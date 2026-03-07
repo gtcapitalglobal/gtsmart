@@ -194,6 +194,12 @@
             <div class="modal-box">
                 <div class="modal-title" id="modalTitle">🌊 Nova Pool</div>
 
+                <div class="modal-label">Nome da Pool</div>
+                <input type="text" class="modal-input" id="poolName" placeholder="Ex: ETH-LINK Uniswap v3">
+
+                <div class="modal-label">Data da Pool</div>
+                <input type="date" class="modal-input" id="poolDate">
+
                 <div class="modal-label">DEX (Exchange)</div>
                 <select class="modal-select" id="poolDex">
                     <option value="Uniswap">Uniswap</option>
@@ -214,6 +220,9 @@
                 <div class="modal-label">Quantidade Token A</div>
                 <input type="number" class="modal-input" id="tokenAAmount" placeholder="Ex: 0.5" step="any" oninput="updatePoolPreview()">
 
+                <div class="modal-label">Preço Token A no dia da Pool (USD)</div>
+                <input type="number" class="modal-input" id="tokenAEntryPrice" placeholder="Ex: 2000.00" step="any" oninput="updatePoolPreview()">
+
                 <div class="modal-separator">＋</div>
 
                 <div class="modal-label">Token B</div>
@@ -223,6 +232,22 @@
 
                 <div class="modal-label">Quantidade Token B</div>
                 <input type="number" class="modal-input" id="tokenBAmount" placeholder="Ex: 500" step="any" oninput="updatePoolPreview()">
+
+                <div class="modal-label">Preço Token B no dia da Pool (USD)</div>
+                <input type="number" class="modal-input" id="tokenBEntryPrice" placeholder="Ex: 15.00" step="any" oninput="updatePoolPreview()">
+
+                <div class="modal-separator">📊 Range</div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div>
+                        <div class="modal-label">Range Mínimo</div>
+                        <input type="number" class="modal-input" id="poolRangeMin" placeholder="Ex: 100" step="any">
+                    </div>
+                    <div>
+                        <div class="modal-label">Range Máximo</div>
+                        <input type="number" class="modal-input" id="poolRangeMax" placeholder="Ex: 200" step="any">
+                    </div>
+                </div>
 
                 <div class="modal-label">Blockchain</div>
                 <select class="modal-select" id="poolChain">
@@ -254,7 +279,7 @@
                 </select>
 
                 <div class="modal-label">Observações (opcional)</div>
-                <input type="text" class="modal-input" id="poolNotes" placeholder="Ex: Range $1800-$2200">
+                <input type="text" class="modal-input" id="poolNotes" placeholder="Ex: Estratégia concentrated liquidity">
 
                 <div class="modal-preview" id="poolPreview"></div>
 
@@ -331,7 +356,7 @@
 
         // ===== RENDER =====
         function updateSummary() {
-            let tvl = 0, totalFees = 0;
+            let tvl = 0, totalFees = 0, totalInvest = 0;
             const activePools = pools.filter(p => p.status !== 'closed');
 
             pools.forEach(p => {
@@ -341,12 +366,18 @@
                 const valB = (p.amountB || 0) * priceB;
                 if (p.status !== 'closed') tvl += valA + valB;
                 totalFees += parseFloat(p.feesEarned || 0);
+                const invA = p.investmentA || ((p.amountA || 0) * (p.entryPriceA || 0));
+                const invB = p.investmentB || ((p.amountB || 0) * (p.entryPriceB || 0));
+                totalInvest += invA + invB;
             });
+
+            const pnl = tvl - totalInvest + totalFees;
 
             document.getElementById('sumTvl').textContent = fmtUsd(tvl);
             document.getElementById('sumPools').textContent = activePools.length + '/' + pools.length;
             document.getElementById('sumFees').textContent = fmtUsd(totalFees);
-            document.getElementById('sumPnl').textContent = totalFees > 0 ? '+' + fmtUsd(totalFees) : '—';
+            document.getElementById('sumPnl').textContent = (pnl >= 0 ? '+' : '') + fmtUsd(pnl);
+            document.getElementById('sumPnl').style.color = pnl >= 0 ? '#2e7d32' : '#c62828';
         }
 
         function renderFilters() {
@@ -392,10 +423,17 @@
                 const valA = (p.amountA || 0) * priceA;
                 const valB = (p.amountB || 0) * priceB;
                 const totalVal = valA + valB;
+                const investA = p.investmentA || ((p.amountA || 0) * (p.entryPriceA || 0));
+                const investB = p.investmentB || ((p.amountB || 0) * (p.entryPriceB || 0));
+                const totalInvest = investA + investB;
+                const pnl = totalVal - totalInvest + parseFloat(p.feesEarned || 0);
                 const chainCls = 'chain-' + (p.chain || 'default').toLowerCase();
                 const dexCls = 'dex-' + (p.dex || 'default').toLowerCase().replace(/\s/g, '');
                 const statusCls = p.status === 'closed' ? 'status-closed' : 'status-active';
                 const ratio = priceB > 0 ? (priceA / priceB) : 0;
+                const symA = (p.tokenASymbol || '?').toUpperCase();
+                const symB = (p.tokenBSymbol || '?').toUpperCase();
+                const poolTitle = p.poolName || (symA + '-' + symB);
 
                 return '<div class="pool-card" style="' + (p.status === 'closed' ? 'opacity:0.6;' : '') + '">' +
                     '<div class="pool-card-top">' +
@@ -405,7 +443,7 @@
                                 (infoB ? '<img src="' + infoB.image + '" onerror="this.style.display=\'none\'">' : '') +
                             '</div>' +
                             '<div>' +
-                                '<div class="pool-pair-name">' + (p.tokenASymbol || '?').toUpperCase() + ' / ' + (p.tokenBSymbol || '?').toUpperCase() + '</div>' +
+                                '<div class="pool-pair-name">' + poolTitle + '</div>' +
                                 '<div class="pool-badges">' +
                                     '<span class="chain-badge ' + chainCls + '">' + (p.chain || 'Outro') + '</span>' +
                                     '<span class="dex-badge ' + dexCls + '">' + (p.dex || 'DEX') + '</span>' +
@@ -420,24 +458,32 @@
                     '</div>' +
                     '<div class="pool-amounts">' +
                         '<div class="pool-amount-box">' +
-                            '<div class="pab-label">' + (p.tokenASymbol || '?').toUpperCase() + '</div>' +
+                            '<div class="pab-label">' + symA + '</div>' +
                             '<div class="pab-value">' + parseFloat(p.amountA || 0).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
-                            '<div class="pab-usd">' + fmtUsd(valA) + '</div>' +
+                            '<div class="pab-usd">Hoje: ' + fmtUsd(valA) + '</div>' +
+                            (p.entryPriceA ? '<div class="pab-usd">Entrada: ' + fmtUsd(p.entryPriceA) + '/un</div>' : '') +
+                            (investA > 0 ? '<div class="pab-usd">Investiu: ' + fmtUsd(investA) + '</div>' : '') +
                         '</div>' +
                         '<div class="pool-amount-box">' +
-                            '<div class="pab-label">' + (p.tokenBSymbol || '?').toUpperCase() + '</div>' +
+                            '<div class="pab-label">' + symB + '</div>' +
                             '<div class="pab-value">' + parseFloat(p.amountB || 0).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
-                            '<div class="pab-usd">' + fmtUsd(valB) + '</div>' +
+                            '<div class="pab-usd">Hoje: ' + fmtUsd(valB) + '</div>' +
+                            (p.entryPriceB ? '<div class="pab-usd">Entrada: ' + fmtUsd(p.entryPriceB) + '/un</div>' : '') +
+                            (investB > 0 ? '<div class="pab-usd">Investiu: ' + fmtUsd(investB) + '</div>' : '') +
                         '</div>' +
                     '</div>' +
                     '<div class="pool-grid">' +
-                        '<div class="pool-stat"><div class="ps-label">Valor Total</div><div class="ps-value">' + fmtUsd(totalVal) + '</div></div>' +
-                        '<div class="pool-stat"><div class="ps-label">Fee Tier</div><div class="ps-value">' + (p.feeTier || '0.3%') + '</div></div>' +
+                        '<div class="pool-stat"><div class="ps-label">Investimento Total</div><div class="ps-value">' + (totalInvest > 0 ? fmtUsd(totalInvest) : '—') + '</div></div>' +
+                        '<div class="pool-stat"><div class="ps-label">Valor Atual</div><div class="ps-value">' + fmtUsd(totalVal) + '</div></div>' +
                         '<div class="pool-stat"><div class="ps-label">Fees Ganhos</div><div class="ps-value" style="color:#2e7d32;">' + fmtUsd(p.feesEarned || 0) + '</div></div>' +
-                        '<div class="pool-stat"><div class="ps-label">Ratio</div><div class="ps-value">1 ' + (p.tokenASymbol || '?').toUpperCase() + ' = ' + (ratio >= 1 ? ratio.toFixed(4) : ratio.toFixed(6)) + ' ' + (p.tokenBSymbol || '?').toUpperCase() + '</div></div>' +
+                        '<div class="pool-stat"><div class="ps-label">PnL</div><div class="ps-value" style="color:' + (pnl >= 0 ? '#2e7d32' : '#c62828') + ';">' + (pnl >= 0 ? '+' : '') + fmtUsd(pnl) + '</div></div>' +
+                        '<div class="pool-stat"><div class="ps-label">Ratio</div><div class="ps-value">1 ' + symA + ' = ' + (ratio >= 1 ? ratio.toFixed(4) : ratio.toFixed(6)) + ' ' + symB + '</div></div>' +
+                        '<div class="pool-stat"><div class="ps-label">Fee Tier</div><div class="ps-value">' + (p.feeTier || '0.3%') + '</div></div>' +
+                        ((p.rangeMin || p.rangeMax) ? '<div class="pool-stat"><div class="ps-label">Range Mínimo</div><div class="ps-value">' + (p.rangeMin || '—') + '</div></div>' +
+                        '<div class="pool-stat"><div class="ps-label">Range Máximo</div><div class="ps-value">' + (p.rangeMax || '—') + '</div></div>' : '') +
                     '</div>' +
                     (p.notes ? '<div class="pool-notes">📝 ' + p.notes + '</div>' : '') +
-                    '<div class="pool-notes">📅 ' + new Date(p.createdAt).toLocaleDateString('pt-BR') + '</div>' +
+                    '<div class="pool-notes">📅 Pool criada: ' + (p.poolDate || new Date(p.createdAt).toLocaleDateString('pt-BR')) + '</div>' +
                 '</div>';
             }).join('');
         }
@@ -446,13 +492,19 @@
         window.openPoolModal = function() {
             editingId = null; selectedTokenA = null; selectedTokenB = null;
             document.getElementById('modalTitle').textContent = '🌊 Nova Pool';
+            document.getElementById('poolName').value = '';
+            document.getElementById('poolDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('poolDex').value = 'Uniswap';
             document.getElementById('tokenASearch').value = '';
             document.getElementById('tokenASelected').textContent = 'Nenhum selecionado';
             document.getElementById('tokenAAmount').value = '';
+            document.getElementById('tokenAEntryPrice').value = '';
             document.getElementById('tokenBSearch').value = '';
             document.getElementById('tokenBSelected').textContent = 'Nenhum selecionado';
             document.getElementById('tokenBAmount').value = '';
+            document.getElementById('tokenBEntryPrice').value = '';
+            document.getElementById('poolRangeMin').value = '';
+            document.getElementById('poolRangeMax').value = '';
             document.getElementById('poolChain').value = 'Ethereum';
             document.getElementById('poolFeeTier').value = '0.3%';
             document.getElementById('poolFeesEarned').value = '';
@@ -490,10 +542,17 @@
                 selectedTokenA = id;
                 document.getElementById('tokenASelected').textContent = '✅ ' + crypto.name + ' (' + crypto.symbol.toUpperCase() + ')';
                 document.getElementById('tokenASearch').value = '';
+                // Auto-fill current price as entry price
+                if (!document.getElementById('tokenAEntryPrice').value) {
+                    document.getElementById('tokenAEntryPrice').value = crypto.current_price;
+                }
             } else {
                 selectedTokenB = id;
                 document.getElementById('tokenBSelected').textContent = '✅ ' + crypto.name + ' (' + crypto.symbol.toUpperCase() + ')';
                 document.getElementById('tokenBSearch').value = '';
+                if (!document.getElementById('tokenBEntryPrice').value) {
+                    document.getElementById('tokenBEntryPrice').value = crypto.current_price;
+                }
             }
             filterTokenList(side);
             updatePoolPreview();
@@ -502,14 +561,31 @@
         window.updatePoolPreview = function() {
             const amtA = parseFloat(document.getElementById('tokenAAmount').value) || 0;
             const amtB = parseFloat(document.getElementById('tokenBAmount').value) || 0;
+            const entryA = parseFloat(document.getElementById('tokenAEntryPrice').value) || 0;
+            const entryB = parseFloat(document.getElementById('tokenBEntryPrice').value) || 0;
             const preview = document.getElementById('poolPreview');
 
             if (selectedTokenA && selectedTokenB && (amtA > 0 || amtB > 0)) {
                 const infoA = getInfo(selectedTokenA);
                 const infoB = getInfo(selectedTokenB);
-                const valA = amtA * getPrice(selectedTokenA);
-                const valB = amtB * getPrice(selectedTokenB);
-                preview.textContent = (infoA ? infoA.symbol.toUpperCase() : '?') + '/' + (infoB ? infoB.symbol.toUpperCase() : '?') + ' | TVL: ' + fmtUsd(valA + valB);
+                const symA = infoA ? infoA.symbol.toUpperCase() : '?';
+                const symB = infoB ? infoB.symbol.toUpperCase() : '?';
+
+                const investA = amtA * entryA;
+                const investB = amtB * entryB;
+                const totalInvest = investA + investB;
+
+                const curA = amtA * getPrice(selectedTokenA);
+                const curB = amtB * getPrice(selectedTokenB);
+                const totalCur = curA + curB;
+
+                const pnl = totalCur - totalInvest;
+                const pnlSign = pnl >= 0 ? '+' : '';
+
+                preview.innerHTML = '<div>' + symA + '/' + symB + '</div>' +
+                    '<div>💵 Investimento: ' + fmtUsd(totalInvest) + ' (' + symA + ': ' + fmtUsd(investA) + ' + ' + symB + ': ' + fmtUsd(investB) + ')</div>' +
+                    '<div>📊 Valor Atual: ' + fmtUsd(totalCur) + '</div>' +
+                    '<div style="color:' + (pnl >= 0 ? '#2e7d32' : '#c62828') + '">PnL: ' + pnlSign + fmtUsd(pnl) + '</div>';
             } else {
                 preview.textContent = '';
             }
@@ -524,11 +600,19 @@
 
             const infoA = getInfo(selectedTokenA);
             const infoB = getInfo(selectedTokenB);
+            const entryA = parseFloat(document.getElementById('tokenAEntryPrice').value) || 0;
+            const entryB = parseFloat(document.getElementById('tokenBEntryPrice').value) || 0;
 
             const pool = {
+                poolName: document.getElementById('poolName').value || ((infoA?.symbol || '?').toUpperCase() + '-' + (infoB?.symbol || '?').toUpperCase()),
+                poolDate: document.getElementById('poolDate').value || new Date().toISOString().split('T')[0],
                 tokenAId: selectedTokenA, tokenAName: infoA?.name || '', tokenASymbol: infoA?.symbol || '',
                 tokenBId: selectedTokenB, tokenBName: infoB?.name || '', tokenBSymbol: infoB?.symbol || '',
                 amountA: amtA || 0, amountB: amtB || 0,
+                entryPriceA: entryA, entryPriceB: entryB,
+                investmentA: (amtA || 0) * entryA, investmentB: (amtB || 0) * entryB,
+                rangeMin: parseFloat(document.getElementById('poolRangeMin').value) || 0,
+                rangeMax: parseFloat(document.getElementById('poolRangeMax').value) || 0,
                 chain: document.getElementById('poolChain').value,
                 dex: document.getElementById('poolDex').value,
                 feeTier: document.getElementById('poolFeeTier').value,
@@ -551,13 +635,19 @@
             editingId = id;
             selectedTokenA = p.tokenAId; selectedTokenB = p.tokenBId;
             document.getElementById('modalTitle').textContent = '✏️ Editar Pool';
+            document.getElementById('poolName').value = p.poolName || '';
+            document.getElementById('poolDate').value = p.poolDate || '';
             document.getElementById('poolDex').value = p.dex || 'Uniswap';
             document.getElementById('tokenASearch').value = '';
             document.getElementById('tokenASelected').textContent = '✅ ' + (p.tokenAName || '') + ' (' + (p.tokenASymbol || '').toUpperCase() + ')';
             document.getElementById('tokenAAmount').value = p.amountA || '';
+            document.getElementById('tokenAEntryPrice').value = p.entryPriceA || '';
             document.getElementById('tokenBSearch').value = '';
             document.getElementById('tokenBSelected').textContent = '✅ ' + (p.tokenBName || '') + ' (' + (p.tokenBSymbol || '').toUpperCase() + ')';
             document.getElementById('tokenBAmount').value = p.amountB || '';
+            document.getElementById('tokenBEntryPrice').value = p.entryPriceB || '';
+            document.getElementById('poolRangeMin').value = p.rangeMin || '';
+            document.getElementById('poolRangeMax').value = p.rangeMax || '';
             document.getElementById('poolChain').value = p.chain || 'Ethereum';
             document.getElementById('poolFeeTier').value = p.feeTier || '0.3%';
             document.getElementById('poolFeesEarned').value = p.feesEarned || '';
