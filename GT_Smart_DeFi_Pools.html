@@ -255,17 +255,26 @@
                     </div>
                 </div>
 
-                <div class="modal-separator">🏦 Borrow Vinculado</div>
+                <div class="modal-separator">🏦 Borrows Vinculados</div>
 
-                <div class="modal-label">Vincular ao Borrow (opcional)</div>
-                <select class="modal-select" id="poolBorrowId" onchange="updateBorrowLink()">
-                    <option value="">— Nenhum borrow vinculado —</option>
+                <div class="modal-label">Borrow do Token A</div>
+                <select class="modal-select" id="poolBorrowIdA" onchange="updateBorrowLinkA()">
+                    <option value="">— Nenhum —</option>
                 </select>
+                <div id="borrowLinkDetailsA" style="display:none;">
+                    <div class="modal-label">% do Borrow usado (Token A)</div>
+                    <input type="number" class="modal-input" id="poolBorrowPctA" placeholder="Ex: 100" step="any" min="0" max="100" oninput="updateBorrowLinkA()">
+                    <div class="modal-preview" id="borrowLinkPreviewA" style="margin-top:6px;"></div>
+                </div>
 
-                <div id="borrowLinkDetails" style="display:none;">
-                    <div class="modal-label">% do Borrow usado nesta Pool</div>
-                    <input type="number" class="modal-input" id="poolBorrowPct" placeholder="Ex: 68.05" step="any" min="0" max="100" oninput="updateBorrowLink()">
-                    <div class="modal-preview" id="borrowLinkPreview" style="margin-top:6px;"></div>
+                <div class="modal-label">Borrow do Token B</div>
+                <select class="modal-select" id="poolBorrowIdB" onchange="updateBorrowLinkB()">
+                    <option value="">— Nenhum —</option>
+                </select>
+                <div id="borrowLinkDetailsB" style="display:none;">
+                    <div class="modal-label">% do Borrow usado (Token B)</div>
+                    <input type="number" class="modal-input" id="poolBorrowPctB" placeholder="Ex: 72.11" step="any" min="0" max="100" oninput="updateBorrowLinkB()">
+                    <div class="modal-preview" id="borrowLinkPreviewB" style="margin-top:6px;"></div>
                 </div>
 
                 <div class="modal-label">Blockchain</div>
@@ -372,21 +381,26 @@
         }
 
         function populateBorrowSelect() {
-            const sel = document.getElementById('poolBorrowId');
-            const current = sel.value;
-            sel.innerHTML = '<option value="">— Nenhum borrow vinculado —</option>' +
+            const selA = document.getElementById('poolBorrowIdA');
+            const selB = document.getElementById('poolBorrowIdB');
+            const curA = selA.value;
+            const curB = selB.value;
+            const opts = '<option value="">— Nenhum —</option>' +
                 borrows.map(b => {
                     const sym = (b.cryptoSymbol || '?').toUpperCase();
                     const amt = parseFloat(b.amount || 0).toLocaleString('en-US', {maximumFractionDigits:4});
                     return '<option value="' + b.id + '">' + sym + ' — ' + amt + ' (' + (b.chain || '') + ', ' + (b.protocol || '') + ')</option>';
                 }).join('');
-            if (current) sel.value = current;
+            selA.innerHTML = opts;
+            selB.innerHTML = opts;
+            if (curA) selA.value = curA;
+            if (curB) selB.value = curB;
         }
 
-        window.updateBorrowLink = function() {
-            const borrowId = document.getElementById('poolBorrowId').value;
-            const detailsDiv = document.getElementById('borrowLinkDetails');
-            const preview = document.getElementById('borrowLinkPreview');
+        function buildBorrowPreview(side) {
+            const borrowId = document.getElementById('poolBorrowId' + side).value;
+            const detailsDiv = document.getElementById('borrowLinkDetails' + side);
+            const preview = document.getElementById('borrowLinkPreview' + side);
 
             if (!borrowId) {
                 detailsDiv.style.display = 'none';
@@ -398,7 +412,7 @@
             const borrow = borrows.find(b => b.id === borrowId);
             if (!borrow) return;
 
-            const pct = parseFloat(document.getElementById('poolBorrowPct').value) || 0;
+            const pct = parseFloat(document.getElementById('poolBorrowPct' + side).value) || 0;
             const sym = (borrow.cryptoSymbol || '?').toUpperCase();
             const totalBorrow = parseFloat(borrow.amount || 0);
             const qtyUsed = totalBorrow * (pct / 100);
@@ -408,7 +422,10 @@
             preview.innerHTML = pct > 0 ?
                 '🏦 Usando <strong>' + pct + '%</strong> = <strong>' + qtyUsed.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) +
                 '<br>💰 Dívida: ' + fmtUsd(debtUsd) : '';
-        };
+        }
+
+        window.updateBorrowLinkA = function() { buildBorrowPreview('A'); };
+        window.updateBorrowLinkB = function() { buildBorrowPreview('B'); };
 
         // ===== PRICES =====
         async function loadPrices() {
@@ -509,24 +526,38 @@
                 const poolTitle = p.poolName || (symA + '-' + symB);
                 const bothHaveInvest = investA > 0 && investB > 0;
 
-                // Borrow info
-                let borrowInfo = '';
-                if (p.borrowId) {
-                    const borrow = borrows.find(b => b.id === p.borrowId);
-                    if (borrow) {
-                        const bSym = (borrow.cryptoSymbol || '?').toUpperCase();
-                        const bTotal = parseFloat(borrow.amount || 0);
-                        const bPct = parseFloat(p.borrowPct || 0);
+                // Borrow info per token
+                let borrowInfoA = '';
+                let borrowInfoB = '';
+                let totalDebt = 0;
+                if (p.borrowIdA) {
+                    const bA = borrows.find(b => b.id === p.borrowIdA);
+                    if (bA) {
+                        const bSym = (bA.cryptoSymbol || '?').toUpperCase();
+                        const bTotal = parseFloat(bA.amount || 0);
+                        const bPct = parseFloat(p.borrowPctA || 0);
                         const bUsed = bTotal * (bPct / 100);
-                        const bPrice = getPrice(borrow.cryptoId);
-                        const debtUsd = bUsed * bPrice;
-                        const poolVal = totalVal;
-                        const realPnl = poolVal - debtUsd;
-                        borrowInfo = bPct + '% = ' + bUsed.toLocaleString('en-US',{maximumFractionDigits:4}) + ' ' + bSym + ' de ' + bTotal.toLocaleString('en-US',{maximumFractionDigits:4}) + ' — ' + borrow.protocol + ' ' + borrow.chain +
-                            '<br>💰 Dívida: ' + fmtUsd(debtUsd) + ' | Pool: ' + fmtUsd(poolVal) +
-                            '<br><span style="font-size:14px;color:' + (realPnl >= 0 ? '#2e7d32' : '#c62828') + ';">Lucro Real: ' + (realPnl >= 0 ? '+' : '') + fmtUsd(realPnl) + '</span>';
+                        const bPrice = getPrice(bA.cryptoId);
+                        const debtA = bUsed * bPrice;
+                        totalDebt += debtA;
+                        borrowInfoA = bPct + '% = ' + bUsed.toLocaleString('en-US',{maximumFractionDigits:4}) + ' ' + bSym + ' | Dívida: ' + fmtUsd(debtA);
                     }
                 }
+                if (p.borrowIdB) {
+                    const bB = borrows.find(b => b.id === p.borrowIdB);
+                    if (bB) {
+                        const bSym = (bB.cryptoSymbol || '?').toUpperCase();
+                        const bTotal = parseFloat(bB.amount || 0);
+                        const bPct = parseFloat(p.borrowPctB || 0);
+                        const bUsed = bTotal * (bPct / 100);
+                        const bPrice = getPrice(bB.cryptoId);
+                        const debtB = bUsed * bPrice;
+                        totalDebt += debtB;
+                        borrowInfoB = bPct + '% = ' + bUsed.toLocaleString('en-US',{maximumFractionDigits:4}) + ' ' + bSym + ' | Dívida: ' + fmtUsd(debtB);
+                    }
+                }
+                const hasBorrow = borrowInfoA || borrowInfoB;
+                const realPnl = hasBorrow ? (totalVal - totalDebt) : 0;
 
                 // Days in pool
                 const poolStart = new Date(p.poolDate || p.createdAt);
@@ -597,7 +628,12 @@
                             (bothHaveInvest ? '<div class="pab-usd">Investiu: ' + fmtUsd(investB) + '</div>' : '') +
                         '</div>' +
                     '</div>' +
-                    (borrowInfo ? '<div class="pool-grid" style="margin-bottom:4px;"><div class="pool-stat" style="grid-column:1/-1;background:#f5f0ff;"><div class="ps-label">🏦 Borrow Vinculado</div><div class="ps-value">' + borrowInfo + '</div></div></div>' : '') +
+                    (hasBorrow ? '<div class="pool-grid" style="margin-bottom:4px;">' +
+                        (borrowInfoA ? '<div class="pool-stat" style="background:#f5f0ff;"><div class="ps-label">🏦 Borrow ' + symA + '</div><div class="ps-value" style="font-size:12px;">' + borrowInfoA + '</div></div>' : '') +
+                        (borrowInfoB ? '<div class="pool-stat" style="background:#f5f0ff;"><div class="ps-label">🏦 Borrow ' + symB + '</div><div class="ps-value" style="font-size:12px;">' + borrowInfoB + '</div></div>' : '') +
+                        '<div class="pool-stat" style="grid-column:1/-1;background:#f5f0ff;"><div class="ps-label">💰 Dívida Total vs Pool</div><div class="ps-value">Dívida: ' + fmtUsd(totalDebt) + ' | Pool: ' + fmtUsd(totalVal) + '</div></div>' +
+                        '<div class="pool-stat" style="grid-column:1/-1;background:' + (realPnl >= 0 ? '#e8f5e9' : '#fdecea') + ';"><div class="ps-label">🎯 Lucro Real (Pool - Dívida)</div><div class="ps-value" style="font-size:18px;color:' + (realPnl >= 0 ? '#2e7d32' : '#c62828') + ';">' + (realPnl >= 0 ? '+' : '') + fmtUsd(realPnl) + '</div></div>' +
+                    '</div>' : '') +
                     '<div class="pool-grid">' +
                         '<div class="pool-stat"><div class="ps-label">Investimento Total</div><div class="ps-value">' + (totalInvest > 0 ? fmtUsd(totalInvest) : '—') + '</div></div>' +
                         '<div class="pool-stat"><div class="ps-label">Valor Atual</div><div class="ps-value">' + fmtUsd(totalVal) + '</div></div>' +
@@ -634,9 +670,12 @@
             document.getElementById('tokenBAmount').value = '';
             document.getElementById('tokenBEntryPrice').value = '';
             document.getElementById('tokenBCurrentAmount').value = '';
-            document.getElementById('poolBorrowId').value = '';
-            document.getElementById('poolBorrowPct').value = '';
-            document.getElementById('borrowLinkDetails').style.display = 'none';
+            document.getElementById('poolBorrowIdA').value = '';
+            document.getElementById('poolBorrowPctA').value = '';
+            document.getElementById('borrowLinkDetailsA').style.display = 'none';
+            document.getElementById('poolBorrowIdB').value = '';
+            document.getElementById('poolBorrowPctB').value = '';
+            document.getElementById('borrowLinkDetailsB').style.display = 'none';
             document.getElementById('poolRangeMin').value = '';
             document.getElementById('poolRangeMax').value = '';
             document.getElementById('poolChain').value = 'Ethereum';
@@ -748,8 +787,10 @@
                 investmentA: (amtA || 0) * entryA, investmentB: (amtB || 0) * entryB,
                 currentAmountA: parseFloat(document.getElementById('tokenACurrentAmount').value) || 0,
                 currentAmountB: parseFloat(document.getElementById('tokenBCurrentAmount').value) || 0,
-                borrowId: document.getElementById('poolBorrowId').value || '',
-                borrowPct: parseFloat(document.getElementById('poolBorrowPct').value) || 0,
+                borrowIdA: document.getElementById('poolBorrowIdA').value || '',
+                borrowPctA: parseFloat(document.getElementById('poolBorrowPctA').value) || 0,
+                borrowIdB: document.getElementById('poolBorrowIdB').value || '',
+                borrowPctB: parseFloat(document.getElementById('poolBorrowPctB').value) || 0,
                 rangeMin: parseFloat(document.getElementById('poolRangeMin').value) || 0,
                 rangeMax: parseFloat(document.getElementById('poolRangeMax').value) || 0,
                 chain: document.getElementById('poolChain').value,
@@ -787,8 +828,10 @@
             document.getElementById('tokenBAmount').value = p.amountB || '';
             document.getElementById('tokenBEntryPrice').value = p.entryPriceB || '';
             document.getElementById('tokenBCurrentAmount').value = p.currentAmountB || '';
-            document.getElementById('poolBorrowId').value = p.borrowId || '';
-            document.getElementById('poolBorrowPct').value = p.borrowPct || '';
+            document.getElementById('poolBorrowIdA').value = p.borrowIdA || '';
+            document.getElementById('poolBorrowPctA').value = p.borrowPctA || '';
+            document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
+            document.getElementById('poolBorrowPctB').value = p.borrowPctB || '';
             document.getElementById('poolRangeMin').value = p.rangeMin || '';
             document.getElementById('poolRangeMax').value = p.rangeMax || '';
             document.getElementById('poolChain').value = p.chain || 'Ethereum';
@@ -799,7 +842,11 @@
             document.getElementById('poolSaveBtn').textContent = 'Atualizar';
             filterTokenList('A'); filterTokenList('B');
             populateBorrowSelect();
-            setTimeout(() => { document.getElementById('poolBorrowId').value = p.borrowId || ''; updateBorrowLink(); }, 100);
+            setTimeout(() => {
+                document.getElementById('poolBorrowIdA').value = p.borrowIdA || '';
+                document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
+                updateBorrowLinkA(); updateBorrowLinkB();
+            }, 100);
             updatePoolPreview();
             document.getElementById('poolModal').classList.add('show');
         };
