@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Detalhe Cartão</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20, #2e7d32); min-height: 100vh; padding: 15px; }
+        .container { max-width: 700px; margin: 10px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1b5e20, #388e3c); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .header h2 { font-size: 17px; }
+        .header-btns { display: flex; gap: 8px; }
+        .btn-edit { background: white; color: #1b5e20; border: none; padding: 7px 13px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-del { background: #e53935; color: white; border: none; padding: 7px 13px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
+        .content { padding: 20px; }
+
+        /* Card visual */
+        .card-visual { background: linear-gradient(135deg, #1b5e20, #43a047); color: white; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+        .card-visual .nome { font-size: 18px; font-weight: 800; }
+        .card-visual .digits { font-size: 22px; letter-spacing: 4px; margin: 8px 0; opacity: 0.9; }
+        .card-visual .info-row { display: flex; justify-content: space-between; margin-top: 10px; }
+        .card-visual .info-label { font-size: 10px; opacity: 0.7; }
+        .card-visual .info-value { font-size: 14px; font-weight: 700; }
+
+        /* Uso */
+        .uso-section { background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .uso-title { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .uso-values { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px; text-align: center; }
+        .uso-val { background: white; padding: 10px; border-radius: 8px; }
+        .uso-val .lbl { font-size: 10px; color: #888; }
+        .uso-val .val { font-size: 16px; font-weight: 800; }
+        .barra { background: #e0e0e0; border-radius: 10px; height: 12px; overflow: hidden; }
+        .barra-fill { height: 100%; border-radius: 10px; }
+        .atualizar-btn { display: block; width: 100%; margin-top: 12px; padding: 10px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; }
+
+        /* Datas */
+        .datas-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 15px; }
+        .data-card { background: #f8f9fa; border-radius: 10px; padding: 12px; text-align: center; }
+        .data-card .icon { font-size: 20px; }
+        .data-card .label { font-size: 10px; color: #888; margin: 4px 0 2px; }
+        .data-card .value { font-size: 16px; font-weight: 800; color: #333; }
+        .data-card .sub { font-size: 10px; color: #2e7d32; font-weight: 600; margin-top: 2px; }
+
+        /* Infos */
+        .info-section { border: 1px solid #e0e0e0; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .info-section h3 { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 12px; }
+        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-key { color: #888; }
+        .info-val { font-weight: 600; color: #333; text-align: right; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .badge-pessoal { background: #e3f2fd; color: #1565c0; }
+        .badge-business { background: #fce4ec; color: #880e4f; }
+        .badge-promo { background: #fff8e1; color: #f57f17; }
+        .alerta-box { background: #fdecea; border: 1px solid #ef9a9a; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: #c62828; font-weight: 600; font-size: 13px; }
+        .ok-box { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: #1b5e20; font-weight: 600; font-size: 13px; }
+
+        /* Atualizar saldo modal */
+        .update-form { background: #f0fff4; border: 2px solid #a5d6a7; border-radius: 10px; padding: 15px; margin-bottom: 15px; display: none; }
+        .update-form input { width: 100%; padding: 10px; border: 2px solid #a5d6a7; border-radius: 8px; font-size: 15px; margin-bottom: 10px; }
+        .update-form .btns { display: flex; gap: 8px; }
+        .update-form .btns button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 id="cardTitle">💳 Cartão</h2>
+            <div class="header-btns">
+                <button class="btn-edit" onclick="editarCartao()">✏️ Editar</button>
+                <button class="btn-del" onclick="excluirCartao()">🗑️</button>
+                <button class="btn-back" onclick="window.location.href='GT_Smart_Cartoes.html'">← Voltar</button>
+            </div>
+        </div>
+        <div class="content" id="mainContent">
+            <div style="text-align:center;padding:40px;color:#aaa;">Carregando...</div>
+        </div>
+    </div>
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getCards, updateCard, deleteCard } from './firebase-config.js';
+
+        let card = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardId = urlParams.get('id');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            const cards = await getCards();
+            card = cards.find(c => c.id === cardId);
+            if (!card) { alert('Cartão não encontrado!'); window.location.href = 'GT_Smart_Cartoes.html'; return; }
+            renderCartao();
+        });
+
+        function calcDataBoa(c) {
+            if (c.tipo === 'Business') {
+                const modo = c.modoBusiness || 'normal';
+                const venc = parseInt(c.diaVencimento);
+                if (!venc) return '—';
+                const dias = modo === 'turbo' ? 13 : 2;
+                let d = venc - dias;
+                if (d <= 0) d += 30;
+                return { dia: d, modo: modo === 'turbo' ? '🚀 Turbo' : '📅 Padrão' };
+            } else {
+                const fech = parseInt(c.diaFechamento);
+                if (!fech) return { dia: '—', modo: 'AZEO' };
+                let d = fech - 2;
+                if (d <= 0) d += 30;
+                return { dia: d, modo: 'AZEO' };
+            }
+        }
+
+        function renderCartao() {
+            document.getElementById('cardTitle').textContent = `💳 ${card.nome}`;
+            const pct = card.limite ? Math.min((card.saldoUsado || 0) / card.limite * 100, 100) : 0;
+            const limite30 = (card.limite || 0) * 0.3;
+            const falta30 = limite30 - (card.saldoUsado || 0);
+            const barColor = pct >= 30 ? '#e53935' : pct >= 20 ? '#ffa000' : '#43a047';
+            const dataBoa = calcDataBoa(card);
+            const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+
+            const alertaHtml = pct >= 30
+                ? `<div class="alerta-box">🔴 ATENÇÃO! Você está usando ${pct.toFixed(1)}% do limite. Acima de 30%! Pague antes de usar mais.</div>`
+                : falta30 < 200
+                ? `<div class="alerta-box">⚠️ Próximo do limite de 30%! Ainda pode usar ${fmt(falta30)}.</div>`
+                : `<div class="ok-box">✅ Uso dentro do limite de 30%. Disponível seguro: ${fmt(falta30)}.</div>`;
+
+            const today = new Date().getDate();
+            let alertaVenc = '';
+            const venc = parseInt(card.diaVencimento);
+            const fech = parseInt(card.diaFechamento);
+            if (venc >= today && venc <= today + 3) alertaVenc = `<div class="alerta-box">📅 Vencimento em ${venc - today === 0 ? 'HOJE' : (venc - today) + ' dias'}! Data boa: Dia ${dataBoa.dia}</div>`;
+            if (card.tipo === 'Pessoal' && (fech === today || fech === today + 1)) alertaVenc += `<div class="alerta-box">⚠️ Cartão pessoal fecha ${fech === today ? 'HOJE' : 'AMANHÃ'}! Evite usar e pague antes do fechamento.</div>`;
+
+            document.getElementById('mainContent').innerHTML = `
+                ${alertaVenc}
+                ${alertaHtml}
+
+                <div class="card-visual">
+                    <div class="nome">${card.nome}</div>
+                    <div class="digits">•••• •••• •••• ${card.ultimos4 || '????'}</div>
+                    <div class="info-row">
+                        <div><div class="info-label">TITULAR</div><div class="info-value">${card.titular}</div></div>
+                        <div><div class="info-label">BANCO</div><div class="info-value">${card.banco || '—'}</div></div>
+                        <div><div class="info-label">TIPO</div><div class="info-value">${card.tipo}</div></div>
+                    </div>
+                </div>
+
+                <div class="uso-section">
+                    <div class="uso-title">💳 Utilização do Limite</div>
+                    <div class="uso-values">
+                        <div class="uso-val"><div class="lbl">Limite Total</div><div class="val" style="color:#1b5e20">${fmt(card.limite)}</div></div>
+                        <div class="uso-val"><div class="lbl">Usado</div><div class="val" style="color:${pct>=30?'#e53935':'#e65100'}">${fmt(card.saldoUsado)}</div></div>
+                        <div class="uso-val"><div class="lbl">Disponível</div><div class="val" style="color:#1565c0">${fmt((card.limite||0)-(card.saldoUsado||0))}</div></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:5px;">
+                        <span>Uso: ${pct.toFixed(1)}%</span>
+                        <span>30% = ${fmt(limite30)} | Falta: ${falta30 > 0 ? fmt(falta30) : '<span style="color:#e53935">Passou!</span>'}</span>
+                    </div>
+                    <div class="barra"><div class="barra-fill" style="width:${pct}%;background:${barColor};"></div></div>
+                    <button class="atualizar-btn" onclick="mostrarUpdateSaldo()">🔄 Atualizar Saldo Usado</button>
+                </div>
+
+                <div id="updateForm" class="update-form">
+                    <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px;">Digite o saldo atual usado no cartão:</label>
+                    <input type="number" id="novoSaldo" placeholder="Ex: 1500.00" step="0.01" value="${card.saldoUsado || 0}">
+                    <div class="btns">
+                        <button onclick="salvarSaldo()" style="background:#2e7d32;color:white;">✅ Salvar</button>
+                        <button onclick="document.getElementById('updateForm').style.display='none'" style="background:#6c757d;color:white;">❌ Cancelar</button>
+                    </div>
+                </div>
+
+                <div class="datas-grid">
+                    <div class="data-card">
+                        <div class="icon">📆</div>
+                        <div class="label">Fechamento</div>
+                        <div class="value">Dia ${card.diaFechamento || '—'}</div>
+                        <div class="sub">${card.tipo === 'Pessoal' ? 'Pague antes!' : ''}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="icon">💳</div>
+                        <div class="label">Vencimento</div>
+                        <div class="value">Dia ${card.diaVencimento || '—'}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="icon">✅</div>
+                        <div class="label">Data Boa Pagar</div>
+                        <div class="value">Dia ${dataBoa.dia}</div>
+                        <div class="sub">${dataBoa.modo}</div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>⭐ Rewards e Benefícios</h3>
+                    <div class="info-row"><span class="info-key">Rewards</span><span class="info-val">${card.rewards || '—'}</span></div>
+                    <div class="info-row"><span class="info-key">Categoria</span><span class="info-val">${card.categoriaReward || '—'}</span></div>
+                    ${card.promo ? `<div class="info-row"><span class="info-key">Promo</span><span class="info-val"><span class="badge badge-promo">🎯 ${card.promo}</span></span></div>` : ''}
+                    ${card.metaBonus ? `<div class="info-row"><span class="info-key">Meta Bônus</span><span class="info-val">${card.metaBonus}</span></div>` : ''}
+                    ${card.bonusPrazo ? `<div class="info-row"><span class="info-key">Prazo Bônus</span><span class="info-val">${new Date(card.bonusPrazo).toLocaleDateString('pt-BR')}</span></div>` : ''}
+                </div>
+
+                <div class="info-section">
+                    <h3>ℹ️ Informações</h3>
+                    <div class="info-row"><span class="info-key">Banco</span><span class="info-val">${card.banco || '—'}</span></div>
+                    <div class="info-row"><span class="info-key">Tipo</span><span class="info-val"><span class="badge ${card.tipo === 'Pessoal' ? 'badge-pessoal' : 'badge-business'}">${card.tipo}</span></span></div>
+                    ${card.empresa ? `<div class="info-row"><span class="info-key">Empresa</span><span class="info-val">${card.empresa}</span></div>` : ''}
+                    ${card.tipo === 'Business' ? `<div class="info-row"><span class="info-key">Modo Pagamento</span><span class="info-val">${card.modoBusiness === 'turbo' ? '🚀 Turbo' : '📅 Padrão'}</span></div>` : ''}
+                    ${card.observacoes ? `<div class="info-row"><span class="info-key">Obs</span><span class="info-val">${card.observacoes}</span></div>` : ''}
+                </div>
+            `;
+        }
+
+        window.mostrarUpdateSaldo = function() {
+            const f = document.getElementById('updateForm');
+            f.style.display = f.style.display === 'none' ? 'block' : 'none';
+        };
+
+        window.salvarSaldo = async function() {
+            const novo = parseFloat(document.getElementById('novoSaldo').value) || 0;
+            card.saldoUsado = novo;
+            await updateCard(card);
+            alert('✅ Saldo atualizado!');
+            renderCartao();
+            document.getElementById('updateForm').style.display = 'none';
+        };
+
+        window.editarCartao = () => window.location.href = `GT_Smart_Editar_Cartao.html?id=${card.id}`;
+
+        window.excluirCartao = async function() {
+            if (!confirm('⚠️ Tem certeza que quer excluir este cartão?')) return;
+            await deleteCard(card.id);
+            alert('✅ Cartão excluído!');
+            window.location.href = 'GT_Smart_Cartoes.html';
+        };
+    </script>
+
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+</body>
+</html>

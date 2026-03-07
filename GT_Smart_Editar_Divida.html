@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Editar Dívida</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #ff6b6b, #ee5a6f); min-height: 100vh; padding: 15px; }
+        .container { max-width: 600px; margin: 10px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 20px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: 600; cursor: pointer; }
+        .content { padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; }
+        input:focus { outline: none; border-color: #ff6b6b; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .btn-primary { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .aviso { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #856404; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>✏️ Editar Dívida</h2>
+            <button onclick="goBack()" class="btn-back">← Voltar</button>
+        </div>
+        <div class="content">
+            <div class="aviso">⚠️ Ao salvar, as parcelas serão recalculadas mantendo os pagamentos já realizados.</div>
+            <form id="debtForm">
+                <div class="form-group">
+                    <label>🏦 Credor</label>
+                    <input type="text" id="creditorName" required>
+                </div>
+                <div class="form-group">
+                    <label>💰 Valor Principal (quanto deve)</label>
+                    <input type="number" id="totalAmount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>📊 Taxa de Juros ao Mês (%)</label>
+                    <input type="number" id="interestRate" step="0.01" required>
+                </div>
+                
+                <div class="form-group" style="background:#f0f9ff;border:1px solid #bee3f8;border-radius:8px;padding:12px;">
+                    <label style="color:#2b6cb0;">💡 Juros mensais calculados</label>
+                    <div id="previewJuros" style="font-size:20px;font-weight:700;color:#2b6cb0;">—</div>
+                </div>
+                <div class="form-group">
+                    <label>🔢 Número de Meses</label>
+                    <input type="number" id="numPayments" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>📅 Data do Empréstimo</label>
+                    <input type="date" id="loanDate" required>
+                </div>
+                <div class="form-group">
+                    <label>📅 Data do Primeiro Pagamento</label>
+                    <input type="date" id="firstPaymentDate" required>
+                </div>
+                <div class="form-group">
+                    <label>📝 Observações</label>
+                    <input type="text" id="notes" placeholder="Opcional">
+                </div>
+                <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+                <button type="button" class="btn btn-secondary" onclick="goBack()">❌ Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#667eea;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getDebts, updateDebt } from './firebase-config.js';
+        
+        let debt = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const debtId = urlParams.get('id');
+        
+        function atualizarPreview() {
+            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const taxa = parseFloat(document.getElementById('interestRate').value) || 0;
+            if (total && taxa) {
+                const juros = (total * taxa / 100).toFixed(2);
+                document.getElementById('previewJuros').textContent = '$' + parseFloat(juros).toLocaleString('en-US', {minimumFractionDigits:2});
+            } else {
+                document.getElementById('previewJuros').textContent = '—';
+            }
+        }
+        window.atualizarPreview = atualizarPreview;
+        setTimeout(() => {
+            document.getElementById('totalAmount').addEventListener('input', atualizarPreview);
+            document.getElementById('interestRate').addEventListener('input', atualizarPreview);
+        }, 100);
+        
+        window.goBack = function() {
+            window.location.href = debtId ? 'GT_Smart_Detalhe_Divida.html?id=' + debtId : 'GT_Smart_Minhas_Dividas.html';
+        };
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            if (!debtId) { alert('❌ Dívida não encontrada!'); window.location.href = 'GT_Smart_Minhas_Dividas.html'; return; }
+            
+            const debts = await getDebts();
+            debt = debts.find(d => d.id === debtId);
+            if (!debt) { alert('❌ Dívida não encontrada!'); window.location.href = 'GT_Smart_Minhas_Dividas.html'; return; }
+            
+            document.getElementById('creditorName').value = debt.creditorName || '';
+            document.getElementById('totalAmount').value = debt.totalAmount || '';
+            document.getElementById('interestRate').value = debt.interestRate || '';
+            
+            // Calcular número de meses (última parcela tem 2 entradas: juros + principal)
+            const meses = debt.interestAmount > 0 ? (debt.numPayments - 1) : debt.numPayments || 12;
+            document.getElementById('numPayments').value = meses;
+            
+            document.getElementById('loanDate').value = debt.loanDate || '';
+            document.getElementById('firstPaymentDate').value = debt.firstPaymentDate || '';
+            document.getElementById('notes').value = debt.notes || '';
+            atualizarPreview();
+        });
+        
+        document.getElementById('debtForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+            const interestRate = parseFloat(document.getElementById('interestRate').value);
+            const interestAmount = Math.round(totalAmount * (interestRate / 100) * 100) / 100;
+            const numPayments = parseInt(document.getElementById('numPayments').value);
+            const paidPayments = (debt.payments || []).filter(p => p.paid);
+            
+            let payments = [];
+            let paymentDate = new Date(document.getElementById('firstPaymentDate').value);
+            
+            for (let i = 0; i < numPayments; i++) {
+                const isLast = i === numPayments - 1;
+                const existingPaid = paidPayments.find(p => p.number === i + 1);
+                
+                if (isLast) {
+                    payments.push({ number: i+1, date: paymentDate.toISOString().split('T')[0], amount: interestAmount, paid: !!existingPaid, paidDate: existingPaid?.paidDate || null, negotiated: false, label: 'Juros' });
+                    payments.push({ number: i+2, date: paymentDate.toISOString().split('T')[0], amount: totalAmount, paid: false, paidDate: null, negotiated: false, label: 'Principal' });
+                } else {
+                    payments.push({ number: i+1, date: paymentDate.toISOString().split('T')[0], amount: interestAmount, paid: !!existingPaid, paidDate: existingPaid?.paidDate || null, negotiated: false, label: 'Juros' });
+                }
+                paymentDate.setMonth(paymentDate.getMonth() + 1);
+            }
+            payments.forEach((p, i) => p.number = i + 1);
+            
+            const updated = { ...debt, creditorName: document.getElementById('creditorName').value, totalAmount, interestRate, interestAmount, frequency: 'monthly', numPayments: payments.length, paymentAmount: interestAmount, loanDate: document.getElementById('loanDate').value, firstPaymentDate: document.getElementById('firstPaymentDate').value, notes: document.getElementById('notes').value || '', payments };
+            
+            const ok = await updateDebt(updated);
+            if (ok) { alert('✅ Dívida atualizada!'); window.location.href = 'GT_Smart_Detalhe_Divida.html?id=' + debtId; }
+            else { alert('❌ Erro ao salvar. Tente novamente.'); }
+        });
+    </script>
+
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+</body>
+</html>

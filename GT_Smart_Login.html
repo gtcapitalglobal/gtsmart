@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart Equity - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-box { background: white; border-radius: 16px; padding: 40px 30px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
+        .logo { font-size: 50px; margin-bottom: 10px; }
+        h1 { font-size: 22px; color: #333; margin-bottom: 5px; }
+        p { font-size: 13px; color: #888; margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
+        input:focus { outline: none; border-color: #667eea; }
+        input.erro { border-color: #dc3545; }
+        .btn-login { width: 100%; padding: 13px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 5px; transition: all 0.3s; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .error-msg { background: #f8d7da; color: #721c24; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; text-align: left; }
+        .success-msg { background: #d4edda; color: #155724; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; text-align: left; }
+        .loading { display: none; margin-top: 15px; color: #667eea; font-size: 13px; }
+        .forgot-link { display: block; margin-top: 15px; color: #667eea; font-size: 13px; cursor: pointer; text-decoration: underline; background: none; border: none; width: 100%; text-align: center; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 999; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 340px; text-align: center; }
+        .modal h3 { font-size: 18px; margin-bottom: 8px; color: #333; }
+        .modal p { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .modal input { margin-bottom: 15px; }
+        .btn-reset { width: 100%; padding: 11px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+        .btn-cancelar { width: 100%; padding: 11px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="logo">💼</div>
+        <h1>GT Smart Equity</h1>
+        <p>Sistema de Gestão de Empréstimos</p>
+        <div class="form-group">
+            <label>📧 Email</label>
+            <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label>🔒 Senha</label>
+            <input type="password" id="password" placeholder="Sua senha" autocomplete="current-password">
+        </div>
+        <button class="btn-login" id="btnLogin" onclick="fazerLogin()">🚀 Entrar</button>
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+        <div class="loading" id="loading">⏳ Entrando...</div>
+        <button class="forgot-link" onclick="abrirEsqueceuSenha()">🔑 Esqueceu a senha?</button>
+    </div>
+
+    <div class="modal-overlay" id="modalSenha">
+        <div class="modal">
+            <h3>🔑 Redefinir Senha</h3>
+            <p>Digite seu email e enviaremos um link para redefinir sua senha.</p>
+            <input type="email" id="emailReset" placeholder="seu@email.com">
+            <div class="error-msg" id="errorReset" style="margin-bottom:10px;"></div>
+            <div class="success-msg" id="successReset" style="margin-bottom:10px;"></div>
+            <button class="btn-reset" onclick="enviarResetSenha()">📧 Enviar Link</button>
+            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+        </div>
+    
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail } from './firebase-config.js';
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) window.location.href = 'GT_Smart_Menu.html';
+        });
+
+        window.fazerLogin = async function() {
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('password').value;
+            const btn = document.getElementById('btnLogin');
+            const erro = document.getElementById('errorMsg');
+            const loading = document.getElementById('loading');
+
+            erro.style.display = 'none';
+            document.getElementById('email').classList.remove('erro');
+            document.getElementById('password').classList.remove('erro');
+
+            if (!email || !senha) {
+                erro.textContent = '⚠️ Preencha email e senha!';
+                erro.style.display = 'block';
+                if (!email) document.getElementById('email').classList.add('erro');
+                if (!senha) document.getElementById('password').classList.add('erro');
+                return;
+            }
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, senha);
+            } catch (e) {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found') {
+                    erro.textContent = '❌ Email ou senha incorretos! Verifique e tente novamente.';
+                    document.getElementById('password').classList.add('erro');
+                } else if (e.code === 'auth/too-many-requests') {
+                    erro.textContent = '⚠️ Muitas tentativas erradas. Aguarde alguns minutos ou redefina sua senha.';
+                } else if (e.code === 'auth/invalid-email') {
+                    erro.textContent = '⚠️ Email inválido!';
+                    document.getElementById('email').classList.add('erro');
+                } else {
+                    erro.textContent = '❌ Erro ao entrar. Verifique sua conexão e tente novamente.';
+                }
+                erro.style.display = 'block';
+            }
+        };
+
+        window.abrirEsqueceuSenha = function() {
+            document.getElementById('emailReset').value = document.getElementById('email').value;
+            document.getElementById('errorReset').style.display = 'none';
+            document.getElementById('successReset').style.display = 'none';
+            document.getElementById('modalSenha').classList.add('show');
+        };
+
+        window.fecharModal = function() {
+            document.getElementById('modalSenha').classList.remove('show');
+        };
+
+        window.enviarResetSenha = async function() {
+            const email = document.getElementById('emailReset').value.trim();
+            const erro = document.getElementById('errorReset');
+            const sucesso = document.getElementById('successReset');
+            erro.style.display = 'none';
+            sucesso.style.display = 'none';
+
+            if (!email) {
+                erro.textContent = '⚠️ Digite seu email!';
+                erro.style.display = 'block';
+                return;
+            }
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                sucesso.textContent = '✅ Email enviado! Verifique sua caixa de entrada.';
+                sucesso.style.display = 'block';
+                setTimeout(() => fecharModal(), 3000);
+            } catch (e) {
+                if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-email') {
+                    erro.textContent = '❌ Email não encontrado!';
+                } else {
+                    erro.textContent = '❌ Erro ao enviar. Tente novamente.';
+                }
+                erro.style.display = 'block';
+            }
+        };
+
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fazerLogin();
+        });
+    </script>
+</body>
+</html>

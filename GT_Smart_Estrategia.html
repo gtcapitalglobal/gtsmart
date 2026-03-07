@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Estratégia AZEO/PAYDEX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+
+        /* Score Cards */
+        .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .score-card { border-radius: 12px; padding: 15px; text-align: center; }
+        .score-card .title { font-size: 12px; font-weight: 700; opacity: 0.8; margin-bottom: 5px; }
+        .score-card .score { font-size: 28px; font-weight: 900; }
+        .score-card .sub { font-size: 11px; margin-top: 4px; opacity: 0.7; }
+        .score-azeo { background: linear-gradient(135deg, #4a0e8f, #6a1b9a); color: white; }
+        .score-paydex { background: linear-gradient(135deg, #1565c0, #1976d2); color: white; }
+
+        /* Section */
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 3px solid; display: flex; align-items: center; gap: 8px; }
+        .section-title.azeo { color: #4a0e8f; border-color: #4a0e8f; }
+        .section-title.paydex { color: #1565c0; border-color: #1565c0; }
+        .section-desc { font-size: 12px; color: #666; margin-bottom: 12px; line-height: 1.5; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+
+        /* Action Cards */
+        .action-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 12px; margin-bottom: 10px; transition: all 0.2s; }
+        .action-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .action-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .card-name { font-size: 14px; font-weight: 700; color: #333; }
+        .card-digits { font-size: 12px; color: #888; }
+        
+        .action-body { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .action-stat { text-align: center; padding: 6px; background: #f8f9fa; border-radius: 8px; }
+        .action-stat .stat-label { font-size: 9px; font-weight: 600; color: #888; text-transform: uppercase; }
+        .action-stat .stat-value { font-size: 13px; font-weight: 800; }
+
+        .action-instruction { padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .action-ok { background: #e8f5e9; color: #1b5e20; border-left: 4px solid #43a047; }
+        .action-warn { background: #fff3e0; color: #e65100; border-left: 4px solid #ff9800; }
+        .action-danger { background: #fdecea; color: #c62828; border-left: 4px solid #e53935; }
+        .action-info { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1976d2; }
+        .action-chosen { background: #ede7f6; color: #4a0e8f; border-left: 4px solid #7c4dff; }
+
+        /* Progress bar */
+        .usage-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+        .usage-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+        .fill-green { background: #43a047; }
+        .fill-yellow { background: #ff9800; }
+        .fill-red { background: #e53935; }
+
+        /* Timeline */
+        .timeline { margin-top: 8px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: #888; }
+        .timeline-date { font-weight: 700; padding: 3px 8px; border-radius: 12px; font-size: 10px; }
+        .tl-closing { background: #fff3e0; color: #e65100; }
+        .tl-pay { background: #e8f5e9; color: #1b5e20; }
+        .tl-due { background: #e3f2fd; color: #1565c0; }
+
+        /* Summary box */
+        .summary-box { background: #f5f7fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #e8e8e8; }
+        .summary-row:last-child { border-bottom: none; font-weight: 800; font-size: 14px; }
+
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #0a2e0a 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .card-name { color: #e0e0e0; }
+        body.dark-mode .action-card { border-color: #333; background: #16213e; }
+        body.dark-mode .action-stat { background: #1a1a3e; }
+        body.dark-mode .action-stat .stat-label { color: #aaa; }
+        body.dark-mode .section-desc { background: #16213e; color: #aaa; }
+        body.dark-mode .summary-box { background: #16213e; }
+        body.dark-mode .summary-row { border-color: #333; }
+
+        @media (max-width: 600px) {
+            .header { flex-direction: column; text-align: center; }
+            .action-body { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🎯 Estratégia AZEO / PAYDEX</h2>
+            <div style="display:flex;gap:8px;">
+                <a href="GT_Smart_Cartoes.html" class="btn-back">💳 Cartões</a>
+                <a href="GT_Smart_Menu.html" class="btn-back">← Menu</a>
+            </div>
+        </div>
+        <div class="content">
+            <!-- Score Cards -->
+            <div class="score-grid">
+                <div class="score-card score-azeo">
+                    <div class="title">AZEO (Pessoal)</div>
+                    <div class="score" id="azeoScore">—</div>
+                    <div class="sub" id="azeoSub">Carregando...</div>
+                </div>
+                <div class="score-card score-paydex">
+                    <div class="title">PAYDEX (Business)</div>
+                    <div class="score" id="paydexScore">—</div>
+                    <div class="sub" id="paydexSub">Carregando...</div>
+                </div>
+            </div>
+
+            <!-- AZEO Section -->
+            <div class="section" id="azeoSection">
+                <div class="section-title azeo">👤 Estratégia AZEO — Cartões Pessoais</div>
+                <div class="section-desc">
+                    <strong>AZEO = All Zero Except One.</strong> Todos os cartões pessoais devem reportar $0 no statement, EXCETO um que reporta 1-9% de uso. Pague ANTES da data de fechamento (statement closing date).
+                </div>
+                <div id="azeoCards"></div>
+            </div>
+
+            <!-- PAYDEX Section -->
+            <div class="section" id="paydexSection">
+                <div class="section-title paydex">🏢 Estratégia PAYDEX — Cartões Business</div>
+                <div class="section-desc">
+                    <strong>PAYDEX mede pontualidade.</strong> Pague ANTES do vencimento. Modo Normal: 2 dias antes. Modo Turbo: 13 dias antes (melhor score). Mantenha uso abaixo de 30%.
+                </div>
+                <div id="paydexCards"></div>
+            </div>
+
+            <!-- Resumo de Ações -->
+            <div class="section">
+                <div class="section-title" style="color:#333;border-color:#333;">📋 Resumo — O Que Fazer</div>
+                <div class="summary-box" id="summaryBox"></div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 06/03/2026</p>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, getCards } from './firebase-config.js';
+
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            const cards = await getCards();
+            renderStrategy(cards || []);
+        });
+
+        function getDaysUntil(day) {
+            const today = new Date();
+            const todayDay = today.getDate();
+            let diff = day - todayDay;
+            if (diff < 0) diff += 30; // próximo mês
+            return diff;
+        }
+
+        function getPayDate(card) {
+            if (card.tipo === 'Business') {
+                const venc = parseInt(card.diaVencimento) || 0;
+                const dias = card.modoBusiness === 'turbo' ? 13 : 2;
+                let payDay = venc - dias;
+                if (payDay <= 0) payDay += 30;
+                return payDay;
+            } else {
+                const fech = parseInt(card.diaFechamento) || 0;
+                return fech - 2 > 0 ? fech - 2 : fech - 2 + 30;
+            }
+        }
+
+        function renderStrategy(cards) {
+            const pessoais = cards.filter(c => c.tipo === 'Pessoal');
+            const business = cards.filter(c => c.tipo === 'Business');
+
+            // ===== AZEO =====
+            const pessoaisComSaldo = pessoais.filter(c => (c.saldoUsado || 0) > 0);
+            const pessoaisSemSaldo = pessoais.filter(c => (c.saldoUsado || 0) <= 0);
+
+            // Escolher o "The One" — cartão com maior limite que tem saldo
+            // Se nenhum tem saldo, sugerir o de maior limite
+            let theOne = null;
+            if (pessoaisComSaldo.length > 0) {
+                // Pegar o que tem menor % de uso (mais próximo de 1-9%)
+                const candidatos = pessoaisComSaldo.map(c => {
+                    const uso = (c.saldoUsado / c.limite) * 100;
+                    const distancia = Math.abs(uso - 5); // ideal é 5%
+                    return { card: c, uso, distancia };
+                }).sort((a, b) => a.distancia - b.distancia);
+                theOne = candidatos[0].card;
+            } else {
+                // Nenhum tem saldo, sugerir o de maior limite
+                theOne = [...pessoais].sort((a, b) => (b.limite || 0) - (a.limite || 0))[0];
+            }
+
+            // AZEO Score
+            let azeoOk = 0;
+            pessoais.forEach(c => {
+                if (c === theOne) {
+                    const uso = ((c.saldoUsado || 0) / (c.limite || 1)) * 100;
+                    if (uso >= 1 && uso <= 9) azeoOk++;
+                } else {
+                    if ((c.saldoUsado || 0) <= 0) azeoOk++;
+                }
+            });
+            const azeoPercent = pessoais.length > 0 ? Math.round((azeoOk / pessoais.length) * 100) : 0;
+
+            document.getElementById('azeoScore').textContent = azeoPercent + '%';
+            document.getElementById('azeoSub').textContent = azeoOk + '/' + pessoais.length + ' cartões corretos';
+
+            // Render AZEO cards
+            let azeoHtml = '';
+            
+            // The One primeiro
+            if (theOne) {
+                const uso = ((theOne.saldoUsado || 0) / (theOne.limite || 1)) * 100;
+                const idealMin = Math.round((theOne.limite || 0) * 0.01);
+                const idealMax = Math.round((theOne.limite || 0) * 0.09);
+                const fechamento = parseInt(theOne.diaFechamento) || 0;
+                const diasFech = getDaysUntil(fechamento);
+                const payDay = getPayDate(theOne);
+                const diasPay = getDaysUntil(payDay);
+
+                let instrucao = '';
+                if (uso >= 1 && uso <= 9) {
+                    instrucao = '<div class="action-instruction action-ok">✅ Perfeito! Uso em ' + uso.toFixed(0) + '%. Deixe reportar assim no fechamento.</div>';
+                } else if (uso > 9) {
+                    const pagarAte = (theOne.saldoUsado || 0) - idealMax;
+                    instrucao = '<div class="action-instruction action-warn">⚠️ Uso em ' + uso.toFixed(0) + '%. Pague ' + fmt(pagarAte) + ' antes do dia ' + fechamento + ' para ficar entre 1-9% ($' + idealMin + '-$' + idealMax + ').</div>';
+                } else {
+                    instrucao = '<div class="action-instruction action-info">ℹ️ Saldo $0. Faça uma compra de $' + idealMin + '-$' + idealMax + ' e deixe reportar no fechamento (dia ' + fechamento + ').</div>';
+                }
+
+                azeoHtml += '<div class="action-card" style="border-color:#7c4dff;border-width:3px;">' +
+                    '<div class="action-header"><div class="card-name">⭐ ' + theOne.nome + ' — THE ONE</div><div class="card-digits">•••• ' + theOne.ultimos4 + '</div></div>' +
+                    '<div class="action-body">' +
+                        '<div class="action-stat"><div class="stat-label">Saldo</div><div class="stat-value">' + fmt(theOne.saldoUsado) + '</div></div>' +
+                        '<div class="action-stat"><div class="stat-label">Limite</div><div class="stat-value">' + fmt(theOne.limite) + '</div></div>' +
+                        '<div class="action-stat"><div class="stat-label">Uso</div><div class="stat-value">' + uso.toFixed(0) + '%</div></div>' +
+                    '</div>' +
+                    '<div class="action-instruction action-chosen">🎯 Este é o "The One" — o ÚNICO que deve reportar saldo (1-9% = $' + idealMin + '-$' + idealMax + ')</div>' +
+                    instrucao +
+                    '<div class="timeline">📅 Fecha dia <span class="timeline-date tl-closing">' + fechamento + '</span> → Pagar dia <span class="timeline-date tl-pay">' + payDay + '</span> (em ' + diasPay + ' dias)</div>' +
+                '</div>';
+            }
+
+            // Outros pessoais
+            pessoais.filter(c => c !== theOne).sort((a, b) => (b.saldoUsado || 0) - (a.saldoUsado || 0)).forEach(c => {
+                const uso = ((c.saldoUsado || 0) / (c.limite || 1)) * 100;
+                const fechamento = parseInt(c.diaFechamento) || 0;
+                const payDay = getPayDate(c);
+                const diasFech = getDaysUntil(fechamento);
+                const diasPay = getDaysUntil(payDay);
+                const fillClass = uso <= 0 ? 'fill-green' : uso < 30 ? 'fill-yellow' : 'fill-red';
+
+                let instrucao = '';
+                if ((c.saldoUsado || 0) <= 0) {
+                    instrucao = '<div class="action-instruction action-ok">✅ Zerado! Perfeito para AZEO.</div>';
+                } else {
+                    const urgencia = diasFech <= 3 ? 'action-danger' : diasFech <= 7 ? 'action-warn' : 'action-warn';
+                    const urgTexto = diasFech <= 3 ? '🚨 URGENTE! ' : diasFech <= 7 ? '⚠️ ' : '💡 ';
+                    instrucao = '<div class="action-instruction ' + urgencia + '">' + urgTexto + 'Pague ' + fmt(c.saldoUsado) + ' até dia ' + fechamento + ' (' + diasFech + ' dias) para zerar antes do fechamento.</div>';
+                }
+
+                azeoHtml += '<div class="action-card">' +
+                    '<div class="action-header"><div class="card-name">💳 ' + c.nome + '</div><div class="card-digits">•••• ' + c.ultimos4 + '</div></div>' +
+                    '<div class="action-body">' +
+                        '<div class="action-stat"><div class="stat-label">Saldo</div><div class="stat-value">' + fmt(c.saldoUsado) + '</div></div>' +
+                        '<div class="action-stat"><div class="stat-label">Limite</div><div class="stat-value">' + fmt(c.limite) + '</div></div>' +
+                        '<div class="action-stat"><div class="stat-label">Uso</div><div class="stat-value" style="color:' + (uso > 30 ? '#e53935' : uso > 0 ? '#ff9800' : '#43a047') + '">' + uso.toFixed(0) + '%</div></div>' +
+                    '</div>' +
+                    '<div class="usage-bar"><div class="usage-fill ' + fillClass + '" style="width:' + Math.min(uso, 100) + '%"></div></div>' +
+                    instrucao +
+                    '<div class="timeline">📅 Fecha dia <span class="timeline-date tl-closing">' + fechamento + '</span> → Pagar até <span class="timeline-date tl-pay">' + payDay + '</span> (' + diasPay + ' dias)</div>' +
+                '</div>';
+            });
+
+            document.getElementById('azeoCards').innerHTML = azeoHtml;
+
+            // ===== PAYDEX =====
+            let paydexOk = 0;
+            let paydexHtml = '';
+            const mesAtual = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
+
+            business.sort((a, b) => getDaysUntil(getPayDate(a)) - getDaysUntil(getPayDate(b))).forEach(c => {
+                const uso = ((c.saldoUsado || 0) / (c.limite || 1)) * 100;
+                const venc = parseInt(c.diaVencimento) || 0;
+                const fechamento = parseInt(c.diaFechamento) || 0;
+                const modo = c.modoBusiness || 'normal';
+                const diasAntecedencia = modo === 'turbo' ? 13 : 2;
+                let payDay = venc - diasAntecedencia;
+                if (payDay <= 0) payDay += 30;
+                const diasPay = getDaysUntil(payDay);
+                const diasVenc = getDaysUntil(venc);
+                const jaPago = c.pagoMes === mesAtual;
+                const fillClass = uso <= 0 ? 'fill-green' : uso < 30 ? 'fill-yellow' : 'fill-red';
+
+                let ok = false;
+                let instrucao = '';
+
+                if (jaPago) {
+                    instrucao = '<div class="action-instruction action-ok">✅ Já pago este mês! PAYDEX perfeito.</div>';
+                    ok = true;
+                } else if ((c.saldoUsado || 0) <= 0) {
+                    instrucao = '<div class="action-instruction action-ok">✅ Saldo $0. Sem pagamento necessário.</div>';
+                    ok = true;
+                } else if (diasPay <= 0) {
+                    instrucao = '<div class="action-instruction action-danger">🚨 Data de pagamento ' + (modo === 'turbo' ? 'turbo ' : '') + 'já passou! Pague ' + fmt(c.saldoUsado) + ' HOJE para não prejudicar PAYDEX.</div>';
+                } else if (diasPay <= 3) {
+                    instrucao = '<div class="action-instruction action-warn">⚠️ Pague ' + fmt(c.saldoUsado) + ' em ' + diasPay + ' dias (dia ' + payDay + ') — ' + (modo === 'turbo' ? '13 dias antes (TURBO)' : '2 dias antes') + ' do vencimento.</div>';
+                } else {
+                    instrucao = '<div class="action-instruction action-info">💡 Pagar ' + fmt(c.saldoUsado) + ' até dia ' + payDay + ' (' + diasPay + ' dias) — ' + (modo === 'turbo' ? 'Modo TURBO (13d antes)' : 'Modo Normal (2d antes)') + '.</div>';
+                }
+
+                if (ok) paydexOk++;
+
+                let usoInstrucao = '';
+                if (uso >= 30 && (c.saldoUsado || 0) > 0) {
+                    usoInstrucao = '<div class="action-instruction action-danger" style="margin-top:6px;">🔴 Uso em ' + uso.toFixed(0) + '% — acima de 30%. Reduza o saldo para melhorar utilização.</div>';
+                }
+
+                paydexHtml += '<div class="action-card">' +
+                    '<div class="action-header"><div class="card-name">🏢 ' + c.nome + ' <span style="font-size:10px;color:#1565c0;">' + (modo === 'turbo' ? '🚀 TURBO' : '📌 Normal') + '</span></div><div class="card-digits">•••• ' + c.ultimos4 + '</div></div>' +
+                    '<div class="action-body">' +
+                        '<div class="action-stat"><div class="stat-label">Saldo</div><div class="stat-value">' + fmt(c.saldoUsado) + '</div></div>' +
+                        '<div class="action-stat"><div class="stat-label">Limite</div><div class="stat-value">' + fmt(c.limite) + '</div></div>' +
+                        '<div class="action-stat"><div class="stat-label">Uso</div><div class="stat-value" style="color:' + (uso > 30 ? '#e53935' : uso > 0 ? '#ff9800' : '#43a047') + '">' + uso.toFixed(0) + '%</div></div>' +
+                    '</div>' +
+                    '<div class="usage-bar"><div class="usage-fill ' + fillClass + '" style="width:' + Math.min(uso, 100) + '%"></div></div>' +
+                    instrucao + usoInstrucao +
+                    '<div class="timeline">📅 Fecha <span class="timeline-date tl-closing">' + fechamento + '</span> → Pagar <span class="timeline-date tl-pay">' + payDay + '</span> → Vence <span class="timeline-date tl-due">' + venc + '</span></div>' +
+                '</div>';
+            });
+
+            const paydexPercent = business.length > 0 ? Math.round((paydexOk / business.length) * 100) : 0;
+            document.getElementById('paydexScore').textContent = paydexPercent + '%';
+            document.getElementById('paydexSub').textContent = paydexOk + '/' + business.length + ' em dia';
+            document.getElementById('paydexCards').innerHTML = paydexHtml;
+
+            // ===== RESUMO =====
+            let resumoHtml = '';
+            let totalPagar = 0;
+            const acoes = [];
+
+            // Pessoais que precisam zerar
+            pessoais.filter(c => c !== theOne && (c.saldoUsado || 0) > 0).forEach(c => {
+                const fech = parseInt(c.diaFechamento) || 0;
+                const dias = getDaysUntil(fech);
+                acoes.push({ dias, texto: '💳 Zerar ' + c.nome + ' (' + fmt(c.saldoUsado) + ') até dia ' + fech, valor: c.saldoUsado || 0 });
+                totalPagar += c.saldoUsado || 0;
+            });
+
+            // The One ajuste
+            if (theOne && (theOne.saldoUsado || 0) > 0) {
+                const uso = ((theOne.saldoUsado || 0) / (theOne.limite || 1)) * 100;
+                const idealMax = Math.round((theOne.limite || 0) * 0.09);
+                if (uso > 9) {
+                    const pagarAte = (theOne.saldoUsado || 0) - idealMax;
+                    const fech = parseInt(theOne.diaFechamento) || 0;
+                    acoes.push({ dias: getDaysUntil(fech), texto: '⭐ Reduzir ' + theOne.nome + ' para $' + idealMax + ' (pagar ' + fmt(pagarAte) + ')', valor: pagarAte });
+                    totalPagar += pagarAte;
+                }
+            }
+
+            // Business que precisam pagar
+            business.filter(c => (c.saldoUsado || 0) > 0 && c.pagoMes !== mesAtual).forEach(c => {
+                const payDay = getPayDate(c);
+                const dias = getDaysUntil(payDay);
+                acoes.push({ dias, texto: '🏢 Pagar ' + c.nome + ' (' + fmt(c.saldoUsado) + ') até dia ' + payDay, valor: c.saldoUsado || 0 });
+                totalPagar += c.saldoUsado || 0;
+            });
+
+            // Ordenar por urgência
+            acoes.sort((a, b) => a.dias - b.dias);
+
+            if (acoes.length === 0) {
+                resumoHtml = '<div style="text-align:center;padding:20px;color:#43a047;font-weight:700;">✅ Tudo em dia! Nenhuma ação necessária.</div>';
+            } else {
+                acoes.forEach(a => {
+                    const urgencia = a.dias <= 3 ? 'color:#c62828;font-weight:800;' : a.dias <= 7 ? 'color:#e65100;' : 'color:#333;';
+                    const diasTexto = a.dias <= 0 ? '🚨 HOJE' : a.dias === 1 ? '⚡ Amanhã' : '📅 ' + a.dias + ' dias';
+                    resumoHtml += '<div class="summary-row"><span style="' + urgencia + '">' + diasTexto + ' — ' + a.texto + '</span></div>';
+                });
+                resumoHtml += '<div class="summary-row"><span style="color:#333;">💰 TOTAL A PAGAR</span><span style="color:#c62828;font-size:16px;">' + fmt(totalPagar) + '</span></div>';
+            }
+
+            document.getElementById('summaryBox').innerHTML = resumoHtml;
+        }
+    </script>
+</body>
+</html>

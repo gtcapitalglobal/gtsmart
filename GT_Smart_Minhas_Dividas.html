@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Minhas Dívidas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1200px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 18px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 15px; border-radius: 10px; border-left: 4px solid #ff6b6b; }
+        .stat-card.warning { border-left-color: #ffc107; }
+        .stat-card.success { border-left-color: #28a745; }
+        .card-title { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .card-value { font-size: 22px; font-weight: 700; color: #333; }
+        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; text-decoration: none; display: inline-block; }
+        .btn-primary { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .search-bar { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; margin-bottom: 15px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab { padding: 10px 20px; background: none; border: none; cursor: pointer; font-weight: 600; color: #666; border-bottom: 3px solid transparent; }
+        .tab.active { color: #ff6b6b; border-bottom-color: #ff6b6b; }
+        .loans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 15px; }
+        .loan-item { background: white; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s; }
+        .loan-item:hover { border-color: #ff6b6b; box-shadow: 0 8px 20px rgba(255,107,107,0.25); transform: translateY(-3px); }
+        .loan-item.late { background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%); border-color: #dc3545; }
+        .loan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .loan-client { font-size: 18px; font-weight: 700; color: #333; }
+        .loan-status { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-late { background: #f8d7da; color: #721c24; }
+        .status-finished { background: #d1ecf1; color: #0c5460; }
+        .status-archived { background: #e2e3e5; color: #383d41; }
+        .loan-details { font-size: 16px; color: #666; margin-bottom: 12px; }
+        .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%); }
+        .progress-text { font-size: 12px; color: #999; margin-bottom: 10px; }
+        .loan-next { display: flex; justify-content: space-between; background: #fff3cd; padding: 8px; border-radius: 6px; font-size: 13px; }
+        .next-payment { font-weight: 600; color: #856404; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; z-index: 9999; font-size: 18px; color: #ff6b6b; font-weight: 600; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div style="font-size:40px;">💳</div>
+        <div>Carregando dívidas...</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2>💳 Minhas Dívidas</h2>
+            <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+        </div>
+        <div class="content">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="card-title">💰 Total Devido</div><div class="card-value" id="totalDebt">$0</div></div>
+                <div class="stat-card success"><div class="card-title">✅ Já Pago</div><div class="card-value" id="totalPaid">$0</div></div>
+                <div class="stat-card warning"><div class="card-title">⏳ A Pagar</div><div class="card-value" id="totalPending">$0</div></div>
+                <div class="stat-card"><div class="card-title">📅 Vence Esta Semana</div><div class="card-value" id="dueThisWeek">$0</div></div>
+            </div>
+
+            <div class="actions">
+                <a href="GT_Smart_Adicionar_Divida.html" class="btn btn-primary">➕ Nova Dívida</a>
+                <a href="GT_Smart_Relatorios.html" class="btn btn-secondary">📊 Relatórios</a>
+            </div>
+
+            <input type="text" class="search-bar" id="searchBar" placeholder="🔍 Buscar por credor...">
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('all', this)">Todas</button>
+                <button class="tab" onclick="showTab('active', this)">Ativas</button>
+                <button class="tab" onclick="showTab('late', this)">Atrasadas</button>
+                <button class="tab" onclick="showTab('finished', this)">Quitadas</button>
+                <button class="tab" onclick="showTab('archived', this)">Arquivadas</button>
+            </div>
+
+            <div class="loans-grid" id="loanList"></div>
+        </div>
+    
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getDebts } from './firebase-config.js';
+
+        let debts = [];
+        let currentTab = 'all';
+        let searchQuery = '';
+
+        const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(v);
+        const parseLocalDate = (ds) => { if(!ds) return new Date(); const p=ds.split('T')[0].split('-'); const d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])); d.setHours(0,0,0,0); return d; };
+        const formatDateBR = (dateStr) => {
+            if (!dateStr) return '';
+            const parts = dateStr.split('T')[0].split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            debts = await getDebts();
+            document.getElementById('loadingOverlay').style.display = 'none';
+            updateStats();
+            renderDebts();
+        });
+
+        document.getElementById('searchBar').addEventListener('input', function(e) {
+            searchQuery = e.target.value.toLowerCase();
+            renderDebts();
+        });
+
+        window.showTab = function(tab, el) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderDebts();
+        };
+
+        function updateStats() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const weekEnd = new Date(today.getTime() + (7*24*60*60*1000));
+            let totalDebt = 0, totalPaid = 0, totalPending = 0, dueThisWeek = 0;
+
+            debts.forEach(debt => {
+                if (debt.archived || debt.status === 'finished') return;
+                totalDebt += debt.totalAmount || 0;
+                (debt.payments || []).forEach(p => {
+                    if (p.paid) { totalPaid += p.amount; }
+                    else if (!p.negotiated) {
+                        totalPending += p.amount;
+                        const d = parseLocalDate(p.date);
+                        if (d >= today && d <= weekEnd) dueThisWeek += p.amount;
+                    }
+                });
+            });
+
+            document.getElementById('totalDebt').textContent = formatCurrency(totalDebt);
+            document.getElementById('totalPaid').textContent = formatCurrency(totalPaid);
+            document.getElementById('totalPending').textContent = formatCurrency(totalPending);
+            document.getElementById('dueThisWeek').textContent = formatCurrency(dueThisWeek);
+        }
+
+        function renderDebts() {
+            const today = new Date(); today.setHours(0,0,0,0);
+
+            let filtered = debts.filter(debt => {
+                const name = (debt.creditorName || debt.clientName || '').toLowerCase();
+                const matchSearch = name.includes(searchQuery);
+                if (currentTab === 'all') return matchSearch;
+                if (currentTab === 'active') return matchSearch && debt.status === 'active' && !debt.archived;
+                if (currentTab === 'finished') return matchSearch && debt.status === 'finished';
+                if (currentTab === 'archived') return matchSearch && debt.archived === true;
+                if (currentTab === 'late') return matchSearch && (debt.payments||[]).some(p => !p.paid && !p.negotiated && parseLocalDate(p.date) < today);
+                return matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                document.getElementById('loanList').innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Nenhuma dívida encontrada</div>';
+                return;
+            }
+
+            document.getElementById('loanList').innerHTML = filtered.map(debt => {
+                const payments = debt.payments || [];
+                const paidCount = payments.filter(p => p.paid).length;
+                const totalCount = payments.length || 1;
+                const progress = (paidCount / totalCount) * 100;
+                const totalPaid = payments.filter(p => p.paid).reduce((s,p) => s+p.amount, 0);
+                const totalPending = payments.filter(p => !p.paid).reduce((s,p) => s+p.amount, 0);
+                const nextPayment = payments.find(p => !p.paid && !p.negotiated);
+                const isLate = nextPayment && parseLocalDate(nextPayment.date) < today;
+
+                let statusClass = 'status-active', statusText = 'Em dia';
+                if (debt.archived) { statusClass = 'status-archived'; statusText = '📦 Arquivado'; }
+                else if (debt.status === 'finished') { statusClass = 'status-finished'; statusText = 'Quitado'; }
+                else if (isLate) { statusClass = 'status-late'; statusText = 'Atrasado'; }
+
+                return `
+                    <div class="loan-item ${isLate?'late':''}" onclick="window.location.href='GT_Smart_Detalhe_Divida.html?id=${debt.id}'">
+                        <div class="loan-header">
+                            <div class="loan-client">🏦 ${debt.creditorName || debt.clientName || 'Credor'}</div>
+                            <div class="loan-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <div class="loan-details">${formatCurrency(debt.totalAmount||0)} → ${totalCount}× ${formatCurrency(debt.paymentAmount||0)}</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+                        <div class="progress-text">${paidCount}/${totalCount} pagas (${progress.toFixed(0)}%) • Pago: ${formatCurrency(totalPaid)} • A pagar: ${formatCurrency(totalPending)}</div>
+                        ${nextPayment ? `<div class="loan-next"><span>Próximo:</span><span class="next-payment">${formatDateBR(nextPayment.date)} - ${formatCurrency(nextPayment.amount)}</span></div>` : ''}
+                    </div>`;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Gestão de Empréstimos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 5px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h2 { font-size: 18px; }
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .content { padding: 12px 15px; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .card.warning { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left-color: #ffc107; }
+        .card.danger { background: linear-gradient(135deg, #f8d7da 0%, #ff7675 100%); border-left-color: #dc3545; }
+        .card.success { background: linear-gradient(135deg, #d4edda 0%, #00b894 100%); border-left-color: #28a745; }
+        .card-title { font-size: 10px; color: #666; margin-bottom: 4px; text-transform: uppercase; font-weight: 600; }
+        .card-value { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 2px; }
+        .card-subtitle { font-size: 10px; color: #666; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab.active { color: #667eea; border-bottom-color: #667eea; }
+        .loans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 10px 0;
+        }
+        .loan-item {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .loan-item:hover { border-color: #667eea; box-shadow: 0 8px 20px rgba(102,126,234,0.25); transform: translateY(-3px); }
+        .loan-item.late { border-color: #dc3545; background: linear-gradient(135deg, #fff 0%, #fff5f5 100%); }
+        .loan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        .loan-client { font-size: 15px; font-weight: 700; color: #333; }
+        .loan-status { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-late { background: #f8d7da; color: #721c24; }
+        .status-finished { background: #d1ecf1; color: #0c5460; }
+        .status-archived { background: #e2e3e5; color: #383d41; }
+        .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); }
+        .progress-text { font-size: 11px; color: #888; margin-bottom: 8px; }
+        .loan-next { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 6px; background: #f8f9fa; font-size: 12px; }
+        .next-payment { color: #667eea; font-weight: 700; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        .floating-add {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .floating-add:hover { transform: scale(1.1); }
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 15px; z-index: 9999;
+            font-size: 18px; color: #667eea; font-weight: 600;
+        }
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr 1fr; }
+        }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div style="font-size: 40px;">💼</div>
+        <div>Carregando empréstimos...</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2>💼 Gestão de Empréstimos</h2>
+            <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+        </div>
+        <div class="content">
+            <div id="lateAlert" style="display:none; background:#f8d7da; border:2px solid #dc3545; border-radius:8px; padding:12px; margin-bottom:15px; color:#721c24;">
+                <strong>⚠️ Atenção!</strong> <span id="lateAlertText"></span>
+            </div>
+
+            <div class="dashboard-grid" id="dashboardCards"></div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar cliente..." onkeyup="searchLoans()" style="flex:1; padding:8px 12px; border:2px solid #e0e0e0; border-radius:6px; font-size:13px;">
+                <select id="sortSelect" onchange="renderLoans()" style="padding:8px; border:2px solid #e0e0e0; border-radius:6px; font-size:13px;">
+                    <option value="recent">Mais Recentes</option>
+                    <option value="amount">Maior Valor</option>
+                    <option value="name">Nome A-Z</option>
+                </select>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('active', this)">Ativos</button>
+                <button class="tab" onclick="showTab('late', this)">Atrasados</button>
+                <button class="tab" onclick="showTab('finished', this)">Quitados</button>
+                <button class="tab" onclick="showTab('archived', this)">📦 Arquivados</button>
+                <button class="tab" onclick="window.location.href='GT_Smart_Relatorios.html'" style="margin-left:auto; background:linear-gradient(135deg,#28a745,#20c997); color:white; border-radius:6px;">📈 Relatórios</button>
+            </div>
+
+            <div id="loanList" class="loans-grid"></div>
+        </div>
+    </div>
+
+    <a href="GT_Smart_Adicionar_Emprestimo.html" class="floating-add" title="Adicionar Empréstimo">+</a>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getLoans } from './firebase-config.js';
+
+        let currentTab = 'active';
+        let loans = [];
+
+        // Verificar login e carregar dados
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'GT_Smart_Login.html';
+                return;
+            }
+            loans = await getLoans();
+            document.getElementById('loadingOverlay').style.display = 'none';
+            updateDashboard();
+            renderLoans();
+        });
+
+        const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(v);
+        const parseLocalDate = (dateStr) => {
+            if (!dateStr) return new Date();
+            const parts = dateStr.split('T')[0].split('-');
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+            d.setHours(0,0,0,0);
+            return d;
+        };
+        const formatDateBR = (dateStr) => {
+            if (!dateStr) return '';
+            const parts = dateStr.split('T')[0].split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
+        };
+
+        function updateDashboard() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            let dueToday = 0, dueThisWeek = 0, lateAmount = 0, lateCount = 0, totalOpen = 0;
+            const lateClients = new Set();
+            const weekEnd = new Date(today); weekEnd.setDate(weekEnd.getDate() + 7);
+
+            loans.forEach(loan => {
+                if (loan.archived || loan.status === 'finished') return;
+                loan.payments.forEach(p => {
+                    if (p.paid || p.negotiated) return;
+                    const d = parseLocalDate(p.date);
+                    totalOpen += p.amount;
+                    if (d.getTime() === today.getTime()) dueToday += p.amount;
+                    if (d >= today && d <= weekEnd) dueThisWeek += p.amount;
+                    if (d < today) { lateCount++; lateAmount += p.amount; lateClients.add(loan.clientName); }
+                });
+            });
+
+            if (lateCount > 0) {
+                document.getElementById('lateAlertText').textContent = ` ${lateCount} parcela${lateCount>1?'s':''} atrasada${lateCount>1?'s':''} de ${lateClients.size} cliente${lateClients.size>1?'s':''}!`;
+                document.getElementById('lateAlert').style.display = 'block';
+            }
+
+            document.getElementById('dashboardCards').innerHTML = `
+                <div class="card"><div class="card-title">💰 Vence Hoje</div><div class="card-value">${formatCurrency(dueToday)}</div></div>
+                <div class="card warning"><div class="card-title">📅 Esta Semana</div><div class="card-value">${formatCurrency(dueThisWeek)}</div><div class="card-subtitle">Próximos 7 dias</div></div>
+                <div class="card ${lateCount>0?'danger':''}"><div class="card-title">🔴 Atrasados</div><div class="card-value">${formatCurrency(lateAmount)}</div><div class="card-subtitle">${lateCount} parcela${lateCount!==1?'s':''}</div></div>
+                <div class="card success"><div class="card-title">💵 Em Aberto</div><div class="card-value">${formatCurrency(totalOpen)}</div><div class="card-subtitle">Total a receber</div></div>
+            `;
+        }
+
+        window.showTab = function(tab, el) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderLoans();
+        };
+
+        window.searchLoans = renderLoans;
+
+        function renderLoans() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sortBy = document.getElementById('sortSelect').value;
+
+            let filtered = loans.filter(loan => {
+                const match = loan.clientName.toLowerCase().includes(searchTerm);
+                if (currentTab === 'archived') return match && loan.archived;
+                if (loan.archived) return false;
+                if (currentTab === 'finished') return match && loan.status === 'finished';
+                if (currentTab === 'late') return match && loan.payments.some(p => !p.paid && !p.negotiated && parseLocalDate(p.date) < today);
+                return match && loan.status === 'active';
+            });
+
+            if (sortBy === 'amount') filtered.sort((a,b) => b.totalAmount - a.totalAmount);
+            else if (sortBy === 'name') filtered.sort((a,b) => a.clientName.localeCompare(b.clientName));
+            else filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            if (filtered.length === 0) {
+                document.getElementById('loanList').innerHTML = `<div class="empty-state"><div class="empty-icon">💼</div><h3>Nenhum empréstimo aqui</h3><p>Clique no + para adicionar</p></div>`;
+                return;
+            }
+
+            document.getElementById('loanList').innerHTML = filtered.map(loan => {
+                const paidCount = loan.payments.filter(p => p.paid).length;
+                const totalCount = loan.payments.length;
+                const progress = (paidCount / totalCount) * 100;
+                const totalReceived = loan.payments.filter(p => p.paid).reduce((s,p) => s+p.amount, 0);
+                const totalPending = loan.payments.filter(p => !p.paid).reduce((s,p) => s+p.amount, 0);
+                const nextPayment = loan.payments.find(p => !p.paid && !p.negotiated);
+                const isLate = nextPayment && parseLocalDate(nextPayment.date) < today;
+
+                let statusClass = 'status-active', statusText = 'Em dia';
+                if (loan.archived) { statusClass = 'status-archived'; statusText = '📦 Arquivado'; }
+                else if (loan.status === 'finished') { statusClass = 'status-finished'; statusText = 'Quitado'; }
+                else if (isLate) { statusClass = 'status-late'; statusText = 'Atrasado'; }
+
+                return `
+                    <div class="loan-item ${isLate?'late':''}" onclick="viewLoan('${loan.id}')">
+                        <div class="loan-header">
+                            <div class="loan-client">🏢 ${loan.clientName}</div>
+                            <div class="loan-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <div style="font-size:13px;color:#666;margin-bottom:10px;font-weight:500;">${formatCurrency(loan.totalAmount)} → ${totalCount}× ${formatCurrency(loan.paymentAmount)}</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+                        <div class="progress-text">${paidCount}/${totalCount} pagas (${progress.toFixed(0)}%) • Recebido: ${formatCurrency(totalReceived)} • Pendente: ${formatCurrency(totalPending)}</div>
+                        ${nextPayment ? `<div class="loan-next"><span>Próximo:</span><span class="next-payment">${formatDateBR(nextPayment.date)} - ${formatCurrency(nextPayment.amount)}</span></div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.viewLoan = function(id) {
+            window.location.href = `GT_Smart_Detalhe_Emprestimo.html?id=${id}`;
+        };
+    </script>
+
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+</body>
+</html>

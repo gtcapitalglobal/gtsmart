@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Calculadora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .resultado {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .resultado h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .info {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        
+        .info strong {
+            color: #333;
+        }
+        
+        .parcelas {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .parcela-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 Calculadora de Empréstimos</h1>
+        
+        <div class="form-group">
+            <label>Valor do Empréstimo ($)</label>
+            <input type="number" id="valor" step="0.01" value="1000">
+        </div>
+        
+        <div class="form-group">
+            <label>Taxa de Juros (% ao mês)</label>
+            <input type="number" id="juros" step="0.01" value="5">
+        </div>
+        
+        <div class="form-group">
+            <label>Número de Parcelas</label>
+            <input type="number" id="parcelas" value="12">
+        </div>
+        
+        <div class="form-group">
+            <label>Frequência</label>
+            <select id="frequencia">
+                <option value="weekly">Semanal</option>
+                <option value="biweekly">Quinzenal</option>
+                <option value="monthly" selected>Mensal</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Data do Primeiro Pagamento</label>
+            <input type="date" id="data">
+        </div>
+        
+        <div class="form-group">
+            <label>Telefone do Cliente (opcional)</label>
+            <input type="tel" id="telefone" placeholder="Ex: 13051234567">
+        </div>
+        
+        <button class="btn" onclick="calcular()">🧮 Calcular</button>
+        
+        <button class="btn" onclick="window.location.href='GT_Smart_Menu.html'" style="background: #6c757d; margin-top: 10px;">← Voltar</button>
+        
+        <div class="resultado" id="resultado">
+            <h2>📊 Resultado</h2>
+            <div class="info"><strong>Valor da Parcela:</strong> <span id="valorParcela"></span></div>
+            <div class="info"><strong>Total a Pagar:</strong> <span id="totalPagar"></span></div>
+            <div class="info"><strong>Total de Juros:</strong> <span id="totalJuros"></span></div>
+            
+            <h3 style="margin-top: 20px; color: #667eea;">📅 Cronograma de Pagamentos</h3>
+            <div class="parcelas" id="listaParcelas"></div>
+            
+            <button onclick="enviarWhatsApp()" style="background:#25D366;color:white;border:none;padding:12px 25px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:15px;width:100%;">
+                📱 Enviar por WhatsApp
+            </button>
+            <button onclick="criarEmprestimo()" style="background:#667eea;color:white;border:none;padding:12px 25px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;width:100%;">
+                ✅ Criar Empréstimo com esses dados
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Define data de hoje como padrão
+        document.getElementById('data').valueAsDate = new Date();
+        
+        function calcular() {
+            const valor = parseFloat(document.getElementById('valor').value);
+            const juros = parseFloat(document.getElementById('juros').value) / 100;
+            const numParcelas = parseInt(document.getElementById('parcelas').value);
+            const frequencia = document.getElementById('frequencia').value;
+            const dataInicio = new Date(document.getElementById('data').value);
+            
+            if (!valor || !juros || !numParcelas || !dataInicio) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+            
+            // Calcular taxa por período
+            let taxaPeriodo = juros;
+            let dias = 30;
+            
+            if (frequencia === 'weekly') {
+                taxaPeriodo = Math.pow(1 + juros, 1/4.345) - 1;
+                dias = 7;
+            } else if (frequencia === 'biweekly') {
+                taxaPeriodo = Math.pow(1 + juros, 1/2.17) - 1;
+                dias = 14;
+            }
+            
+            // Calcular parcela (Tabela Price)
+            const parcela = valor * taxaPeriodo / (1 - Math.pow(1 + taxaPeriodo, -numParcelas));
+            const parcelaArredondada = Math.round(parcela * 100) / 100;
+            
+            // Calcular última parcela ajustada
+            let saldo = valor;
+            for (let i = 0; i < numParcelas - 1; i++) {
+                saldo = saldo * (1 + taxaPeriodo) - parcelaArredondada;
+            }
+            const ultimaParcela = Math.round(saldo * (1 + taxaPeriodo) * 100) / 100;
+            
+            // Total
+            const total = (parcelaArredondada * (numParcelas - 1)) + ultimaParcela;
+            const totalJuros = total - valor;
+            
+            // Função para formatar em USD
+            const formatUSD = (num) => {
+                return '$' + num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            };
+            
+            // Exibir resultados
+            document.getElementById('valorParcela').textContent = formatUSD(parcelaArredondada);
+            document.getElementById('totalPagar').textContent = formatUSD(total);
+            document.getElementById('totalJuros').textContent = formatUSD(totalJuros);
+            
+            // Gerar cronograma
+            let html = '';
+            let dataAtual = new Date(dataInicio);
+            
+            for (let i = 1; i <= numParcelas; i++) {
+                const valorParcela = i === numParcelas ? ultimaParcela : parcelaArredondada;
+                const dataFormatada = dataAtual.toLocaleDateString('pt-BR');
+                
+                html += `<div class="parcela-item">
+                    Parcela #${i} - ${dataFormatada} - ${formatUSD(valorParcela)}
+                </div>`;
+                
+                dataAtual.setDate(dataAtual.getDate() + dias);
+            }
+            
+            document.getElementById('listaParcelas').innerHTML = html;
+            document.getElementById('resultado').style.display = 'block';
+        }
+        
+        function enviarWhatsApp() {
+            const valorParcela = document.getElementById('valorParcela').textContent;
+            const totalPagar = document.getElementById('totalPagar').textContent;
+            const totalJuros = document.getElementById('totalJuros').textContent;
+            const numParcelas = document.getElementById('parcelas').value;
+            const frequencia = document.getElementById('frequencia').value;
+            const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
+            
+            const freqTexto = frequencia === 'weekly' ? 'Semanal' : frequencia === 'biweekly' ? 'Quinzenal' : 'Mensal';
+            
+            // Montar lista de parcelas
+            const items = document.querySelectorAll('#listaParcelas .parcela-item');
+            let listaParcelas = '';
+            items.forEach(item => {
+                listaParcelas += `  ${item.textContent.trim()}\n`;
+            });
+            
+            const msg = `_Simulação_\n\n` +
+                `💰 *Resumo:*\n` +
+                `• Frequência: ${freqTexto}\n` +
+                `• Valor da Parcela: *${valorParcela}*\n` +
+                `• Total de Parcelas: *${numParcelas}*\n\n` +
+                `📅 *Cronograma:*\n${listaParcelas}\n` +
+                `Qualquer dúvida estou à disposição! 😊`;
+            
+            const url = telefone 
+                ? `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`
+                : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            
+            window.open(url, '_blank');
+        }
+        
+        function criarEmprestimo() {
+            const valor = parseFloat(document.getElementById('valor').value);
+            const numParcelas = parseInt(document.getElementById('parcelas').value);
+            const juros = parseFloat(document.getElementById('juros').value) / 100;
+            const frequencia = document.getElementById('frequencia').value;
+            const dataInicio = document.getElementById('data').value;
+            const telefone = document.getElementById('telefone').value.trim().replace(/\D/g, '');
+            
+            // Recalcular parcela
+            let taxaPeriodo = juros;
+            if (frequencia === 'weekly') taxaPeriodo = Math.pow(1 + juros, 1/4.345) - 1;
+            else if (frequencia === 'biweekly') taxaPeriodo = Math.pow(1 + juros, 1/2.17) - 1;
+            const parcela = valor * taxaPeriodo / (1 - Math.pow(1 + taxaPeriodo, -numParcelas));
+            const parcelaArredondada = Math.round(parcela * 100) / 100;
+            
+            const dados = {
+                loanAmount: valor,
+                numPayments: numParcelas,
+                paymentAmount: parcelaArredondada,
+                firstPaymentDate: dataInicio,
+                frequency: frequencia,
+                clientPhone: telefone
+            };
+            
+            localStorage.setItem('gtSmartLoanData', JSON.stringify(dados));
+            window.location.href = 'GT_Smart_Adicionar_Emprestimo.html';
+        }
+    </script>
+
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+</body>
+</html>

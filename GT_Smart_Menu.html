@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="GT Smart">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>GT Smart Equity LLC - Menu Principal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; width: 100%; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: white; font-size: 32px; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .header p { color: rgba(255,255,255,0.9); font-size: 14px; }
+        .user-bar {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 13px;
+        }
+        .menu-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+        .menu-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 25px 15px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            min-height: 130px;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .menu-btn .icon { font-size: 42px; }
+        .menu-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+        }
+        .migrate-banner {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+            font-size: 13px;
+        }
+        .migrate-banner button {
+            background: #ffc107;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .menu-btn { background: #16213e; color: #fff; }
+        body.dark-mode .menu-btn:hover { background: #1a1a2e; }
+        /* removido — cartoes e empresas usam estilo padrão agora */
+        .menu-btn-soon { opacity: 0.5; cursor: default; position: relative; border: 2px dashed #666 !important; background: rgba(255,255,255,0.03) !important; }
+        .menu-btn-soon:hover { transform: none !important; box-shadow: none !important; opacity: 0.6; }
+        .soon-badge { position: absolute; top: 8px; right: 8px; background: #ff9800; color: #fff; font-size: 9px; padding: 2px 7px; border-radius: 10px; font-weight: 700; text-transform: uppercase; }
+        body.dark-mode .menu-btn-soon { background: rgba(255,255,255,0.03) !important; border-color: #444 !important; }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .dash-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        .dash-card .dash-label { font-size: 11px; opacity: 0.85; margin-bottom: 5px; }
+        .dash-card .dash-value { font-size: 20px; font-weight: 700; }
+        .dash-card .dash-icon { font-size: 24px; margin-bottom: 5px; }
+        .dash-card.verde { background: rgba(40,167,69,0.35); }
+        .dash-card.vermelho { background: rgba(220,53,69,0.35); }
+        .dash-card.amarelo { background: rgba(255,193,7,0.25); }
+        .dash-card.azul { background: rgba(0,123,255,0.25); }
+        .progress-bar-wrap { background: rgba(255,255,255,0.2); border-radius: 10px; height: 6px; margin-top: 8px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: rgba(255,255,255,0.8); border-radius: 10px; transition: width 1s; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💼 GT Smart Equity LLC</h1>
+            <p>Sistema de Gestão de Empréstimos</p>
+            <p style="font-size:11px;opacity:0.7;margin-top:4px;">Basic 6.0 | 06/03/2026</p>
+        </div>
+
+        <!-- Banner de migração (aparece só se tiver dados no localStorage) -->
+        <div class="migrate-banner" id="migrateBanner" style="display:none;">
+            ⚠️ <strong>Dados locais encontrados!</strong> Migre seus dados para o Firebase (nuvem) para acessar de qualquer celular.
+            <br>
+            <button onclick="migrarDados()">☁️ Migrar para Firebase agora</button>
+        </div>
+
+        <div class="user-bar">
+            <span id="userEmail">🔄 Carregando...</span>
+            <button onclick="sair()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">
+                🚪 Sair
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button onclick="toggleDarkMode()" id="darkBtn" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                🌙 Modo Escuro
+            </button>
+            <button id="btnBackup" onclick="fazerBackup()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                ☁️ Backup
+            </button>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="dash-card" id="dashPagarHoje" style="cursor:pointer;" onclick="window.location.href='GT_Smart_Cartoes.html'">
+                <div class="dash-icon">💰</div>
+                <div class="dash-label">Vence Hoje</div>
+                <div class="dash-value" id="totalPagar" style="font-size:14px;">⏳ Carregando...</div>
+            </div>
+            <div class="dash-card" id="dashAlertas" style="cursor:pointer;">
+                <div class="dash-icon">⚠️</div>
+                <div class="dash-label">Atenção</div>
+                <div class="dash-value" id="totalAlertas" style="font-size:14px;">⏳ Carregando...</div>
+            </div>
+        </div>
+
+        <div class="menu-buttons">
+            <a href="GT_Smart_Calculadora_Nova.html" class="menu-btn">
+                <span class="icon">🧮</span>
+                <span>Calcular Empréstimos</span>
+            </a>
+            <a href="GT_Smart_Gerador_Contrato.html" class="menu-btn">
+                <span class="icon">📄</span>
+                <span>Gerar Contrato</span>
+            </a>
+            <a href="GT_Smart_Historico_Contratos.html" class="menu-btn">
+                <span class="icon">📋</span>
+                <span>Histórico de Contratos</span>
+            </a>
+            <a href="GT_Smart_Gestao.html" class="menu-btn">
+                <span class="icon">💼</span>
+                <span>Gestão de Empréstimos</span>
+            </a>
+            <a href="GT_Smart_Minhas_Dividas.html" class="menu-btn">
+                <span class="icon">💳</span>
+                <span>Gestão de Dívidas</span>
+            </a>
+            <a href="GT_Smart_Relatorios.html" class="menu-btn">
+                <span class="icon">📊</span>
+                <span>Relatórios</span>
+            </a>
+            <a href="GT_Smart_Cartoes.html" class="menu-btn">
+                <span class="icon">💳</span>
+                <span>Gestão de Cartões</span>
+            </a>
+            <a href="GT_Smart_Dashboard_Cartoes.html" class="menu-btn">
+                <span class="icon">📊</span>
+                <span>Dashboard Cartões</span>
+            </a>
+            <a href="GT_Smart_Estrategia.html" class="menu-btn">
+                <span class="icon">🎯</span>
+                <span>Estratégia AZEO</span>
+            </a>
+            <a href="GT_Smart_Calendario_Cartoes.html" class="menu-btn">
+                <span class="icon">📅</span>
+                <span>Calendário Cartões</span>
+            </a>
+            <a href="GT_Smart_Comparar_Cartoes.html" class="menu-btn">
+                <span class="icon">🏆</span>
+                <span>Qual Cartão Usar</span>
+            </a>
+            <a href="GT_Smart_Calendario.html" class="menu-btn">
+                <span class="icon">📅</span>
+                <span>Calendário</span>
+            </a>
+            <a href="GT_Smart_Empresas.html" class="menu-btn">
+                <span class="icon">🏢</span>
+                <span>Empresas</span>
+            </a>
+            <a href="GT_Smart_Configuracoes.html" class="menu-btn">
+                <span class="icon">⚙️</span>
+                <span>Configurações</span>
+            </a>
+        </div>
+
+        <div style="margin-top:25px; padding-top:20px; border-top:2px solid rgba(255,255,255,0.1);">
+            <div style="text-align:center; margin-bottom:15px; font-size:13px; color:#888; font-weight:600; letter-spacing:1px;">🚧 EM BREVE</div>
+            <div class="menu-grid">
+                <div class="menu-btn menu-btn-soon" onclick="alert('🚧 Módulo Crypto em desenvolvimento!')">
+                    <span class="icon">🪙</span>
+                    <span>Crypto</span>
+                    <span class="soon-badge">Em breve</span>
+                </div>
+                <div class="menu-btn menu-btn-soon" onclick="alert('🚧 Módulo Ledger Lands em desenvolvimento!')">
+                    <span class="icon">🏡</span>
+                    <span>Ledger Lands</span>
+                    <span class="soon-badge">Em breve</span>
+                </div>
+                <div class="menu-btn menu-btn-soon" onclick="alert('🚧 Módulo GT Lands Mensagem em desenvolvimento!')">
+                    <span class="icon">💬</span>
+                    <span>GT Lands Mensagem</span>
+                    <span class="soon-badge">Em breve</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script type="module">
+        import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, getLoans, getDebts, getCards } from './firebase-config.js';
+        
+        // Tentar importar extras (pode não existir em versões antigas do firebase-config)
+        let getEmpresas = async () => [];
+        let getContracts = async () => [];
+        try {
+            const mod = await import('./firebase-config.js');
+            if (mod.getEmpresas) getEmpresas = mod.getEmpresas;
+            if (mod.getContracts) getContracts = mod.getContracts;
+        } catch(e) { console.log('Extras não disponíveis:', e); }
+
+        // Verificar login
+        // Registrar Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW:', e));
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'GT_Smart_Login.html';
+                return;
+            }
+            document.getElementById('userEmail').textContent = '👤 ' + (user.email || 'Usuário');
+            carregarDashboard();
+            
+            // Verificar se há dados locais para migrar
+            const localLoans = JSON.parse(localStorage.getItem('gtSmartLoans') || '[]');
+            const localDebts = JSON.parse(localStorage.getItem('gtSmartDebts') || '[]');
+            const jaMigrou = localStorage.getItem('gtSmartMigrated') === 'true';
+            
+            if (!jaMigrou && (localLoans.length > 0 || localDebts.length > 0)) {
+                document.getElementById('migrateBanner').style.display = 'block';
+            }
+
+            // Backup automático diário pro Google Drive
+            const hojeBackup = new Date().toISOString().split('T')[0];
+            const ultimoBackup = localStorage.getItem('gtSmartLastDriveBackup');
+            if (ultimoBackup !== hojeBackup) {
+                try {
+                    // Só tenta Drive se o Google carregou
+                    if (typeof google !== 'undefined' && google.accounts) {
+                        await backupParaDrive(true);
+                        localStorage.setItem('gtSmartLastDriveBackup', hojeBackup);
+                        console.log('✅ Backup automático no Drive: ' + hojeBackup);
+                    } else {
+                        console.log('Google não carregou, backup Drive pulado');
+                    }
+                } catch(e) {
+                    console.log('Backup automático Drive falhou:', e.message);
+                }
+            }
+        });
+
+        async function carregarDashboard() {
+            try {
+                const loans = await getLoans() || [];
+                const debts = await getDebts() || [];
+                const cards = await getCards() || [];
+
+                const hoje = new Date();
+                hoje.setHours(0,0,0,0);
+                const todayDay = hoje.getDate();
+                const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+                const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+                const parseLocalDate = (ds) => {
+                    if (!ds) return null;
+                    const p = ds.split('T')[0].split('-');
+                    const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+                    d.setHours(0,0,0,0);
+                    return d;
+                };
+
+                // ===== PAGAR HOJE =====
+                let pagarItens = [];
+                let totalPagarValor = 0;
+                let temAtrasado = false;
+
+                // Empréstimos: conta só a PRÓXIMA parcela não paga (igual GT_Smart_Gestao.html)
+                let parcelasEmpHoje = 0, parcelasEmpAtrasadas = 0;
+                loans.forEach(loan => {
+                    if (loan.archived || loan.status === 'finished') return;
+                    const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
+                    if (!proxima) return;
+                    const dt = parseLocalDate(proxima.date);
+                    if (!dt) return;
+                    if (dt.getTime() === hoje.getTime()) {
+                        parcelasEmpHoje++;
+                        totalPagarValor += proxima.amount || 0;
+                    } else if (dt < hoje) {
+                        parcelasEmpAtrasadas++;
+                        temAtrasado = true;
+                    }
+                });
+
+                // Dívidas: conta só a PRÓXIMA parcela não paga de cada dívida
+                let parcelasDivHoje = 0, parcelasDivAtrasadas = 0;
+                debts.forEach(debt => {
+                    if (debt.archived || debt.status === 'finished') return;
+                    const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
+                    if (!proxima) return;
+                    const dt = parseLocalDate(proxima.date);
+                    if (!dt) return;
+                    if (dt.getTime() === hoje.getTime()) {
+                        parcelasDivHoje++;
+                        totalPagarValor += proxima.amount || 0;
+                    } else if (dt < hoje) {
+                        parcelasDivAtrasadas++;
+                        temAtrasado = true;
+                    }
+                });
+
+                // Cartões com data boa = hoje
+                let cartoesHoje = 0, cartoesAtrasados = 0;
+                cards.forEach(c => {
+                    if (c.pagoMes === mesAtual) return;
+                    if (!c.saldoUsado || parseFloat(c.saldoUsado) <= 0) return; // saldo $0 = nada a pagar
+                    let dataBoa = null;
+                    if (c.tipo === 'Business') {
+                        const venc = parseInt(c.diaVencimento); if (!venc) return;
+                        const dias = c.modoBusiness === 'turbo' ? 13 : 2;
+                        dataBoa = venc - dias; if (dataBoa <= 0) dataBoa += 30;
+                    } else {
+                        const fech = parseInt(c.diaFechamento); if (!fech) return;
+                        dataBoa = fech - 2; if (dataBoa <= 0) dataBoa += 30;
+                    }
+                    if (dataBoa === todayDay) {
+                        cartoesHoje++;
+                        totalPagarValor += c.saldoUsado || 0;
+                    } else if (dataBoa < todayDay) {
+                        cartoesAtrasados++;
+                        temAtrasado = true;
+                    }
+                });
+
+                // Montar HTML do Pagar Hoje (só o que vence HOJE)
+                const totalHoje = parcelasEmpHoje + parcelasDivHoje + cartoesHoje;
+                let pagarHtml = '';
+                const dashPagar = document.getElementById('dashPagarHoje');
+
+                if (totalHoje === 0) {
+                    pagarHtml = '✅ Nada vence hoje';
+                    dashPagar.className = 'dash-card verde';
+                } else {
+                    let linhas = [];
+                    if (parcelasEmpHoje > 0) linhas.push('📋 ' + parcelasEmpHoje + ' parcela' + (parcelasEmpHoje > 1 ? 's' : '') + ' de empréstimo');
+                    if (parcelasDivHoje > 0) linhas.push('💰 ' + parcelasDivHoje + ' parcela' + (parcelasDivHoje > 1 ? 's' : '') + ' de dívida');
+                    if (cartoesHoje > 0) linhas.push('💳 ' + cartoesHoje + ' cartão(ões)');
+                    if (totalPagarValor > 0) linhas.push('💵 Total: ' + fmt(totalPagarValor));
+                    pagarHtml = linhas.join('<br>');
+                    dashPagar.className = 'dash-card amarelo';
+                }
+                document.getElementById('totalPagar').innerHTML = pagarHtml;
+
+                // ===== ALERTAS =====
+                let alertas = [];
+                const dashAlertas = document.getElementById('dashAlertas');
+
+                // Cartões acima de 30%
+                const acima30 = cards.filter(c => c.limite && (c.saldoUsado || 0) / c.limite * 100 >= 30).length;
+                if (acima30 > 0) alertas.push('🔴 ' + acima30 + ' cartão(ões) acima 30%');
+
+                // Empréstimos com próxima parcela atrasada — mostra nome do cliente
+                loans.forEach(loan => {
+                    if (loan.archived || loan.status === 'finished') return;
+                    const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
+                    if (!proxima) return;
+                    const dt = parseLocalDate(proxima.date);
+                    if (dt && dt < hoje) {
+                        const nome = loan.clientName || 'Sem nome';
+                        const dataFmt = proxima.date.split('-').reverse().join('/');
+                        alertas.push('📋 ' + nome + ' — atrasado desde ' + dataFmt);
+                    }
+                });
+
+                // Dívidas com próxima parcela atrasada — mostra nome
+                debts.forEach(debt => {
+                    if (debt.archived || debt.status === 'finished') return;
+                    const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
+                    if (!proxima) return;
+                    const dt = parseLocalDate(proxima.date);
+                    if (dt && dt < hoje) {
+                        const nome = debt.creditor || debt.nome || 'Sem nome';
+                        const dataFmt = proxima.date.split('-').reverse().join('/');
+                        alertas.push('💰 ' + nome + ' — atrasado desde ' + dataFmt);
+                    }
+                });
+
+                // Cartões com pagamento atrasado
+                if (cartoesAtrasados > 0) alertas.push('💳 ' + cartoesAtrasados + ' cartão(ões) com pagamento atrasado');
+
+                // Bônus de cartão vencendo em breve (15 dias) - sem duplicatas
+                const bonusVistos = new Set();
+                cards.forEach(c => {
+                    if (!c.bonusPrazo) return;
+                    const chave = (c.nome || '') + '|' + c.bonusPrazo;
+                    if (bonusVistos.has(chave)) return;
+                    bonusVistos.add(chave);
+                    const prazo = parseLocalDate(c.bonusPrazo);
+                    if (!prazo) return;
+                    const diff = Math.round((prazo - hoje) / (1000*60*60*24));
+                    if (diff >= 0 && diff <= 15) {
+                        alertas.push('⏱️ Bônus ' + (c.nome || '') + ' vence em ' + diff + ' dia' + (diff !== 1 ? 's' : ''));
+                    } else if (diff < 0 && diff >= -7) {
+                        alertas.push('❌ Bônus ' + (c.nome || '') + ' expirou há ' + Math.abs(diff) + ' dia' + (Math.abs(diff) !== 1 ? 's' : ''));
+                    }
+                });
+
+                // Promos acabando em breve (30 dias)
+                cards.forEach(c => {
+                    if (!c.promo) return;
+                    const match = (c.promo || '').match(/(\d{1,2})\/(\d{4})/);
+                    if (match) {
+                        const promoDate = new Date(parseInt(match[2]), parseInt(match[1]) - 1, 28);
+                        const diff = Math.round((promoDate - hoje) / (1000*60*60*24));
+                        if (diff >= 0 && diff <= 30) {
+                            alertas.push('🎯 Promo ' + (c.nome || '') + ' acaba em ' + diff + ' dias');
+                        }
+                    }
+                });
+
+                // Montar HTML dos Alertas
+                if (alertas.length === 0) {
+                    document.getElementById('totalAlertas').innerHTML = '✅ Tudo tranquilo';
+                    dashAlertas.className = 'dash-card verde';
+                } else {
+                    document.getElementById('totalAlertas').innerHTML = alertas.join('<br>');
+                    const temCritico = acima30 > 0 || parcelasEmpAtrasadas > 0 || parcelasDivAtrasadas > 0 || cartoesAtrasados > 0;
+                    dashAlertas.className = temCritico ? 'dash-card vermelho' : 'dash-card amarelo';
+                }
+
+            } catch(e) {
+                console.log('Erro dashboard:', e);
+                document.getElementById('totalPagar').innerHTML = '❌ Erro';
+                document.getElementById('totalAlertas').innerHTML = '❌ Erro';
+            }
+        }
+
+        window.fazerBackup = async function() {
+            const btn = document.getElementById('btnBackup');
+            btn.textContent = '⏳ Enviando...';
+            btn.disabled = true;
+            try {
+                if (typeof google !== 'undefined' && google.accounts) {
+                    await backupParaDrive(false);
+                    btn.textContent = '✅ Salvo no Drive!';
+                } else {
+                    await exportFullBackup();
+                    btn.textContent = '📥 Backup local!';
+                }
+                setTimeout(() => { btn.textContent = '☁️ Backup'; btn.disabled = false; }, 3000);
+            } catch(e) {
+                console.error('Erro backup:', e);
+                alert('❌ Erro: ' + e.message);
+                btn.textContent = '☁️ Backup';
+                btn.disabled = false;
+            }
+        };
+
+        // ===== GOOGLE DRIVE BACKUP =====
+        const GOOGLE_CLIENT_ID = '870054137437-ftgm5iq8v8c552dib3tbgd3avkipsn5h.apps.googleusercontent.com';
+        const DRIVE_FOLDER_ID = '1yosnY9qeZz0YVbrD8wwLJYJnJQ_mFyC9';
+
+        function getGoogleAccessToken() {
+            return new Promise((resolve, reject) => {
+                const tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: GOOGLE_CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/drive',
+                    callback: (response) => {
+                        if (response.error) reject(new Error(response.error));
+                        else resolve(response.access_token);
+                    },
+                    error_callback: (error) => {
+                        reject(new Error('Auth cancelada'));
+                    }
+                });
+                tokenClient.requestAccessToken();
+            });
+        }
+
+        async function backupParaDrive(silencioso) {
+            // Coletar TODOS os dados
+            const loans = await getLoans();
+            const debts = await getDebts();
+            const cards = await getCards();
+            const empresas = await getEmpresas();
+            const contracts = await getContracts();
+
+            const backup = {
+                exportDate: new Date().toISOString(),
+                exportDateFormatted: new Date().toLocaleString('pt-BR'),
+                system: 'GT Smart Equity',
+                version: '6.0',
+                data: { loans, debts, cards, empresas, contracts },
+                statistics: {
+                    totalLoans: loans.length,
+                    totalDebts: debts.length,
+                    totalCards: cards.length,
+                    totalEmpresas: empresas.length,
+                    totalContracts: contracts.length,
+                    activeLoans: loans.filter(l => l.status === 'active').length
+                }
+            };
+
+            const jsonStr = JSON.stringify(backup, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const dataHoje = new Date().toISOString().slice(0, 10);
+            const fileName = 'GT_Smart_Backup_' + dataHoje + '.json';
+
+            // Pedir permissão do Google
+            const accessToken = await getGoogleAccessToken();
+
+            // Verificar se já existe backup de hoje (pra substituir)
+            const searchUrl = 'https://www.googleapis.com/drive/v3/files?q=' +
+                encodeURIComponent("name='" + fileName + "' and '" + DRIVE_FOLDER_ID + "' in parents and trashed=false") +
+                '&fields=files(id,name)';
+            const searchRes = await fetch(searchUrl, {
+                headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            const searchData = await searchRes.json();
+
+            // Se já existe, deletar o antigo
+            if (searchData.files && searchData.files.length > 0) {
+                for (const file of searchData.files) {
+                    await fetch('https://www.googleapis.com/drive/v3/files/' + file.id, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + accessToken }
+                    });
+                }
+            }
+
+            // Upload do backup
+            const metadata = {
+                name: fileName,
+                mimeType: 'application/json',
+                parents: [DRIVE_FOLDER_ID]
+            };
+
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', blob);
+
+            const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                body: form
+            });
+
+            if (!uploadRes.ok) throw new Error('Upload falhou: ' + uploadRes.status);
+
+            const result = await uploadRes.json();
+            console.log('☁️ Backup salvo no Drive:', result.name);
+            return result;
+        }
+
+        window.sair = async function() {
+            if (confirm('Deseja sair do sistema?')) {
+                await signOut(auth);
+                window.location.href = 'GT_Smart_Login.html';
+            }
+        };
+
+        window.migrarDados = async function() {
+            const btn = document.querySelector('.migrate-banner button');
+            btn.textContent = '⏳ Migrando...';
+            btn.disabled = true;
+            
+            const resultado = await migrateFromLocalStorage();
+            
+            if (resultado) {
+                alert(`✅ Migração concluída!\n\n📊 ${resultado.loans} empréstimos\n💳 ${resultado.debts} dívidas\n📄 ${resultado.contracts} contratos\n\nSeus dados estão agora na nuvem!`);
+                document.getElementById('migrateBanner').style.display = 'none';
+            } else {
+                alert('❌ Erro na migração. Tente novamente.');
+                btn.textContent = '☁️ Migrar para Firebase agora';
+                btn.disabled = false;
+            }
+        };
+
+        // Modo escuro
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('gtSmartDarkMode', isDark);
+            document.getElementById('darkBtn').textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+        };
+
+        window.onload = function() {
+            if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkBtn').textContent = '☀️ Modo Claro';
+            }
+        };
+    </script>
+</body>
+</html>

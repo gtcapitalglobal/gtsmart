@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Dashboard de Cartões</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-link { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+
+        /* Big Number Card */
+        .big-card { background: linear-gradient(135deg, #1b5e20, #388e3c); border-radius: 14px; padding: 20px; color: white; margin-bottom: 15px; text-align: center; }
+        .big-label { font-size: 12px; font-weight: 600; opacity: 0.8; }
+        .big-number { font-size: 36px; font-weight: 900; margin: 4px 0; }
+        .big-sub { font-size: 13px; opacity: 0.8; }
+        .big-row { display: flex; justify-content: space-around; margin-top: 15px; }
+        .big-item { text-align: center; }
+        .big-item .bi-val { font-size: 20px; font-weight: 800; }
+        .big-item .bi-lbl { font-size: 10px; opacity: 0.7; }
+
+        /* Usage Gauge */
+        .gauge-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .gauge-card { border-radius: 12px; padding: 15px; text-align: center; }
+        .gauge-pessoal { background: #f3e5f5; color: #4a0e8f; }
+        .gauge-business { background: #e3f2fd; color: #1565c0; }
+        .gauge-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+        .gauge-circle { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 8px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .gauge-circle .gc-val { font-size: 22px; font-weight: 900; }
+        .gauge-info { font-size: 11px; opacity: 0.8; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .stat-card { border-radius: 10px; padding: 10px 6px; text-align: center; }
+        .stat-card .s-label { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.8; }
+        .stat-card .s-value { font-size: 16px; font-weight: 800; margin-top: 2px; }
+        .st-total { background: #e8f5e9; color: #1b5e20; }
+        .st-acima { background: #fdecea; color: #c62828; }
+        .st-zero { background: #e3f2fd; color: #1565c0; }
+        .st-pagos { background: #fff3e0; color: #e65100; }
+
+        /* Section Title */
+        .sec-title { font-size: 15px; font-weight: 800; color: #333; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 3px solid #2e7d32; display: flex; align-items: center; gap: 8px; }
+
+        /* Usage bars chart */
+        .usage-chart { margin-bottom: 20px; }
+        .usage-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; padding: 4px; border-radius: 6px; }
+        .usage-row:hover { background: #f5f5f5; }
+        .usage-name { width: 140px; font-size: 11px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .usage-bar-bg { flex: 1; height: 18px; background: #f0f0f0; border-radius: 9px; overflow: hidden; position: relative; }
+        .usage-bar-fill { height: 100%; border-radius: 9px; transition: width 0.8s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; }
+        .usage-bar-text { font-size: 9px; font-weight: 700; color: white; white-space: nowrap; }
+        .usage-pct { width: 40px; font-size: 12px; font-weight: 800; text-align: right; }
+        .usage-amt { width: 70px; font-size: 10px; color: #888; text-align: right; }
+        .fill-green { background: linear-gradient(90deg, #43a047, #66bb6a); }
+        .fill-yellow { background: linear-gradient(90deg, #ff9800, #ffb74d); }
+        .fill-red { background: linear-gradient(90deg, #e53935, #ef5350); }
+        .fill-zero { background: #e0e0e0; }
+
+        /* Bank breakdown */
+        .bank-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 20px; }
+        .bank-card { border: 2px solid #e8e8e8; border-radius: 10px; padding: 10px; }
+        .bank-name { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 4px; }
+        .bank-info { font-size: 11px; color: #888; }
+        .bank-bar { height: 5px; background: #f0f0f0; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+        .bank-fill { height: 100%; border-radius: 3px; }
+
+        /* Card mini grid */
+        .card-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 20px; }
+        .card-mini { border: 2px solid #e0e0e0; border-radius: 10px; padding: 10px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+        .card-mini:hover { border-color: #2e7d32; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card-mini.cm-business { border-left: 4px solid #1565c0; }
+        .card-mini.cm-pessoal { border-left: 4px solid #7c4dff; }
+        .card-mini.cm-danger { border-color: #e53935; }
+        .cm-name { font-size: 11px; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cm-digits { font-size: 10px; color: #aaa; }
+        .cm-saldo { font-size: 16px; font-weight: 800; margin: 4px 0; }
+        .cm-limite { font-size: 10px; color: #888; }
+        .cm-bar { height: 4px; background: #f0f0f0; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .cm-fill { height: 100%; border-radius: 2px; }
+        .cm-pago { position: absolute; top: 6px; right: 6px; font-size: 10px; background: #e8f5e9; color: #1b5e20; padding: 1px 5px; border-radius: 6px; font-weight: 700; }
+
+        /* Filter tabs */
+        .filter-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+        .filter-tab { padding: 6px 12px; border-radius: 18px; border: 2px solid #ddd; background: white; font-size: 11px; font-weight: 600; cursor: pointer; color: #555; }
+        .filter-tab.active { background: #2e7d32; color: white; border-color: #2e7d32; }
+
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #0a2e0a 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .sec-title { color: #e0e0e0; border-color: #43a047; }
+        body.dark-mode .usage-name { color: #e0e0e0; }
+        body.dark-mode .usage-row:hover { background: #16213e; }
+        body.dark-mode .usage-bar-bg { background: #2a2a4a; }
+        body.dark-mode .bank-card { border-color: #333; background: #16213e; }
+        body.dark-mode .bank-name { color: #e0e0e0; }
+        body.dark-mode .bank-bar { background: #2a2a4a; }
+        body.dark-mode .card-mini { border-color: #333; background: #16213e; }
+        body.dark-mode .cm-name { color: #e0e0e0; }
+        body.dark-mode .cm-bar { background: #2a2a4a; }
+        body.dark-mode .filter-tab { background: #16213e; border-color: #333; color: #aaa; }
+        body.dark-mode .stat-card.st-total { background: #152e15; }
+        body.dark-mode .stat-card.st-acima { background: #2e1515; }
+        body.dark-mode .stat-card.st-zero { background: #152030; }
+        body.dark-mode .stat-card.st-pagos { background: #2e2515; }
+        body.dark-mode .gauge-pessoal { background: #2d1a4e; }
+        body.dark-mode .gauge-business { background: #152030; }
+        body.dark-mode .fill-zero { background: #444; }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .gauge-row { grid-template-columns: 1fr 1fr; }
+            .bank-grid { grid-template-columns: 1fr !important; }
+            .card-mini-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .header { flex-direction: column; text-align: center; }
+            .usage-name { width: 80px; font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📊 Dashboard de Cartões</h2>
+            <div class="header-right">
+                <a href="GT_Smart_Estrategia.html" class="btn-link">🎯 Estratégia</a>
+                <a href="GT_Smart_Comparar_Cartoes.html" class="btn-link">🏆 Comparar</a>
+                <a href="GT_Smart_Calendario_Cartoes.html" class="btn-link">📅 Calendário</a>
+                <a href="GT_Smart_Cartoes.html" class="btn-link">💳 Cartões</a>
+                <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
+            </div>
+        </div>
+        <div class="content">
+            <div id="dashboard">
+                <div style="text-align:center;padding:40px;color:#999;">⏳ Carregando dashboard...</div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 06/03/2026</p>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, getCards } from './firebase-config.js';
+
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') document.body.classList.add('dark-mode');
+
+        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+        let currentFilter = 'todos';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            const cards = (await getCards()) || [];
+            render(cards);
+        });
+
+        function render(cards) {
+            const pessoais = cards.filter(c => c.tipo === 'Pessoal');
+            const business = cards.filter(c => c.tipo === 'Business');
+            const mesAtual = new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0');
+
+            const totalLimite = cards.reduce((s,c) => s + (c.limite||0), 0);
+            const totalSaldo = cards.reduce((s,c) => s + (c.saldoUsado||0), 0);
+            const totalDisponivel = totalLimite - totalSaldo;
+            const usoGeral = totalLimite ? (totalSaldo/totalLimite*100) : 0;
+
+            const limP = pessoais.reduce((s,c) => s + (c.limite||0), 0);
+            const salP = pessoais.reduce((s,c) => s + (c.saldoUsado||0), 0);
+            const usoP = limP ? (salP/limP*100) : 0;
+
+            const limB = business.reduce((s,c) => s + (c.limite||0), 0);
+            const salB = business.reduce((s,c) => s + (c.saldoUsado||0), 0);
+            const usoB = limB ? (salB/limB*100) : 0;
+
+            const acima30 = cards.filter(c => c.limite && (c.saldoUsado||0)/c.limite*100 >= 30).length;
+            const zeros = cards.filter(c => (c.saldoUsado||0) <= 0).length;
+            const pagos = cards.filter(c => c.pagoMes === mesAtual).length;
+
+            const usoColor = uso => uso <= 9 ? '#43a047' : uso <= 30 ? '#ff9800' : '#e53935';
+            const fillCls = uso => uso <= 0 ? 'fill-zero' : uso <= 9 ? 'fill-green' : uso <= 30 ? 'fill-yellow' : 'fill-red';
+
+            // === GAUGE SVG ===
+            function gaugeCircle(pct, color) {
+                const r = 38, c = 2 * Math.PI * r;
+                const offset = c - (pct/100) * c;
+                return '<svg width="90" height="90" viewBox="0 0 90 90">' +
+                    '<circle cx="45" cy="45" r="' + r + '" fill="none" stroke="#e0e0e0" stroke-width="8"/>' +
+                    '<circle cx="45" cy="45" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="8" ' +
+                    'stroke-dasharray="' + c + '" stroke-dashoffset="' + offset + '" transform="rotate(-90 45 45)" stroke-linecap="round"/>' +
+                    '<text x="45" y="50" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor">' + pct.toFixed(0) + '%</text>' +
+                '</svg>';
+            }
+
+            // === BANK DATA ===
+            const bancos = {};
+            cards.forEach(c => {
+                const b = c.banco || 'Outro';
+                if (!bancos[b]) bancos[b] = { count: 0, limite: 0, saldo: 0 };
+                bancos[b].count++;
+                bancos[b].limite += c.limite || 0;
+                bancos[b].saldo += c.saldoUsado || 0;
+            });
+            const bancosSorted = Object.entries(bancos).sort((a,b) => b[1].limite - a[1].limite);
+
+            // === BUILD HTML ===
+            let html = '';
+
+            // Big card
+            html += '<div class="big-card">' +
+                '<div class="big-label">LIMITE TOTAL DISPONÍVEL</div>' +
+                '<div class="big-number">' + fmt(totalDisponivel) + '</div>' +
+                '<div class="big-sub">de ' + fmt(totalLimite) + ' total — ' + usoGeral.toFixed(1) + '% usado</div>' +
+                '<div class="big-row">' +
+                    '<div class="big-item"><div class="bi-val">' + cards.length + '</div><div class="bi-lbl">Cartões</div></div>' +
+                    '<div class="big-item"><div class="bi-val">' + fmt(totalSaldo) + '</div><div class="bi-lbl">Saldo Usado</div></div>' +
+                    '<div class="big-item"><div class="bi-val">' + bancosSorted.length + '</div><div class="bi-lbl">Bancos</div></div>' +
+                '</div>' +
+            '</div>';
+
+            // Gauges
+            html += '<div class="gauge-row">' +
+                '<div class="gauge-card gauge-pessoal">' +
+                    '<div class="gauge-title">👤 PESSOAL (' + pessoais.length + ')</div>' +
+                    gaugeCircle(usoP, usoColor(usoP)) +
+                    '<div class="gauge-info">' + fmt(salP) + ' / ' + fmt(limP) + '</div>' +
+                '</div>' +
+                '<div class="gauge-card gauge-business">' +
+                    '<div class="gauge-title">🏢 BUSINESS (' + business.length + ')</div>' +
+                    gaugeCircle(usoB, usoColor(usoB)) +
+                    '<div class="gauge-info">' + fmt(salB) + ' / ' + fmt(limB) + '</div>' +
+                '</div>' +
+            '</div>';
+
+            // Stats
+            html += '<div class="stats-grid">' +
+                '<div class="stat-card st-total"><div class="s-label">💳 Total</div><div class="s-value">' + cards.length + '</div></div>' +
+                '<div class="stat-card st-acima"><div class="s-label">🔴 Acima 30%</div><div class="s-value">' + acima30 + '</div></div>' +
+                '<div class="stat-card st-zero"><div class="s-label">✅ Saldo $0</div><div class="s-value">' + zeros + '</div></div>' +
+                '<div class="stat-card st-pagos"><div class="s-label">💰 Pagos Mês</div><div class="s-value">' + pagos + '/' + cards.length + '</div></div>' +
+            '</div>';
+
+            // Usage chart
+            html += '<div class="sec-title">📊 Uso por Cartão</div>';
+            html += '<div class="usage-chart">';
+            const sorted = [...cards].sort((a,b) => {
+                const uA = a.limite ? (a.saldoUsado||0)/a.limite*100 : 0;
+                const uB = b.limite ? (b.saldoUsado||0)/b.limite*100 : 0;
+                return uB - uA;
+            });
+            sorted.forEach(c => {
+                const uso = c.limite ? ((c.saldoUsado||0)/c.limite*100) : 0;
+                const cls = fillCls(uso);
+                const w = Math.max(uso, 2);
+                const tipo = c.tipo === 'Business' ? '🏢' : '👤';
+                html += '<div class="usage-row" onclick="window.location.href=\'GT_Smart_Detalhe_Cartao.html?id=' + c.id + '\'">' +
+                    '<div class="usage-name">' + tipo + ' ' + (c.nome||'').substring(0,18) + '</div>' +
+                    '<div class="usage-bar-bg"><div class="usage-bar-fill ' + cls + '" style="width:' + Math.min(w,100) + '%">' +
+                        (uso >= 15 ? '<span class="usage-bar-text">' + fmt(c.saldoUsado) + '</span>' : '') +
+                    '</div></div>' +
+                    '<div class="usage-pct" style="color:' + usoColor(uso) + '">' + uso.toFixed(0) + '%</div>' +
+                    '<div class="usage-amt">' + fmt(c.limite) + '</div>' +
+                '</div>';
+            });
+            html += '</div>';
+
+            // Bank breakdown
+            html += '<div class="sec-title">🏦 Por Banco</div>';
+            html += '<div class="bank-grid">';
+            bancosSorted.forEach(([nome, v]) => {
+                const uso = v.limite ? (v.saldo/v.limite*100) : 0;
+                html += '<div class="bank-card">' +
+                    '<div class="bank-name">' + nome + ' <span style="font-size:11px;color:#888;">(' + v.count + ')</span></div>' +
+                    '<div class="bank-info">Limite: ' + fmt(v.limite) + ' | Usado: ' + fmt(v.saldo) + ' | <span style="color:' + usoColor(uso) + ';font-weight:700;">' + uso.toFixed(0) + '%</span></div>' +
+                    '<div class="bank-bar"><div class="bank-fill" style="width:' + Math.min(uso,100) + '%;background:' + usoColor(uso) + '"></div></div>' +
+                '</div>';
+            });
+            html += '</div>';
+
+            // Card mini grid
+            html += '<div class="sec-title">💳 Todos os Cartões</div>';
+            html += '<div class="filter-tabs">' +
+                '<span class="filter-tab active" onclick="filterCards(\'todos\',this)">Todos (' + cards.length + ')</span>' +
+                '<span class="filter-tab" onclick="filterCards(\'pessoal\',this)">👤 Pessoal (' + pessoais.length + ')</span>' +
+                '<span class="filter-tab" onclick="filterCards(\'business\',this)">🏢 Business (' + business.length + ')</span>' +
+                '<span class="filter-tab" onclick="filterCards(\'comSaldo\',this)">💰 Com Saldo (' + cards.filter(c=>(c.saldoUsado||0)>0).length + ')</span>' +
+                '<span class="filter-tab" onclick="filterCards(\'zerados\',this)">✅ Zerados (' + zeros + ')</span>' +
+                '<span class="filter-tab" onclick="filterCards(\'criticos\',this)">🔴 Acima 30% (' + acima30 + ')</span>' +
+            '</div>';
+
+            html += '<div class="card-mini-grid" id="cardMiniGrid">';
+            html += renderMiniCards(cards, 'todos', mesAtual);
+            html += '</div>';
+
+            document.getElementById('dashboard').innerHTML = html;
+
+            // Store cards for filtering
+            window._dashCards = cards;
+            window._dashMes = mesAtual;
+        }
+
+        function renderMiniCards(cards, filter, mesAtual) {
+            let filtered = cards;
+            if (filter === 'pessoal') filtered = cards.filter(c => c.tipo === 'Pessoal');
+            else if (filter === 'business') filtered = cards.filter(c => c.tipo === 'Business');
+            else if (filter === 'comSaldo') filtered = cards.filter(c => (c.saldoUsado||0) > 0);
+            else if (filter === 'zerados') filtered = cards.filter(c => (c.saldoUsado||0) <= 0);
+            else if (filter === 'criticos') filtered = cards.filter(c => c.limite && (c.saldoUsado||0)/c.limite*100 >= 30);
+
+            // Sort by usage desc
+            filtered.sort((a,b) => {
+                const uA = a.limite ? (a.saldoUsado||0)/a.limite*100 : 0;
+                const uB = b.limite ? (b.saldoUsado||0)/b.limite*100 : 0;
+                return uB - uA;
+            });
+
+            const usoColor = uso => uso <= 9 ? '#43a047' : uso <= 30 ? '#ff9800' : '#e53935';
+            const fillCls = uso => uso <= 0 ? 'fill-zero' : uso <= 9 ? 'fill-green' : uso <= 30 ? 'fill-yellow' : 'fill-red';
+            const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+            if (filtered.length === 0) return '<div style="text-align:center;padding:20px;color:#999;grid-column:1/-1;">Nenhum cartão nesta categoria</div>';
+
+            return filtered.map(c => {
+                const uso = c.limite ? ((c.saldoUsado||0)/c.limite*100) : 0;
+                const cls = c.tipo === 'Business' ? 'cm-business' : 'cm-pessoal';
+                const danger = uso >= 30 ? ' cm-danger' : '';
+                const pago = c.pagoMes === mesAtual ? '<div class="cm-pago">✓ Pago</div>' : '';
+
+                return '<div class="card-mini ' + cls + danger + '" onclick="window.location.href=\'GT_Smart_Detalhe_Cartao.html?id=' + c.id + '\'">' +
+                    pago +
+                    '<div class="cm-name">' + (c.nome||'Cartão') + '</div>' +
+                    '<div class="cm-digits">•••• ' + (c.ultimos4||'') + ' | ' + (c.tipo === 'Business' ? '🏢' : '👤') + '</div>' +
+                    '<div class="cm-saldo" style="color:' + usoColor(uso) + '">' + fmt(c.saldoUsado) + '</div>' +
+                    '<div class="cm-limite">de ' + fmt(c.limite) + ' (' + uso.toFixed(0) + '%)</div>' +
+                    '<div class="cm-bar"><div class="cm-fill ' + fillCls(uso) + '" style="width:' + Math.min(Math.max(uso,2),100) + '%"></div></div>' +
+                '</div>';
+            }).join('');
+        }
+
+        window.filterCards = function(filter, el) {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('cardMiniGrid').innerHTML = renderMiniCards(window._dashCards, filter, window._dashMes);
+        };
+    </script>
+</body>
+</html>

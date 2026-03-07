@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Detalhes do Empréstimo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 900px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 18px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+        .summary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .summary-item { font-size: 11px; margin-bottom: 3px; }
+        .summary-value { font-size: 16px; font-weight: 700; }
+        .progress-section { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); }
+        .progress-text { font-size: 11px; color: #666; text-align: center; }
+        .payments-list { max-height: 400px; overflow-y: auto; }
+        .payment-item { background: #f8f9fa; padding: 10px 12px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #e0e0e0; }
+        .payment-item.paid { background: #d4edda; border-left-color: #28a745; }
+        .payment-item.late { background: #f8d7da; border-left-color: #dc3545; }
+        .payment-item.due-soon { background: #fff3cd; border-left-color: #ffc107; }
+        .payment-amount { font-size: 14px; font-weight: 700; color: #667eea; margin: 0 12px; }
+        .paid-badge { background: #28a745; color: white; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+        .late-badge { background: #dc3545; color: white; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+        .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn { padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; border: none; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        @media (max-width: 768px) { .actions { grid-template-columns: 1fr 1fr; } }
+        .saving-indicator { position: fixed; top: 15px; right: 15px; background: #667eea; color: white; padding: 8px 15px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    </style>
+</head>
+<body>
+    <div class="saving-indicator" id="savingIndicator">💾 Salvando...</div>
+
+    <div class="container">
+        <div class="header">
+            <h2 id="clientTitle">📊 Detalhes do Empréstimo</h2>
+            <a href="GT_Smart_Gestao.html" class="btn-back">← Voltar</a>
+        </div>
+        <div class="content">
+            <div class="summary" id="summary"></div>
+            <div class="progress-section">
+                <div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+                <div class="progress-text" id="progressText"></div>
+            </div>
+            <h3 style="font-size:15px; margin-bottom:10px;">📅 Cronograma de Pagamentos</h3>
+            <div class="payments-list" id="paymentsList"></div>
+
+            <h3 style="font-size:15px; margin:15px 0 10px;">💬 Histórico de Comunicação</h3>
+            <div id="communicationHistory" style="background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:15px;"></div>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="text" id="newNote" placeholder="Adicionar nota..." style="flex:1; padding:8px; border:2px solid #e0e0e0; border-radius:6px; font-size:13px;">
+                <button onclick="addNote()" style="padding:8px 16px; background:#667eea; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">Adicionar</button>
+            </div>
+
+            <div id="archiveActions" style="display:none; margin-bottom:15px;"></div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="sendWhatsApp()" style="background:#25D366;">📱 WhatsApp</button>
+                <button class="btn btn-primary" onclick="sendWhatsAppLate()" style="background:#dc3545;">⚠️ Aviso Atraso</button>
+                <button class="btn btn-primary" onclick="generateMoreMonth()" style="background:#17a2b8;">➕ Gerar +1 Mês</button>
+                <button class="btn btn-secondary" onclick="editLoan()">✏️ Editar</button>
+                <button class="btn btn-danger" onclick="excluirEmprestimo()">🗑️ Excluir</button>
+                <button class="btn btn-secondary" onclick="window.location.href='GT_Smart_Gestao.html'">← Voltar</button>
+            </div>
+        </div>
+    
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.0 | 06/03/2026</p>
+    </div>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './firebase-config.js';
+
+        let loan = null;
+        let loanId = null;
+        let allLoans = [];
+
+        const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+        // Fix timezone: "2026-02-23" deve ser 23/02 local, não UTC
+        const parseLocalDate = (dateStr) => {
+            if (!dateStr) return new Date();
+            const parts = dateStr.split('T')[0].split('-');
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+            d.setHours(0,0,0,0);
+            return d;
+        };
+        const formatDateBR = (dateStr) => {
+            if (!dateStr) return '';
+            const parts = dateStr.split('T')[0].split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
+        };
+        const formatDateTimeBR = (iso) => {
+            if (!iso) return '';
+            const d = new Date(iso);
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            const params = new URLSearchParams(window.location.search);
+            loanId = params.get('id');
+            if (!loanId) { alert('Empréstimo não encontrado!'); window.location.href = 'GT_Smart_Gestao.html'; return; }
+            allLoans = await getLoans();
+            loan = allLoans.find(l => l.id === loanId);
+            if (!loan) { alert('Empréstimo não encontrado!'); window.location.href = 'GT_Smart_Gestao.html'; return; }
+            renderLoan();
+        });
+
+        async function salvarLoan() {
+            document.getElementById('savingIndicator').style.display = 'block';
+            await updateLoan(loanId, loan);
+            setTimeout(() => document.getElementById('savingIndicator').style.display = 'none', 1000);
+        }
+
+        window.renderLoan = function() {
+            document.getElementById('clientTitle').textContent = '🏢 ' + loan.clientName;
+            const paidCount = loan.payments.filter(p => p.paid).length;
+            const totalReceived = loan.payments.filter(p => p.paid).reduce((s,p) => s+p.amount, 0);
+            const totalPending = loan.payments.filter(p => !p.paid).reduce((s,p) => s+p.amount, 0);
+            const progress = (paidCount / loan.payments.length) * 100;
+
+            document.getElementById('summary').innerHTML = `
+                <div class="summary-grid">
+                    <div><div class="summary-item">💰 Valor Total</div><div class="summary-value">${formatCurrency(loan.totalAmount)}</div></div>
+                    <div><div class="summary-item">📊 Parcelas</div><div class="summary-value">${loan.numPayments}× ${formatCurrency(loan.paymentAmount)}</div></div>
+                    <div><div class="summary-item">✅ Já Recebido</div><div class="summary-value">${formatCurrency(totalReceived)}</div></div>
+                    <div><div class="summary-item">⏳ A Receber</div><div class="summary-value">${formatCurrency(totalPending)}</div></div>
+                </div>`;
+
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${paidCount}/${loan.payments.length} pagas (${progress.toFixed(0)}%)`;
+
+            const today = new Date(); today.setHours(0,0,0,0);
+            const twoDaysFromNow = new Date(today); twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+
+            document.getElementById('paymentsList').innerHTML = loan.payments.map((payment, index) => {
+                const pDate = parseLocalDate(payment.date);
+                let itemClass = '', badge = '', extraBtn = '';
+
+                if (payment.paid) {
+                    itemClass = 'paid';
+                    badge = `<span class="paid-badge">✓ PAGO</span>`;
+                } else if (payment.negotiated) {
+                    badge = `<span style="background:#fff3cd;color:#856404;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;">NEGOCIADA</span>`;
+                    extraBtn = `<button onclick="undoNegotiation(${index}); event.stopPropagation();" style="background:#6c757d;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;margin-left:8px;">↩️ Desfazer</button>`;
+                } else if (payment.recalculatedFrom && !payment.paid && pDate < today) {
+                    itemClass = 'late';
+                    badge = `<span style="background:#17a2b8;color:white;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;">RENEGOCIADA</span>`;
+                    extraBtn = `<button onclick="recalculatePayment(${index}); event.stopPropagation();" style="background:#ff9800;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;margin-left:8px;">⚙️ Recalcular</button>`;
+                } else if (pDate < today) {
+                    itemClass = 'late';
+                    badge = `<span class="late-badge">ATRASADO</span>`;
+                    extraBtn = `<button onclick="recalculatePayment(${index}); event.stopPropagation();" style="background:#ff9800;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;margin-left:8px;">⚙️ Recalcular</button>`;
+                } else if (pDate <= twoDaysFromNow) {
+                    itemClass = 'due-soon';
+                }
+
+                return `
+                    <div class="payment-item ${itemClass}">
+                        <div style="flex:1;">
+                            <div style="font-size:12px;font-weight:700;color:#333;">${payment.negotiated?'<strong style="color:#ff9800;">Negociada</strong> - ':''}${payment.recalculatedFrom?`<strong style="color:#17a2b8;">Renegociada da #${payment.recalculatedFrom}</strong> - `:''}#${payment.number} - ${formatDateBR(payment.date)}</div>
+                            ${payment.paid ? `<div style="font-size:11px;color:#666;">Pago em: ${formatDateBR(payment.paidDate)}</div>` : ''}
+                        </div>
+                        <div class="payment-amount">${formatCurrency(payment.amount)}</div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            ${badge}
+                            ${extraBtn}
+                            <input type="checkbox" style="width:22px;height:22px;cursor:pointer;" ${payment.paid?'checked':''} onchange="togglePayment(${index})">
+                            <button onclick="deletePaymentItem(${index}); event.stopPropagation();" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;">🗑️</button>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            // Histórico de comunicação
+            if (!loan.communicationHistory) loan.communicationHistory = [];
+            document.getElementById('communicationHistory').innerHTML = loan.communicationHistory.length === 0
+                ? '<div style="text-align:center;color:#999;font-size:12px;padding:10px;">Nenhuma nota registrada</div>'
+                : loan.communicationHistory.sort((a,b) => new Date(b.date)-new Date(a.date)).map(note => `
+                    <div style="background:white;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #667eea;">
+                        <div style="font-size:11px;color:#999;margin-bottom:4px;">${formatDateTimeBR(note.date)}</div>
+                        <div style="font-size:12px;color:#333;">${note.text}</div>
+                    </div>`).join('');
+
+            // Arquivar/Desarquivar
+            const allPaid = loan.payments.every(p => p.paid);
+            const archiveDiv = document.getElementById('archiveActions');
+            if (loan.archived) {
+                archiveDiv.style.display = 'block';
+                archiveDiv.innerHTML = `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px;border-radius:6px;">
+                    <div style="font-size:13px;color:#856404;margin-bottom:8px;">📦 Este empréstimo está <strong>ARQUIVADO</strong></div>
+                    <button onclick="unarchiveLoan()" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">📤 Desarquivar</button>
+                </div>`;
+            } else if (allPaid) {
+                archiveDiv.style.display = 'block';
+                archiveDiv.innerHTML = `<div style="background:#d4edda;border-left:4px solid #28a745;padding:12px;border-radius:6px;">
+                    <div style="font-size:13px;color:#155724;margin-bottom:8px;">✅ Todas as parcelas foram pagas!</div>
+                    <button onclick="archiveLoan()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">📦 Arquivar Empréstimo</button>
+                </div>`;
+            } else {
+                archiveDiv.style.display = 'none';
+            }
+        };
+
+        window.addNote = async function() {
+            const txt = document.getElementById('newNote').value.trim();
+            if (!txt) return;
+            if (!loan.communicationHistory) loan.communicationHistory = [];
+            loan.communicationHistory.push({ date: new Date().toISOString(), text: txt });
+            await salvarLoan();
+            document.getElementById('newNote').value = '';
+            renderLoan();
+        };
+
+        window.togglePayment = async function(index) {
+            loan.payments[index].paid = !loan.payments[index].paid;
+            loan.payments[index].paidDate = loan.payments[index].paid ? new Date().toISOString() : null;
+            loan.status = loan.payments.every(p => p.paid) ? 'finished' : 'active';
+            await salvarLoan();
+            renderLoan();
+        };
+
+        window.deletePaymentItem = async function(index) {
+            if (loan.payments.length === 1) { alert('❌ Não pode deletar a única parcela!'); return; }
+            if (!confirm(`🗑️ Deletar parcela #${loan.payments[index].number}? Esta ação não pode ser desfeita!`)) return;
+            loan.payments.splice(index, 1);
+            loan.payments.forEach((p, i) => p.number = i + 1);
+            loan.numPayments = loan.payments.length;
+            loan.status = loan.payments.every(p => p.paid) ? 'finished' : 'active';
+            await salvarLoan();
+            renderLoan();
+        };
+
+        window.undoNegotiation = async function(index) {
+            if (!confirm('↩️ Desfazer negociação desta parcela?\n\nIsso vai remover também as parcelas renegociadas criadas a partir dela.')) return;
+            
+            const paymentNumber = loan.payments[index].number;
+            
+            // Remove a negociação da parcela
+            delete loan.payments[index].negotiated;
+            delete loan.payments[index].negotiatedDate;
+            
+            // Remove todas as parcelas renegociadas que vieram desta parcela
+            loan.payments = loan.payments.filter(p => p.recalculatedFrom !== paymentNumber);
+            
+            // Renumera as parcelas
+            loan.payments.forEach((p, i) => p.number = i + 1);
+            loan.numPayments = loan.payments.length;
+            loan.status = loan.payments.every(p => p.paid) ? 'finished' : 'active';
+            
+            await salvarLoan();
+            renderLoan();
+            alert('✅ Negociação desfeita!');
+        };
+
+        window.recalculatePayment = async function(index) {
+            const payment = loan.payments[index];
+            const today = new Date(); today.setHours(0,0,0,0);
+            const pDate = parseLocalDate(payment.date);
+            if (pDate >= today || payment.paid) { alert('❌ Esta parcela não está atrasada!'); return; }
+            if (payment.negotiated) { alert('❌ Esta parcela já está negociada!'); return; }
+
+            const lastPayment = loan.payments[loan.payments.length - 1];
+            const lastDate = new Date(lastPayment.date);
+            const dayIncrement = loan.frequency === 'weekly' ? 7 : loan.frequency === 'biweekly' ? 14 : 30;
+            const newDate = new Date(lastDate);
+            newDate.setDate(newDate.getDate() + dayIncrement);
+
+            const daysLate = Math.floor((newDate - pDate) / (1000*60*60*24));
+            const interestRate = loan.interestRate || 5;
+            const interest = payment.amount * (interestRate/100) * (daysLate/30);
+            const newAmount = payment.amount + interest;
+
+            const msg = `⚙️ RECALCULAR PARCELA ATRASADA\n\nParcela #${payment.number}: ${formatCurrency(payment.amount)}\n\nNova parcela:\n• Nova data: ${newDate.toLocaleDateString('pt-BR')}\n• Dias de atraso: ${daysLate}\n• Juros (${interestRate}%/mês): ${formatCurrency(interest)}\n• Valor total: ${formatCurrency(newAmount)}\n\nConfirmar?`;
+            if (!confirm(msg)) return;
+
+            payment.negotiated = true;
+            payment.negotiatedDate = new Date().toISOString();
+            loan.payments.push({
+                number: loan.payments.length + 1,
+                date: newDate.toISOString().split('T')[0],
+                amount: newAmount,
+                paid: false,
+                interestAmount: interest,
+                daysLate,
+                recalculatedFrom: payment.number,
+                recalculatedFromDate: payment.date
+            });
+            loan.numPayments = loan.payments.length;
+            if (!loan.communicationHistory) loan.communicationHistory = [];
+            loan.communicationHistory.push({ date: new Date().toISOString(), text: `Parcela #${payment.number} recalculada. Nova parcela #${loan.payments.length} criada. Juros: ${formatCurrency(interest)}. Total: ${formatCurrency(newAmount)}.` });
+
+            await salvarLoan();
+            renderLoan();
+            alert(`✅ Nova parcela #${loan.payments.length} criada!\nValor: ${formatCurrency(newAmount)}`);
+        };
+
+        window.generateMoreMonth = async function() {
+            if (!confirm('➕ Gerar mais um mês de parcelas?')) return;
+            const lastPayment = loan.payments[loan.payments.length - 1];
+            const lastDate = new Date(lastPayment.date);
+            const dayIncrement = loan.frequency === 'weekly' ? 7 : loan.frequency === 'biweekly' ? 14 : 30;
+            const newPaymentsCount = loan.frequency === 'weekly' ? 4 : loan.frequency === 'biweekly' ? 2 : 1;
+            let currentDate = new Date(lastDate);
+            for (let i = 0; i < newPaymentsCount; i++) {
+                currentDate = new Date(currentDate);
+                currentDate.setDate(currentDate.getDate() + dayIncrement);
+                loan.payments.push({ number: loan.payments.length + 1, date: currentDate.toISOString().split('T')[0], amount: loan.paymentAmount, paid: false });
+            }
+            loan.numPayments = loan.payments.length;
+            await salvarLoan();
+            renderLoan();
+            alert(`✅ ${newPaymentsCount} parcela(s) adicionada(s)!`);
+        };
+
+        window.archiveLoan = async function() {
+            if (!confirm('📦 Arquivar este empréstimo?')) return;
+            loan.archived = true;
+            await salvarLoan();
+            alert('✅ Empréstimo arquivado!');
+            window.location.href = 'GT_Smart_Gestao.html';
+        };
+
+        window.unarchiveLoan = async function() {
+            if (!confirm('📤 Desarquivar este empréstimo?')) return;
+            loan.archived = false;
+            await salvarLoan();
+            alert('✅ Empréstimo desarquivado!');
+            window.location.href = 'GT_Smart_Gestao.html';
+        };
+
+        window.excluirEmprestimo = async function() {
+            if (!confirm('⚠️ Excluir este empréstimo? Esta ação NÃO pode ser desfeita!')) return;
+            await deleteLoan(loanId);
+            alert('✅ Empréstimo excluído!');
+            window.location.href = 'GT_Smart_Gestao.html';
+        };
+
+        window.editLoan = function() {
+            localStorage.setItem('gtSmartEditLoan', JSON.stringify(loan));
+            window.location.href = 'GT_Smart_Editar_Emprestimo.html?id=' + loanId;
+        };
+
+        window.sendWhatsApp = function() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const paidPayments = loan.payments.filter(p => p.paid);
+            const pendingPayments = loan.payments.filter(p => !p.paid && !p.negotiated);
+            const negotiatedPayments = loan.payments.filter(p => p.negotiated);
+            const totalPaid = paidPayments.reduce((s,p) => s+p.amount, 0);
+            let msg = `_Mensagem automática_\n\nOlá *${loan.clientName}*! Segue o resumo das suas parcelas:\n\n`;
+            if (paidPayments.length > 0) {
+                msg += `✅ *Parcelas Pagas (${paidPayments.length}):*\n`;
+                paidPayments.forEach(p => msg += `  #${p.number} - ${formatDateBR(p.date)} - ${formatCurrency(p.amount)}\n`);
+                msg += `  _Total pago: ${formatCurrency(totalPaid)}_\n\n`;
+            }
+            if (negotiatedPayments.length > 0) {
+                msg += `🔄 *Parcelas Negociadas (${negotiatedPayments.length}):*\n`;
+                negotiatedPayments.forEach(p => msg += `  #${p.number} - ${formatDateBR(p.date)} - ${formatCurrency(p.amount)}\n`);
+                msg += `\n`;
+            }
+            if (pendingPayments.length > 0) {
+                msg += `⏳ *Parcelas Pendentes (${pendingPayments.length}):*\n`;
+                pendingPayments.forEach(p => {
+                    const pDate = parseLocalDate(p.date);
+                    const isLate = pDate < today;
+                    msg += `${isLate?'⚠️':'  '} #${p.number} - ${formatDateBR(p.date)} - ${formatCurrency(p.amount)}${isLate?' *(ATRASADA)*':''}\n`;
+                });
+                msg += `\n`;
+            }
+            msg += `Qualquer dúvida estou à disposição! 🙏`;
+            const phone = (loan.clientPhone || '').replace(/\D/g, '');
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+
+        window.sendWhatsAppLate = function() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const latePayments = loan.payments.filter(p => {
+                if (p.paid || p.negotiated) return false;
+                const d = parseLocalDate(p.date);
+                return d < today;
+            });
+            if (latePayments.length === 0) { alert('✅ Nenhuma parcela atrasada!'); return; }
+
+            // Verifica se alguma parcela tem menos de 3 dias de atraso
+            const recentLate = latePayments.filter(p => {
+                const d = parseLocalDate(p.date);
+                const days = Math.floor((today - d) / (1000*60*60*24));
+                return days < 3;
+            });
+            if (recentLate.length > 0) {
+                const detalhes = recentLate.map(p => {
+                    const days = Math.floor((today - parseLocalDate(p.date)) / (1000*60*60*24));
+                    return `#${p.number} - ${days} dia${days>1?'s':''}`;
+                }).join('\n');
+                if (!confirm(`⚠️ Atenção!\n\nAs seguintes parcelas têm menos de 3 dias de atraso:\n\n${detalhes}\n\nDeseja enviar o aviso mesmo assim?`)) return;
+            }
+
+            let msg = `_Mensagem automática_\n\nOlá *${loan.clientName}*!\n\n⚠️ *Parcela${latePayments.length>1?'s':''} em atraso:*\n\n`;
+            latePayments.forEach(p => {
+                const d = parseLocalDate(p.date);
+                const daysLate = Math.floor((today - d) / (1000*60*60*24));
+                msg += `#${p.number} - ${formatDateBR(p.date)} - ${formatCurrency(p.amount)} - ${daysLate} dia${daysLate>1?'s':''} de atraso\n`;
+            });
+            const totalLate = latePayments.reduce((s,p) => s+p.amount, 0);
+            msg += `\n💰 *Total em atraso: ${formatCurrency(totalLate)}*\n`;
+            msg += `\nQuer renegociar ou fazer o pagamento? 🙏`;
+            const phone = (loan.clientPhone || '').replace(/\D/g, '');
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+    </script>
+<a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#667eea;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+</body>
+</html>

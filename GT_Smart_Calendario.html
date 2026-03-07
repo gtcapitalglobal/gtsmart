@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Calendário</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 18px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+
+        /* Resumo do mês */
+        .month-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .summary-card { border-radius: 10px; padding: 10px 8px; text-align: center; }
+        .summary-card .label { font-size: 10px; font-weight: 600; opacity: 0.8; margin-bottom: 4px; }
+        .summary-card .value { font-size: 16px; font-weight: 800; }
+        .card-emprestimo { background: #ede7f6; color: #4a0e8f; }
+        .card-divida { background: #fdecea; color: #c62828; }
+        .card-cartao { background: #e8f5e9; color: #1b5e20; }
+        .card-atrasado { background: #fff3e0; color: #e65100; }
+
+        /* Calendário */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .month-year { font-size: 18px; font-weight: 700; color: #333; }
+        .nav-buttons { display: flex; gap: 8px; }
+        .nav-btn { background: #667eea; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 15px; }
+        .calendar-header-day { text-align: center; padding: 6px; font-weight: 700; font-size: 11px; color: #667eea; background: #f8f9fa; border-radius: 6px; }
+        .calendar-day { aspect-ratio: 1; border: 2px solid #e8e8e8; border-radius: 8px; padding: 3px; cursor: pointer; transition: all 0.2s; position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 48px; }
+        .calendar-day:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.3); transform: scale(1.03); }
+        .calendar-day.other-month { opacity: 0.2; pointer-events: none; }
+        .calendar-day.today { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-color: #764ba2; }
+        .calendar-day.today .day-amount { color: #fff; }
+        .calendar-day.selected { border-color: #667eea; border-width: 3px; box-shadow: 0 0 0 2px rgba(102,126,234,0.3); }
+        .calendar-day.has-payments { background: #fafafa; border-color: #ccc; }
+        .calendar-day.has-late { background: #fff5f5; border-color: #e53935; }
+        .calendar-day.has-paid { background: #f0fff4; border-color: #81c784; }
+        .calendar-day.today.has-late { background: linear-gradient(135deg, #e53935, #b71c1c); border-color: #b71c1c; }
+        .day-number { font-size: 12px; font-weight: 700; }
+        .day-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; }
+        .dot-emp { background: #7c4dff; }
+        .dot-div { background: #e53935; }
+        .dot-card { background: #2e7d32; }
+        .dot-paid { background: #81c784; border: 1px solid #43a047; }
+        .day-amount { font-size: 8px; font-weight: 700; text-align: center; color: #555; }
+
+        /* Legenda */
+        .legend { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: #555; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* Detalhes do dia */
+        .payments-section { background: #f5f7fa; padding: 15px; border-radius: 12px; margin-top: 10px; }
+        .payments-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .payments-title { font-size: 15px; font-weight: 700; color: #333; }
+        .payments-total { font-size: 13px; font-weight: 700; }
+        .payments-total .receber { color: #4a0e8f; }
+        .payments-total .pagar { color: #c62828; }
+
+        .payment-item { background: white; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid #667eea; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+        .payment-item:hover { transform: translateX(3px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .payment-item.type-loan { border-left-color: #7c4dff; }
+        .payment-item.type-loan.paid { border-left-color: #b39ddb; background: #f3f0ff; }
+        .payment-item.type-loan.late { border-left-color: #e53935; background: #fff5f5; }
+        .payment-item.type-debt { border-left-color: #e53935; }
+        .payment-item.type-debt.paid { border-left-color: #ef9a9a; background: #fff0f0; }
+        .payment-item.type-card { border-left-color: #2e7d32; }
+        .payment-item.type-card.paid { border-left-color: #81c784; background: #f0fff4; }
+
+        .payment-client { font-size: 14px; font-weight: 700; color: #333; }
+        .payment-info { font-size: 11px; color: #888; margin-top: 2px; }
+        .payment-amount { font-size: 15px; font-weight: 800; }
+        .payment-amount.amt-loan { color: #7c4dff; }
+        .payment-amount.amt-debt { color: #e53935; }
+        .payment-amount.amt-card { color: #2e7d32; }
+        .payment-amount.amt-paid { color: #81c784; }
+
+        .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 9px; font-weight: 700; margin-left: 5px; vertical-align: middle; }
+        .badge-emp { background: #ede7f6; color: #4a0e8f; }
+        .badge-div { background: #fdecea; color: #c62828; }
+        .badge-card { background: #e8f5e9; color: #1b5e20; }
+        .badge-paid { background: #c8e6c9; color: #2e7d32; }
+        .badge-late { background: #ffcdd2; color: #b71c1c; }
+        .badge-neg { background: #fff3e0; color: #e65100; }
+
+        .empty-day { text-align: center; padding: 20px; color: #999; font-size: 13px; }
+
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode .month-year { color: #e0e0e0; }
+        body.dark-mode .calendar-header-day { background: #16213e; color: #7c8dff; }
+        body.dark-mode .calendar-day { border-color: #2a2a4a; background: #16213e; color: #e0e0e0; }
+        body.dark-mode .calendar-day.has-payments { background: #1a1a3e; border-color: #444; }
+        body.dark-mode .calendar-day.has-late { background: #2e1515; border-color: #e53935; }
+        body.dark-mode .calendar-day.has-paid { background: #152e15; border-color: #43a047; }
+        body.dark-mode .calendar-day.other-month { opacity: 0.15; }
+        body.dark-mode .day-amount { color: #aaa; }
+        body.dark-mode .payments-section { background: #16213e; }
+        body.dark-mode .payments-title { color: #e0e0e0; }
+        body.dark-mode .payment-item { background: #1a1a3e; }
+        body.dark-mode .payment-client { color: #e0e0e0; }
+        body.dark-mode .legend-item { color: #aaa; }
+        body.dark-mode .summary-card.card-emprestimo { background: #2d1a4e; }
+        body.dark-mode .summary-card.card-divida { background: #3e1515; }
+        body.dark-mode .summary-card.card-cartao { background: #153e15; }
+        body.dark-mode .summary-card.card-atrasado { background: #3e2e15; }
+
+        @media (max-width: 600px) {
+            .month-summary { grid-template-columns: repeat(2, 1fr) !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+            .calendar-day { min-height: 42px; }
+            .day-number { font-size: 11px; }
+            .dot { width: 5px; height: 5px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📅 Calendário Financeiro</h2>
+            <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+        </div>
+        <div class="content">
+            <!-- Resumo do mês -->
+            <div class="month-summary">
+                <div class="summary-card card-emprestimo">
+                    <div class="label">📋 Empréstimos</div>
+                    <div class="value" id="sumEmp">—</div>
+                </div>
+                <div class="summary-card card-divida">
+                    <div class="label">💰 Dívidas</div>
+                    <div class="value" id="sumDiv">—</div>
+                </div>
+                <div class="summary-card card-cartao">
+                    <div class="label">💳 Cartões</div>
+                    <div class="value" id="sumCard">—</div>
+                </div>
+                <div class="summary-card card-atrasado">
+                    <div class="label">⚠️ Atrasados</div>
+                    <div class="value" id="sumAtrasado">—</div>
+                </div>
+            </div>
+
+            <!-- Navegação -->
+            <div class="calendar-header">
+                <div class="month-year" id="monthYear"></div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="previousMonth()">‹</button>
+                    <button class="nav-btn" onclick="goToday()">Hoje</button>
+                    <button class="nav-btn" onclick="nextMonth()">›</button>
+                </div>
+            </div>
+
+            <!-- Legenda -->
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot dot-emp"></div><span>Empréstimo</span></div>
+                <div class="legend-item"><div class="legend-dot dot-div"></div><span>Dívida</span></div>
+                <div class="legend-item"><div class="legend-dot dot-card"></div><span>Cartão</span></div>
+                <div class="legend-item"><div class="legend-dot dot-paid"></div><span>Pago</span></div>
+            </div>
+
+            <!-- Grade do calendário -->
+            <div class="calendar-grid" id="calendar"></div>
+
+            <!-- Pagamentos do dia selecionado -->
+            <div class="payments-section" id="paymentsSection" style="display:none;">
+                <div class="payments-header">
+                    <span class="payments-title" id="paymentsTitle"></span>
+                    <span class="payments-total" id="paymentsTotal"></span>
+                </div>
+                <div id="paymentsList"></div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#667eea;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, getLoans, getDebts, getCards } from './firebase-config.js';
+
+        let currentDate = new Date();
+        let selectedDateStr = '';
+        const parseLocalDate = (ds) => { if(!ds) return new Date(); const p=ds.split("T")[0].split("-"); const d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])); d.setHours(0,0,0,0); return d; };
+        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+        const fmt2 = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        let loans = [], debts = [], cards = [];
+
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            loadAll().catch(e => {
+                console.error('Erro ao carregar:', e);
+                document.getElementById('calendar').innerHTML = '<div style="text-align:center;padding:20px;color:red;">❌ Erro ao carregar: ' + e.message + '</div>';
+            });
+        });
+
+        async function loadAll() {
+            try {
+                [loans, debts, cards] = await Promise.all([getLoans(), getDebts(), getCards()]);
+            } catch(e) {
+                console.error('Erro getData:', e);
+                loans = []; debts = []; cards = [];
+            }
+            loans = (loans || []).filter(l => !l.archived && l.status !== 'finished');
+            debts = (debts || []).filter(d => !d.archived && d.status !== 'finished');
+            cards = cards || [];
+            renderCalendar();
+            try {
+                const todayStr = new Date().toISOString().split('T')[0];
+                showPayments(todayStr);
+            } catch(e) { console.error('Erro showPayments:', e); }
+        }
+
+        function getPaymentsForDate(dateStr) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const pDate = parseLocalDate(dateStr);
+            const dayNum = parseInt(dateStr.split('-')[2]);
+            const items = [];
+
+            // Empréstimos
+            loans.forEach(loan => {
+                (loan.payments || []).forEach(p => {
+                    if (p.date === dateStr && !p.negotiated) {
+                        items.push({
+                            ...p,
+                            clientName: loan.clientName || 'Sem nome',
+                            loanId: loan.id,
+                            type: 'loan',
+                            typeLabel: 'Empréstimo',
+                            link: 'GT_Smart_Detalhe_Emprestimo.html?id=' + loan.id
+                        });
+                    }
+                });
+            });
+
+            // Dívidas
+            debts.forEach(debt => {
+                (debt.payments || []).forEach(p => {
+                    if (p.date === dateStr && !p.negotiated) {
+                        items.push({
+                            ...p,
+                            clientName: debt.creditorName || debt.nome || 'Dívida',
+                            debtId: debt.id,
+                            type: 'debt',
+                            typeLabel: 'Dívida',
+                            link: 'GT_Smart_Detalhe_Divida.html?id=' + debt.id
+                        });
+                    }
+                });
+            });
+
+            // Cartões (dia do vencimento)
+            cards.forEach(c => {
+                const venc = parseInt(c.diaVencimento);
+                if (!venc || dayNum !== venc) return;
+                const mesAtual = dateStr.substring(0, 7);
+                const jaPago = c.pagoMes === mesAtual;
+                items.push({
+                    amount: c.saldoUsado || 0,
+                    clientName: (c.nome || 'Cartão') + (c.ultimos4 ? ' •••• ' + c.ultimos4 : ''),
+                    type: 'card',
+                    typeLabel: 'Cartão',
+                    paid: jaPago,
+                    titular: c.titular || '',
+                    banco: c.banco || '',
+                    link: 'GT_Smart_Detalhe_Cartao.html?id=' + c.id
+                });
+            });
+
+            return items;
+        }
+
+        function updateSummary() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const today = new Date(); today.setHours(0,0,0,0);
+            let empTotal = 0, divTotal = 0, cardTotal = 0, atrasadoTotal = 0;
+
+            loans.forEach(loan => {
+                (loan.payments || []).forEach(p => {
+                    if (p.negotiated) return;
+                    const d = parseLocalDate(p.date);
+                    if (d.getFullYear() === year && d.getMonth() === month) {
+                        if (!p.paid) {
+                            empTotal += p.amount || 0;
+                            if (d < today) atrasadoTotal += p.amount || 0;
+                        }
+                    }
+                });
+            });
+
+            debts.forEach(debt => {
+                (debt.payments || []).forEach(p => {
+                    if (p.negotiated) return;
+                    const d = parseLocalDate(p.date);
+                    if (d.getFullYear() === year && d.getMonth() === month) {
+                        if (!p.paid) {
+                            divTotal += p.amount || 0;
+                            if (d < today) atrasadoTotal += p.amount || 0;
+                        }
+                    }
+                });
+            });
+
+            cards.forEach(c => {
+                const venc = parseInt(c.diaVencimento);
+                if (!venc) return;
+                const mesStr = year + '-' + String(month + 1).padStart(2, '0');
+                if (c.pagoMes !== mesStr) {
+                    cardTotal += c.saldoUsado || 0;
+                }
+            });
+
+            document.getElementById('sumEmp').textContent = fmt(empTotal);
+            document.getElementById('sumDiv').textContent = fmt(divTotal);
+            document.getElementById('sumCard').textContent = fmt(cardTotal);
+            document.getElementById('sumAtrasado').textContent = fmt(atrasadoTotal);
+        }
+
+        function renderCalendar() {
+            try {
+            updateSummary();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            document.getElementById('monthYear').textContent = monthNames[month] + ' ' + year;
+
+            const today = new Date(); today.setHours(0,0,0,0);
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month+1, 0).getDate();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+
+            let html = '';
+            const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+            dayNames.forEach(d => { html += '<div class="calendar-header-day">' + d + '</div>'; });
+
+            // Dias do mês anterior
+            for (let i = firstDay - 1; i >= 0; i--) {
+                html += '<div class="calendar-day other-month"><div class="day-number">' + (prevMonthDays - i) + '</div></div>';
+            }
+
+            // Dias do mês
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day); date.setHours(0,0,0,0);
+                const dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+                const payments = getPaymentsForDate(dateStr);
+
+                const isToday = date.getTime() === today.getTime();
+                const isSelected = dateStr === selectedDateStr;
+                let cls = 'calendar-day';
+
+                let hasLate = false, allPaid = payments.length > 0;
+                payments.forEach(p => {
+                    if (!p.paid) { allPaid = false; if (date < today) hasLate = true; }
+                });
+
+                if (isToday) cls += ' today';
+                if (isSelected) cls += ' selected';
+
+                if (payments.length > 0 && !isToday) {
+                    if (hasLate) cls += ' has-late';
+                    else if (allPaid) cls += ' has-paid';
+                    else cls += ' has-payments';
+                } else if (isToday && hasLate) cls += ' has-late';
+
+                // Bolinhas por tipo
+                let dots = '';
+                if (payments.length > 0) {
+                    const dotHtml = payments.slice(0, 5).map(p => {
+                        if (p.paid) return '<div class="dot dot-paid"></div>';
+                        if (p.type === 'loan') return '<div class="dot dot-emp"></div>';
+                        if (p.type === 'debt') return '<div class="dot dot-div"></div>';
+                        return '<div class="dot dot-card"></div>';
+                    }).join('');
+                    dots = '<div class="day-dots">' + dotHtml + '</div>';
+                }
+
+                const totalAmt = payments.filter(p => !p.paid).reduce((s, p) => s + (p.amount || 0), 0);
+                const amtStr = totalAmt > 0 ? '<div class="day-amount">$' + totalAmt.toFixed(0) + '</div>' : '';
+
+                html += '<div class="' + cls + '" onclick="showPayments(\'' + dateStr + '\')">' +
+                    '<div class="day-number">' + day + '</div>' +
+                    dots + amtStr + '</div>';
+            }
+
+            // Dias do próximo mês
+            const totalCells = firstDay + daysInMonth;
+            const remaining = 7 - (totalCells % 7);
+            if (remaining < 7) {
+                for (let i = 1; i <= remaining; i++) {
+                    html += '<div class="calendar-day other-month"><div class="day-number">' + i + '</div></div>';
+                }
+            }
+
+            document.getElementById('calendar').innerHTML = html;
+            } catch(e) {
+                console.error('Erro renderCalendar:', e);
+                document.getElementById('calendar').innerHTML = '<div style="padding:20px;color:red;text-align:center;">❌ Erro: ' + e.message + '</div>';
+            }
+        }
+
+        window.showPayments = function(dateStr) {
+            selectedDateStr = dateStr;
+            renderCalendar(); // Refresh to show selected state
+
+            const payments = getPaymentsForDate(dateStr);
+            const today = new Date(); today.setHours(0,0,0,0);
+            const pDate = parseLocalDate(dateStr);
+            const [y, m, d] = dateStr.split('-');
+
+            if (payments.length === 0) {
+                document.getElementById('paymentsSection').style.display = 'block';
+                document.getElementById('paymentsTitle').textContent = '📋 ' + d + '/' + m + '/' + y;
+                document.getElementById('paymentsTotal').innerHTML = '';
+                document.getElementById('paymentsList').innerHTML = '<div class="empty-day">Nenhum pagamento neste dia</div>';
+                document.getElementById('paymentsSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return;
+            }
+
+            // Título com data relativa
+            const diffDays = Math.round((pDate - today) / 86400000);
+            let titleDate = d + '/' + m + '/' + y;
+            if (diffDays === 0) titleDate += ' — Hoje';
+            else if (diffDays === 1) titleDate += ' — Amanhã';
+            else if (diffDays === -1) titleDate += ' — Ontem';
+            else if (diffDays > 0) titleDate += ' — em ' + diffDays + ' dias';
+            else titleDate += ' — ' + Math.abs(diffDays) + ' dias atrás';
+
+            // Totais por tipo
+            const totalEmp = payments.filter(p => p.type === 'loan' && !p.paid).reduce((s,p) => s + (p.amount||0), 0);
+            const totalDiv = payments.filter(p => p.type === 'debt' && !p.paid).reduce((s,p) => s + (p.amount||0), 0);
+            const totalCard = payments.filter(p => p.type === 'card' && !p.paid).reduce((s,p) => s + (p.amount||0), 0);
+
+            let totalHtml = '';
+            if (totalEmp > 0) totalHtml += '<span class="receber">📋 ' + fmt(totalEmp) + '</span> ';
+            if (totalDiv > 0) totalHtml += '<span class="pagar">💰 ' + fmt(totalDiv) + '</span> ';
+            if (totalCard > 0) totalHtml += '<span style="color:#2e7d32">💳 ' + fmt(totalCard) + '</span>';
+
+            document.getElementById('paymentsTitle').textContent = '📋 ' + titleDate;
+            document.getElementById('paymentsTotal').innerHTML = totalHtml;
+
+            // Ordenar: atrasados primeiro, depois por tipo
+            const sorted = [...payments].sort((a, b) => {
+                const aLate = !a.paid && pDate < today ? 0 : 1;
+                const bLate = !b.paid && pDate < today ? 0 : 1;
+                if (aLate !== bLate) return aLate - bLate;
+                const typeOrder = { loan: 0, debt: 1, card: 2 };
+                return (typeOrder[a.type] || 0) - (typeOrder[b.type] || 0);
+            });
+
+            document.getElementById('paymentsList').innerHTML = sorted.map(p => {
+                const isLate = !p.paid && pDate < today;
+
+                // CSS classes
+                let itemCls = 'payment-item type-' + p.type;
+                if (p.paid) itemCls += ' paid';
+                else if (isLate) itemCls += ' late';
+
+                // Badge de tipo
+                let typeBadge = '';
+                if (p.type === 'loan') typeBadge = '<span class="badge badge-emp">📋 Empréstimo</span>';
+                else if (p.type === 'debt') typeBadge = '<span class="badge badge-div">💰 Dívida</span>';
+                else typeBadge = '<span class="badge badge-card">💳 Cartão</span>';
+
+                // Badge de status
+                let statusBadge = '';
+                if (p.paid) statusBadge = '<span class="badge badge-paid">✓ PAGO</span>';
+                else if (isLate) {
+                    const dias = Math.abs(diffDays);
+                    statusBadge = '<span class="badge badge-late">⚠ ' + dias + 'd atrás</span>';
+                }
+                else if (p.negotiated) statusBadge = '<span class="badge badge-neg">🔄 Negociado</span>';
+
+                // Info extra
+                let info = '';
+                if (p.type === 'loan' && p.number) info = 'Parcela #' + p.number;
+                else if (p.type === 'debt' && p.number) info = 'Parcela #' + p.number;
+                else if (p.type === 'card') info = (p.titular || '') + (p.banco ? ' | ' + p.banco : '');
+
+                // Cor do valor
+                let amtCls = 'payment-amount';
+                if (p.paid) amtCls += ' amt-paid';
+                else if (p.type === 'loan') amtCls += ' amt-loan';
+                else if (p.type === 'debt') amtCls += ' amt-debt';
+                else amtCls += ' amt-card';
+
+                return '<div class="' + itemCls + '" onclick="window.location.href=\'' + p.link + '\'">' +
+                    '<div>' +
+                        '<div class="payment-client">' + p.clientName + typeBadge + statusBadge + '</div>' +
+                        (info ? '<div class="payment-info">' + info + '</div>' : '') +
+                    '</div>' +
+                    '<div class="' + amtCls + '">' + fmt2(p.amount) + '</div>' +
+                '</div>';
+            }).join('');
+
+            document.getElementById('paymentsSection').style.display = 'block';
+            document.getElementById('paymentsSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
+
+        window.previousMonth = function() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            selectedDateStr = '';
+            renderCalendar();
+            document.getElementById('paymentsSection').style.display = 'none';
+        };
+        window.nextMonth = function() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            selectedDateStr = '';
+            renderCalendar();
+            document.getElementById('paymentsSection').style.display = 'none';
+        };
+        window.goToday = function() {
+            currentDate = new Date();
+            selectedDateStr = '';
+            renderCalendar();
+            showPayments(new Date().toISOString().split('T')[0]);
+        };
+    </script>
+</body>
+</html>

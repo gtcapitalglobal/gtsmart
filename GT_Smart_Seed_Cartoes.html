@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Seed Cartões - GT Smart</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Arial,sans-serif; background:#0d1b2a; color:#fff; padding:20px; }
+        h1 { text-align:center; margin-bottom:20px; }
+        .status { background:#1b2838; border-radius:12px; padding:20px; margin-bottom:10px; }
+        .card-line { padding:8px 12px; border-bottom:1px solid #2a3a4a; font-size:13px; display:flex; justify-content:space-between; }
+        .card-line.ok { color:#4caf50; }
+        .card-line.err { color:#ef5350; }
+        .card-line.wait { color:#ffa726; }
+        .btn { display:block; margin:20px auto; padding:15px 40px; background:linear-gradient(135deg,#4a148c,#6a1b9a); color:white; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
+        .btn:hover { opacity:0.9; }
+        .btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .summary { text-align:center; margin-top:20px; font-size:18px; font-weight:700; }
+        .warning { background:#fff3e0; color:#e65100; padding:15px; border-radius:10px; margin-bottom:20px; text-align:center; font-weight:700; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Seed Cartões - GT Smart</h1>
+    <div class="warning">⚠️ Isso vai adicionar/atualizar 25 cartões no Firebase. Cartões existentes com mesmo ID serão sobrescritos.</div>
+    <button class="btn" id="btnSeed" onclick="iniciarSeed()">🚀 Iniciar Seed (25 Cartões)</button>
+    <div class="status" id="statusArea">
+        <div style="text-align:center;color:#888;">Clique no botão acima para começar</div>
+    </div>
+    <div class="summary" id="summary"></div>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, saveCard } from './firebase-config.js';
+
+        const cartoes = [
+            // ===== PESSOAL - GUSTAVO =====
+            {
+                id: 'CARD_0852',
+                nome: 'BoA Cash Rewards',
+                ultimos4: '0852',
+                titular: 'Gustavo',
+                banco: 'Bank of America',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 8000,
+                saldoUsado: 0,
+                diaFechamento: 15,
+                diaVencimento: 12,
+                rewards: '3%',
+                categoriaReward: 'Restaurants',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Geralmente usado pra Restaurante. Auto-payment ativo.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_6606',
+                nome: 'BoA Cash Rewards',
+                ultimos4: '6606',
+                titular: 'Gustavo',
+                banco: 'Bank of America',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 16000,
+                saldoUsado: 14000,
+                diaFechamento: 7,
+                diaVencimento: 4,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Empréstimos realizado pagar 01/2027. Auto-payment ativo.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_6775',
+                nome: 'Capital One Quicksilver',
+                ultimos4: '6775',
+                titular: 'Gustavo',
+                banco: 'Capital One',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 5700,
+                saldoUsado: 0,
+                diaFechamento: 23,
+                diaVencimento: 17,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_63005',
+                nome: 'Amex Cash Magnet',
+                ultimos4: '63005',
+                titular: 'Gustavo',
+                banco: 'American Express',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 5000,
+                saldoUsado: 0,
+                diaFechamento: 2,
+                diaVencimento: 27,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Auto-payment ativo. Aumento 08/08/2025 - Negado.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_3358',
+                nome: 'Apple Card',
+                ultimos4: '3358',
+                titular: 'Gustavo',
+                banco: 'Apple/GS',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 3000,
+                saldoUsado: 0,
+                diaFechamento: 30,
+                diaVencimento: 30,
+                rewards: '3%',
+                categoriaReward: 'Apple',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Produtos Apple 3%. Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_8196',
+                nome: 'CareCredit',
+                ultimos4: '8196',
+                titular: 'Gustavo',
+                banco: 'Synchrony',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 9000,
+                saldoUsado: 2500,
+                diaFechamento: 28,
+                diaVencimento: 20,
+                rewards: '0%',
+                categoriaReward: 'General',
+                promo: '0% APY até 12/2026',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Promo até 28/12/2026. Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_7638',
+                nome: 'Firestone CFNA',
+                ultimos4: '7638',
+                titular: 'Gustavo',
+                banco: 'CFNA',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 1600,
+                saldoUsado: 0,
+                diaFechamento: 15,
+                diaVencimento: 10,
+                rewards: '4%',
+                categoriaReward: 'Firestone',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Firestone 4%. Aumento não solicitado ainda.',
+                modoBusiness: ''
+            },
+
+            // ===== PESSOAL - TELMA =====
+            {
+                id: 'CARD_4077',
+                nome: 'BoA Customized Cash',
+                ultimos4: '4077',
+                titular: 'Telma',
+                banco: 'Bank of America',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 10000,
+                saldoUsado: 8400,
+                diaFechamento: 22,
+                diaVencimento: 19,
+                rewards: '3%',
+                categoriaReward: 'Online',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Online 3%. Empréstimos realizado pagar 03/2025. Auto-payment ativo.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_3862',
+                nome: 'BoA Travel Rewards',
+                ultimos4: '3862',
+                titular: 'Telma',
+                banco: 'Bank of America',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 6000,
+                saldoUsado: 0,
+                diaFechamento: 6,
+                diaVencimento: 3,
+                rewards: '1.5 pts',
+                categoriaReward: 'Travel',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: '1.5 pontos por dólar Travel. Auto-payment ativo. Aumento negado.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_3572',
+                nome: 'Capital One Quicksilver',
+                ultimos4: '3572',
+                titular: 'Telma',
+                banco: 'Capital One',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 3750,
+                saldoUsado: 0,
+                diaFechamento: 27,
+                diaVencimento: 21,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_1550',
+                nome: 'Capital One Quicksilver',
+                ultimos4: '1550',
+                titular: 'Telma',
+                banco: 'Capital One',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 10000,
+                saldoUsado: 0,
+                diaFechamento: 12,
+                diaVencimento: 7,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_91004',
+                nome: 'Amex Blue Cash Everyday',
+                ultimos4: '91004',
+                titular: 'Telma',
+                banco: 'American Express',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 30000,
+                saldoUsado: 0,
+                diaFechamento: 2,
+                diaVencimento: 27,
+                rewards: '3%',
+                categoriaReward: 'Super/Gas',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Geralmente usado pra gasolina 3%. Auto-payment ativo. Aumento 20/11/2025 - Aprovado.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_9914',
+                nome: 'Citi Diamond Preferred',
+                ultimos4: '9914',
+                titular: 'Telma',
+                banco: 'Citi',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 9100,
+                saldoUsado: 3096,
+                diaFechamento: 28,
+                diaVencimento: 24,
+                rewards: '0%',
+                categoriaReward: 'Transferência',
+                promo: '0% Transfer até 10/2027',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Balance transfer 4%. 21 meses para pagar até 19/10/2027. Auto-payment ativo.',
+                modoBusiness: ''
+            },
+            {
+                id: 'CARD_0450',
+                nome: 'CareCredit Mastercard',
+                ultimos4: '0450',
+                titular: 'Telma',
+                banco: 'Synchrony',
+                tipo: 'Pessoal',
+                empresa: '',
+                limite: 16500,
+                saldoUsado: 7400,
+                diaFechamento: 14,
+                diaVencimento: 8,
+                rewards: '0%',
+                categoriaReward: 'Sem Categoria',
+                promo: '0% Transfer até 10/2027',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Promo transfer 0% até 10/19/2027 ou compras 0% 01/19/2027. Não pretendo pagar até essa data. Auto-payment ativo. Estou com 49% de uso.',
+                modoBusiness: ''
+            },
+
+            // ===== BUSINESS - GUSTAVO =====
+            {
+                id: 'CARD_0720',
+                nome: 'Capital Spark Business',
+                ultimos4: '0720',
+                titular: 'Gustavo',
+                banco: 'Capital One',
+                tipo: 'Business',
+                empresa: 'G&T GROUP LLC',
+                limite: 7000,
+                saldoUsado: 0,
+                diaFechamento: 11,
+                diaVencimento: 6,
+                rewards: '2%',
+                categoriaReward: 'General',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Não utilizar esse cartão. Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_01002',
+                nome: 'Amex Amazon Business Prime',
+                ultimos4: '01002',
+                titular: 'Gustavo',
+                banco: 'American Express',
+                tipo: 'Business',
+                empresa: 'G&T GROUP LLC',
+                limite: 28900,
+                saldoUsado: 0,
+                diaFechamento: 12,
+                diaVencimento: 4,
+                rewards: '5%',
+                categoriaReward: 'Amazon',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Amazon 5%. Usado na conta Amazon Prime. Fazer um pessoal para amazon. Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_41004',
+                nome: 'Amex Blue Business Cash',
+                ultimos4: '41004',
+                titular: 'Gustavo',
+                banco: 'American Express',
+                tipo: 'Business',
+                empresa: 'GLA USA SOLUTIONS',
+                limite: 1100,
+                saldoUsado: 0,
+                diaFechamento: 24,
+                diaVencimento: 19,
+                rewards: '2%',
+                categoriaReward: 'General',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Não utilizar esse cartão. Auto-payment ativo. Aumento não solicitado ainda.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_4249',
+                nome: 'Truist Business Cash Rewards',
+                ultimos4: '4249',
+                titular: 'Gustavo',
+                banco: 'Truist',
+                tipo: 'Business',
+                empresa: 'GT CAPITAL GLOBAL',
+                limite: 2500,
+                saldoUsado: 449,
+                diaFechamento: 14,
+                diaVencimento: 11,
+                rewards: '3%',
+                categoriaReward: 'Gasolina',
+                promo: '',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: 'Gasolina 3%. Ligar no banco e selecionar a categoria de 2% pra dinner.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_3924',
+                nome: 'Truist Business Standard',
+                ultimos4: '3924',
+                titular: 'Gustavo',
+                banco: 'Truist',
+                tipo: 'Business',
+                empresa: 'GT CAPITAL GLOBAL',
+                limite: 2500,
+                saldoUsado: 1600,
+                diaFechamento: 14,
+                diaVencimento: 11,
+                rewards: '0%',
+                categoriaReward: 'Sem Categoria',
+                promo: '0% APY até 11/2026',
+                metaBonus: 'Gaste $3000 e ganhe $300',
+                bonusPrazo: '2026-02-18',
+                observacoes: '0% APY até 11/2026. Gaste $3000 até dia 18/02/2026 e ganhe $300.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_8379',
+                nome: 'Ink Unlimited',
+                ultimos4: '8379',
+                titular: 'Gustavo',
+                banco: 'Chase',
+                tipo: 'Business',
+                empresa: 'GT CAPITAL GLOBAL',
+                limite: 15000,
+                saldoUsado: 8759,
+                diaFechamento: 10,
+                diaVencimento: 4,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '0% APY até 11/2026',
+                metaBonus: 'Gaste $6000 e ganhe $900',
+                bonusPrazo: '2026-02-18',
+                observacoes: '0% APY até 11/2026. Gaste $6000 até dia 18/02/2026 e ganhe $900. Cancelar até dia 20/02. Auto-payment ativo.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_6223',
+                nome: 'Business Zero+',
+                ultimos4: '6223',
+                titular: 'Gustavo',
+                banco: 'Trusco/Elan',
+                tipo: 'Business',
+                empresa: 'GT CAPITAL GLOBAL',
+                limite: 3000,
+                saldoUsado: 1022,
+                diaFechamento: 2,
+                diaVencimento: 28,
+                rewards: '1%',
+                categoriaReward: 'General',
+                promo: '0% APY até 11/2026',
+                metaBonus: '',
+                bonusPrazo: '',
+                observacoes: '0% APY até 11/2026. Auto-payment ativo.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_0679',
+                nome: 'Signify Business Cash',
+                ultimos4: '0679',
+                titular: 'Gustavo',
+                banco: 'Wells Fargo',
+                tipo: 'Business',
+                empresa: 'GT CAPITAL GLOBAL',
+                limite: 12000,
+                saldoUsado: 4837,
+                diaFechamento: 26,
+                diaVencimento: 21,
+                rewards: '2%',
+                categoriaReward: 'General',
+                promo: '0% APY até 11/2026',
+                metaBonus: 'Bônus $500 ✅ Concluído',
+                bonusPrazo: '',
+                observacoes: '0% APY até 11/2026. Bônus $500 já recebido.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_4059',
+                nome: 'BoA Business Advantage Unlimited',
+                ultimos4: '4059',
+                titular: 'Gustavo',
+                banco: 'Bank of America',
+                tipo: 'Business',
+                empresa: 'GT Real Assets',
+                limite: 4000,
+                saldoUsado: 1171,
+                diaFechamento: 13,
+                diaVencimento: 12,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '0% APY até 08/2026',
+                metaBonus: 'Gaste $3000 e ganhe $300',
+                bonusPrazo: '2026-04-20',
+                observacoes: '0% APY até 14/08/2026. Gaste $3000 até dia 20/04/2026 e ganhe $300.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_8469',
+                nome: 'BoA Business Advantage Unlimited',
+                ultimos4: '8469',
+                titular: 'Gustavo',
+                banco: 'Bank of America',
+                tipo: 'Business',
+                empresa: 'GT Smart',
+                limite: 4000,
+                saldoUsado: 2324,
+                diaFechamento: 17,
+                diaVencimento: 16,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '0% APY até 08/2027',
+                metaBonus: 'Gaste $5000 e ganhe $500',
+                bonusPrazo: '2026-02-28',
+                observacoes: '0% APY até 08/2027. Gaste $5000 até 02/2026 e ganhe $500.',
+                modoBusiness: 'normal'
+            },
+            {
+                id: 'CARD_8317',
+                nome: 'BoA Business Advantage Unlimited',
+                ultimos4: '8317',
+                titular: 'Gustavo',
+                banco: 'Bank of America',
+                tipo: 'Business',
+                empresa: 'GT Tech',
+                limite: 4000,
+                saldoUsado: 2575,
+                diaFechamento: 17,
+                diaVencimento: 16,
+                rewards: '1.5%',
+                categoriaReward: 'General',
+                promo: '0% APY até 10/2026',
+                metaBonus: 'Gaste $5000 e ganhe $500',
+                bonusPrazo: '2026-02-28',
+                observacoes: '0% APY até 10/2026. Gaste $5000 até 02/2026 e ganhe $500.',
+                modoBusiness: 'normal'
+            }
+        ];
+
+        let statusEl, summaryEl, btnEl;
+
+        window.iniciarSeed = async function() {
+            statusEl = document.getElementById('statusArea');
+            summaryEl = document.getElementById('summary');
+            btnEl = document.getElementById('btnSeed');
+            btnEl.disabled = true;
+            btnEl.textContent = '⏳ Salvando...';
+            statusEl.innerHTML = '';
+
+            let ok = 0, err = 0;
+
+            for (let i = 0; i < cartoes.length; i++) {
+                const c = cartoes[i];
+                const label = `${c.nome} •••• ${c.ultimos4} (${c.titular})`;
+                addLine(label, 'wait', '⏳');
+
+                try {
+                    const result = await saveCard(c);
+                    if (result) {
+                        updateLine(i, label, 'ok', '✅');
+                        ok++;
+                    } else {
+                        updateLine(i, label, 'err', '❌ Erro ao salvar');
+                        err++;
+                    }
+                } catch(e) {
+                    updateLine(i, label, 'err', '❌ ' + e.message);
+                    err++;
+                }
+            }
+
+            summaryEl.innerHTML = `✅ ${ok} salvos | ❌ ${err} erros | Total: ${cartoes.length}`;
+            summaryEl.style.color = err === 0 ? '#4caf50' : '#ffa726';
+            btnEl.textContent = err === 0 ? '✅ Concluído!' : '⚠️ Concluído com erros';
+        };
+
+        function addLine(label, cls, status) {
+            statusEl.innerHTML += `<div class="card-line ${cls}" id="line-${statusEl.children.length}"><span>${label}</span><span>${status}</span></div>`;
+        }
+
+        function updateLine(idx, label, cls, status) {
+            const el = document.getElementById('line-' + idx);
+            if (el) {
+                el.className = 'card-line ' + cls;
+                el.innerHTML = `<span>${label}</span><span>${status}</span>`;
+            }
+        }
+
+        // Verifica auth
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                document.getElementById('statusArea').innerHTML = '<div style="color:#ef5350;text-align:center;font-weight:700;">❌ Você precisa estar logado! Faça login primeiro no GT Smart.</div>';
+                document.getElementById('btnSeed').disabled = true;
+            } else {
+                document.getElementById('statusArea').innerHTML = `<div style="color:#4caf50;text-align:center;">✅ Logado como ${user.email} — Pronto para iniciar!</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

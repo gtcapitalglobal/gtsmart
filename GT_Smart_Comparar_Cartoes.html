@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Qual Cartão Usar?</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+
+        /* Search */
+        .search-section { margin-bottom: 20px; }
+        .search-label { font-size: 16px; font-weight: 800; color: #333; margin-bottom: 10px; }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+        .search-input { flex: 1; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; outline: none; }
+        .search-input:focus { border-color: #2e7d32; }
+        .search-btn { background: #2e7d32; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+        /* Category buttons */
+        .cat-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .cat-btn { padding: 8px 14px; border-radius: 20px; border: 2px solid #e0e0e0; background: white; font-size: 12px; font-weight: 600; cursor: pointer; color: #555; transition: all 0.2s; }
+        .cat-btn:hover { border-color: #2e7d32; color: #2e7d32; }
+        .cat-btn.active { background: #2e7d32; color: white; border-color: #2e7d32; }
+
+        /* Result section */
+        .result-section { display: none; }
+        .result-title { font-size: 16px; font-weight: 800; color: #333; margin-bottom: 4px; }
+        .result-sub { font-size: 12px; color: #888; margin-bottom: 15px; }
+
+        /* Best card highlight */
+        .best-card { border: 3px solid #2e7d32; border-radius: 14px; padding: 16px; margin-bottom: 15px; background: linear-gradient(135deg, #e8f5e9, #f1f8e9); position: relative; }
+        .best-badge { position: absolute; top: -10px; left: 15px; background: #2e7d32; color: white; padding: 3px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+        .best-name { font-size: 18px; font-weight: 800; color: #1b5e20; margin-top: 8px; }
+        .best-reward { font-size: 28px; font-weight: 900; color: #2e7d32; }
+        .best-info { font-size: 12px; color: #555; margin-top: 6px; line-height: 1.6; }
+        .best-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+        .best-stat { text-align: center; padding: 8px; background: white; border-radius: 8px; }
+        .best-stat .sl { font-size: 9px; font-weight: 600; color: #888; text-transform: uppercase; }
+        .best-stat .sv { font-size: 14px; font-weight: 800; color: #333; }
+
+        /* Other cards */
+        .other-title { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 10px; margin-top: 5px; }
+        .other-card { border: 2px solid #e8e8e8; border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; cursor: pointer; }
+        .other-card:hover { border-color: #2e7d32; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .oc-left { flex: 1; }
+        .oc-name { font-size: 14px; font-weight: 700; color: #333; }
+        .oc-info { font-size: 11px; color: #888; margin-top: 2px; }
+        .oc-right { text-align: right; }
+        .oc-reward { font-size: 18px; font-weight: 800; }
+        .oc-rank { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-top: 3px; display: inline-block; }
+
+        .badge-tipo { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
+        .bt-business { background: #e3f2fd; color: #1565c0; }
+        .bt-pessoal { background: #f3e5f5; color: #6a1b9a; }
+
+        /* Warning box */
+        .warn-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 10px 14px; border-radius: 8px; margin-top: 10px; font-size: 12px; color: #e65100; }
+
+        /* Savings calculator */
+        .calc-section { background: #f5f7fa; border-radius: 12px; padding: 15px; margin-top: 15px; }
+        .calc-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .calc-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .calc-input { padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; width: 120px; outline: none; }
+        .calc-input:focus { border-color: #2e7d32; }
+        .calc-result { font-size: 14px; font-weight: 700; color: #2e7d32; padding: 10px; background: #e8f5e9; border-radius: 8px; text-align: center; display: none; }
+
+        /* No usar */
+        .no-usar { opacity: 0.5; border-left: 4px solid #e53935; }
+        .no-usar .oc-name { text-decoration: line-through; }
+
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #0a2e0a 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .search-label, body.dark-mode .result-title { color: #e0e0e0; }
+        body.dark-mode .search-input { background: #16213e; border-color: #333; color: #e0e0e0; }
+        body.dark-mode .cat-btn { background: #16213e; border-color: #333; color: #aaa; }
+        body.dark-mode .best-card { background: linear-gradient(135deg, #0a2e0a, #152e15); border-color: #43a047; }
+        body.dark-mode .best-stat { background: #16213e; }
+        body.dark-mode .best-stat .sv { color: #e0e0e0; }
+        body.dark-mode .other-card { border-color: #333; background: #16213e; }
+        body.dark-mode .oc-name { color: #e0e0e0; }
+        body.dark-mode .calc-section { background: #16213e; }
+        body.dark-mode .calc-title { color: #e0e0e0; }
+        body.dark-mode .calc-input { background: #1a1a3e; border-color: #333; color: #e0e0e0; }
+
+        @media (max-width: 600px) {
+            .header { flex-direction: column; text-align: center; }
+            .best-details { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🏆 Qual Cartão Usar?</h2>
+            <div class="header-right">
+                <a href="GT_Smart_Cartoes.html" class="btn-back">💳 Cartões</a>
+                <a href="GT_Smart_Menu.html" class="btn-back">← Menu</a>
+            </div>
+        </div>
+        <div class="content">
+            <!-- Search -->
+            <div class="search-section">
+                <div class="search-label">🛒 O que você vai comprar?</div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Ex: gasolina, restaurante, Amazon..." oninput="buscar()">
+                    <button class="search-btn" onclick="buscar()">🔍</button>
+                </div>
+
+                <!-- Categories -->
+                <div class="cat-grid" id="catGrid"></div>
+            </div>
+
+            <!-- Results -->
+            <div class="result-section" id="resultSection">
+                <div class="result-title" id="resultTitle"></div>
+                <div class="result-sub" id="resultSub"></div>
+                <div id="resultCards"></div>
+
+                <!-- Calculator -->
+                <div class="calc-section">
+                    <div class="calc-title">🧮 Quanto vai gastar?</div>
+                    <div class="calc-row">
+                        <span>$</span>
+                        <input type="number" class="calc-input" id="calcInput" placeholder="100" oninput="calcular()">
+                        <span style="font-size:13px;color:#888;">no melhor cartão</span>
+                    </div>
+                    <div class="calc-result" id="calcResult"></div>
+                </div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 06/03/2026</p>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, getCards } from './firebase-config.js';
+
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') document.body.classList.add('dark-mode');
+
+        let cards = [];
+        let currentCategory = '';
+        let bestRewardRate = 0;
+        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+        // Categorias com keywords pra busca
+        const categorias = [
+            { id: 'amazon', emoji: '📦', label: 'Amazon', keywords: ['amazon', 'prime', 'aws'] },
+            { id: 'gasolina', emoji: '⛽', label: 'Gasolina', keywords: ['gasolina', 'gas', 'fuel', 'posto', 'shell', 'bp', 'exxon', 'chevron', 'costco gas'] },
+            { id: 'restaurante', emoji: '🍔', label: 'Restaurante', keywords: ['restaurante', 'restaurant', 'comida', 'food', 'jantar', 'almoço', 'lanche', 'fast food', 'mcdonalds', 'uber eats', 'doordash'] },
+            { id: 'supermercado', emoji: '🛒', label: 'Supermercado', keywords: ['supermercado', 'grocery', 'mercado', 'walmart', 'publix', 'costco', 'target', 'aldi', 'whole foods'] },
+            { id: 'online', emoji: '🌐', label: 'Compras Online', keywords: ['online', 'internet', 'web', 'e-commerce', 'ebay', 'website', 'assinatura', 'subscription', 'streaming'] },
+            { id: 'apple', emoji: '🍎', label: 'Apple', keywords: ['apple', 'iphone', 'macbook', 'ipad', 'apple store', 'itunes', 'app store'] },
+            { id: 'travel', emoji: '✈️', label: 'Viagem', keywords: ['viagem', 'travel', 'hotel', 'voo', 'flight', 'airbnb', 'booking', 'airline', 'uber', 'lyft'] },
+            { id: 'firestone', emoji: '🔧', label: 'Firestone/Auto', keywords: ['firestone', 'pneu', 'tire', 'carro', 'auto', 'mecânico', 'oil change', 'manutenção'] },
+            { id: 'general', emoji: '🏷️', label: 'Geral', keywords: ['geral', 'general', 'outro', 'qualquer', 'outros'] },
+            { id: 'transfer', emoji: '💳', label: 'Balance Transfer', keywords: ['transfer', 'balance', 'transferência', 'transferir saldo', '0%', 'promo'] }
+        ];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            cards = (await getCards()) || [];
+            renderCategorias();
+        });
+
+        function renderCategorias() {
+            document.getElementById('catGrid').innerHTML = categorias.map(cat =>
+                '<button class="cat-btn" onclick="selectCategory(\'' + cat.id + '\')">' + cat.emoji + ' ' + cat.label + '</button>'
+            ).join('');
+        }
+
+        function getRewardForCategory(card, catId) {
+            const cat = (card.categoriaReward || '').toLowerCase();
+            const obs = (card.observacoes || '').toLowerCase();
+            const rewards = (card.rewards || '').toLowerCase();
+            const nome = (card.nome || '').toLowerCase();
+
+            // Parse reward rate
+            let rate = 0;
+            const match = rewards.match(/([\d.]+)\s*%/);
+            if (match) rate = parseFloat(match[1]);
+            const ptsMatch = rewards.match(/([\d.]+)\s*pts/i);
+            if (ptsMatch) rate = parseFloat(ptsMatch[1]); // treat points as %
+
+            // Check "não utilizar"
+            const naoUsar = obs.includes('não utilizar') || obs.includes('nao utilizar');
+
+            // Category-specific rates
+            let categoryRate = rate; // default to general rate
+            let isSpecialty = false;
+
+            switch(catId) {
+                case 'amazon':
+                    if (cat.includes('amazon') || nome.includes('amazon')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'gasolina':
+                    if (cat.includes('gasolina') || cat.includes('gas') || obs.includes('gasolina')) { categoryRate = rate; isSpecialty = true; }
+                    if (cat.includes('super') && cat.includes('gas')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'restaurante':
+                    if (cat.includes('restaurante') || obs.includes('restaurante')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'supermercado':
+                    if (cat.includes('super') || obs.includes('supermercado') || obs.includes('grocery')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'online':
+                    if (cat.includes('online') || obs.includes('online')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'apple':
+                    if (cat.includes('apple') || nome.includes('apple')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'travel':
+                    if (cat.includes('travel') || nome.includes('travel')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'firestone':
+                    if (cat.includes('firestone') || nome.includes('firestone')) { categoryRate = rate; isSpecialty = true; }
+                    break;
+                case 'transfer':
+                    if (obs.includes('transfer') || obs.includes('0%') || cat.includes('transfer')) { 
+                        categoryRate = 0; isSpecialty = true; 
+                    }
+                    break;
+            }
+
+            return { rate: categoryRate, isSpecialty, naoUsar };
+        }
+
+        function getCardAvailableLimit(card) {
+            return (card.limite || 0) - (card.saldoUsado || 0);
+        }
+
+        function getUsoPercent(card) {
+            if (!card.limite) return 0;
+            return ((card.saldoUsado || 0) / card.limite) * 100;
+        }
+
+        window.selectCategory = function(catId) {
+            currentCategory = catId;
+            // Update active button
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('searchInput').value = '';
+            showResults(catId);
+        };
+
+        window.buscar = function() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                document.getElementById('resultSection').style.display = 'none';
+                return;
+            }
+
+            // Find matching category
+            let matchedCat = null;
+            for (const cat of categorias) {
+                if (cat.keywords.some(kw => query.includes(kw) || kw.includes(query))) {
+                    matchedCat = cat;
+                    break;
+                }
+            }
+
+            // Reset buttons
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+
+            if (matchedCat) {
+                currentCategory = matchedCat.id;
+                showResults(matchedCat.id, query);
+            } else {
+                // Default to general
+                currentCategory = 'general';
+                showResults('general', query);
+            }
+        };
+
+        function showResults(catId, query) {
+            const cat = categorias.find(c => c.id === catId);
+            const section = document.getElementById('resultSection');
+            section.style.display = 'block';
+
+            document.getElementById('resultTitle').textContent = cat.emoji + ' Melhor cartão para: ' + (query || cat.label);
+            document.getElementById('resultSub').textContent = 'Ordenado por cashback/rewards — maior primeiro';
+
+            // Score each card
+            const scored = cards.map(c => {
+                const info = getRewardForCategory(c, catId);
+                const available = getCardAvailableLimit(c);
+                const uso = getUsoPercent(c);
+                return { card: c, ...info, available, uso };
+            });
+
+            // Sort: specialty first, then by rate, then by available limit
+            scored.sort((a, b) => {
+                if (a.naoUsar !== b.naoUsar) return a.naoUsar ? 1 : -1;
+                if (a.isSpecialty !== b.isSpecialty) return b.isSpecialty ? 1 : -1;
+                if (a.rate !== b.rate) return b.rate - a.rate;
+                return b.available - a.available;
+            });
+
+            // Filter: only cards with rate > 0 or specialty (for transfer show 0% cards)
+            let relevantCards = scored;
+            if (catId === 'transfer') {
+                relevantCards = scored.filter(s => s.isSpecialty || s.card.promo);
+            }
+
+            if (relevantCards.length === 0) {
+                document.getElementById('resultCards').innerHTML = '<div style="text-align:center;padding:20px;color:#999;">Nenhum cartão encontrado para esta categoria</div>';
+                return;
+            }
+
+            const best = relevantCards[0];
+            bestRewardRate = best.rate;
+            const others = relevantCards.slice(1);
+
+            const tipoBadge = best.card.tipo === 'Business' ? '<span class="badge-tipo bt-business">🏢 Business</span>' : '<span class="badge-tipo bt-pessoal">👤 Pessoal</span>';
+            const usoColor = best.uso > 30 ? '#e53935' : best.uso > 0 ? '#ff9800' : '#43a047';
+
+            let bestHtml = '<div class="best-card">' +
+                '<div class="best-badge">🏆 MELHOR OPÇÃO</div>' +
+                '<div class="best-name">' + best.card.nome + ' ' + tipoBadge + '</div>' +
+                '<div class="best-reward">' + (catId === 'transfer' ? '0% APR' : best.rate + '% cashback') + '</div>' +
+                '<div class="best-info">' +
+                    '•••• ' + (best.card.ultimos4 || '') + ' | ' + (best.card.titular || '') + ' | ' + (best.card.banco || '') +
+                    (best.isSpecialty ? '<br>⭐ Cartão especializado nesta categoria' : '') +
+                '</div>' +
+                '<div class="best-details">' +
+                    '<div class="best-stat"><div class="sl">Disponível</div><div class="sv">' + fmt(best.available) + '</div></div>' +
+                    '<div class="best-stat"><div class="sl">Limite</div><div class="sv">' + fmt(best.card.limite) + '</div></div>' +
+                    '<div class="best-stat"><div class="sl">Uso</div><div class="sv" style="color:' + usoColor + '">' + best.uso.toFixed(0) + '%</div></div>' +
+                '</div>';
+
+            // Warnings
+            if (best.uso > 30) {
+                bestHtml += '<div class="warn-box">⚠️ Uso acima de 30%. Considere usar outro cartão para não prejudicar o score.</div>';
+            }
+            if (best.available < 100) {
+                bestHtml += '<div class="warn-box">⚠️ Limite disponível muito baixo. Considere o próximo da lista.</div>';
+            }
+            if (best.naoUsar) {
+                bestHtml += '<div class="warn-box">🚫 Este cartão está marcado como "Não utilizar" nas observações.</div>';
+            }
+
+            bestHtml += '</div>';
+
+            // Others
+            let othersHtml = '';
+            if (others.length > 0) {
+                othersHtml = '<div class="other-title">Outras opções:</div>';
+                others.forEach((s, i) => {
+                    const tipoBadge2 = s.card.tipo === 'Business' ? '<span class="badge-tipo bt-business">🏢</span>' : '<span class="badge-tipo bt-pessoal">👤</span>';
+                    const usoColor2 = s.uso > 30 ? '#e53935' : s.uso > 0 ? '#ff9800' : '#43a047';
+                    const noUsar = s.naoUsar ? ' no-usar' : '';
+                    const rankColor = i === 0 ? '#ff9800' : i === 1 ? '#9e9e9e' : '#795548';
+
+                    othersHtml += '<div class="other-card' + noUsar + '" onclick="window.location.href=\'GT_Smart_Detalhe_Cartao.html?id=' + s.card.id + '\'">' +
+                        '<div class="oc-left">' +
+                            '<div class="oc-name">' + s.card.nome + ' ' + tipoBadge2 + (s.naoUsar ? ' 🚫' : '') + '</div>' +
+                            '<div class="oc-info">•••• ' + (s.card.ultimos4 || '') + ' | Disponível: ' + fmt(s.available) + ' | Uso: <span style="color:' + usoColor2 + '">' + s.uso.toFixed(0) + '%</span></div>' +
+                        '</div>' +
+                        '<div class="oc-right">' +
+                            '<div class="oc-reward" style="color:' + (s.rate > 0 ? '#2e7d32' : '#999') + '">' + (catId === 'transfer' ? '0%' : s.rate + '%') + '</div>' +
+                            '<div class="oc-rank" style="background:' + rankColor + '20;color:' + rankColor + '">#' + (i + 2) + '</div>' +
+                        '</div>' +
+                    '</div>';
+                });
+            }
+
+            document.getElementById('resultCards').innerHTML = bestHtml + othersHtml;
+
+            // Reset calculator
+            document.getElementById('calcInput').value = '';
+            document.getElementById('calcResult').style.display = 'none';
+
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        window.calcular = function() {
+            const valor = parseFloat(document.getElementById('calcInput').value);
+            const resultEl = document.getElementById('calcResult');
+            if (!valor || valor <= 0 || !bestRewardRate) {
+                resultEl.style.display = 'none';
+                return;
+            }
+
+            const cashback = valor * (bestRewardRate / 100);
+            resultEl.innerHTML = '💰 Cashback estimado: <strong>' + fmt(cashback) + '</strong> (' + bestRewardRate + '% de ' + fmt(valor) + ')';
+            resultEl.style.display = 'block';
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Configurações</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 5px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h2 { font-size: 18px; }
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .content { padding: 15px 20px; }
+        .section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        .option {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .option-label {
+            font-size: 13px;
+            color: #333;
+        }
+        .option-desc {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            color: white;
+        }
+        .btn-primary { background: #667eea; }
+        .btn-success { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .toggle {
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+        }
+        .toggle.active {
+            background: #28a745;
+        }
+        .toggle-slider {
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        .toggle.active .toggle-slider {
+            left: 26px;
+        }
+        .file-input {
+            display: none;
+        }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>⚙️ Configurações</h2>
+            <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+        </div>
+        <div class="content">
+            <div class="section">
+                <div class="section-title">💾 Backup & Restauração</div>
+                <div class="option">
+                    <div>
+                        <div class="option-label">Exportar Dados</div>
+                        <div class="option-desc">Baixar todos os empréstimos em JSON</div>
+                    </div>
+                    <button class="btn btn-success" onclick="exportData()">📥 Exportar</button>
+                </div>
+                <div class="option">
+                    <div>
+                        <div class="option-label">Importar Dados</div>
+                        <div class="option-desc">Restaurar backup anterior</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📤 Importar</button>
+                    <input type="file" id="fileInput" class="file-input" accept=".json" onchange="importData(event)">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🎨 Aparência</div>
+                <div class="option">
+                    <div>
+                        <div class="option-label">Modo Escuro</div>
+                        <div class="option-desc">Tema escuro para economizar bateria</div>
+                    </div>
+                    <div class="toggle" id="darkModeToggle" onclick="toggleDarkMode()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔔 Notificações</div>
+                <div class="option">
+                    <div>
+                        <div class="option-label">Mostrar Alertas</div>
+                        <div class="option-desc">Badge com atrasados no dashboard</div>
+                    </div>
+                    <div class="toggle active" id="alertsToggle" onclick="toggleAlerts()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">⚠️ Zona de Perigo</div>
+                <div class="option">
+                    <div>
+                        <div class="option-label">Limpar Todos os Dados</div>
+                        <div class="option-desc">⚠️ Apaga TUDO - não pode ser desfeito!</div>
+                    </div>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpar</button>
+                </div>
+            </div>
+        </div>
+    
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+    <script type="module">
+        import { auth, onAuthStateChanged, getLoans, saveLoan, getContracts, saveContract, getDebts, saveDebt, exportFullBackup, importFullBackup } from "./firebase-config.js";
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "GT_Smart_Login.html"; });
+        
+        window.onload = function() {
+            const darkMode = localStorage.getItem('gtSmartDarkMode') === 'true';
+            if (darkMode) {
+                document.getElementById('darkModeToggle').classList.add('active');
+                document.body.classList.add('dark-mode');
+            }
+            
+            const alerts = localStorage.getItem('gtSmartAlerts') !== 'false';
+            if (!alerts) {
+                document.getElementById('alertsToggle').classList.remove('active');
+            }
+        };
+        
+        window.exportData = async function() {
+            try {
+                const result = await exportFullBackup();
+                if (result) {
+                    alert(`✅ Backup exportado!\n\n📊 ${result.loans} empréstimos, ${result.debts} dívidas, ${result.contracts} contratos`);
+                } else {
+                    alert('❌ Erro ao exportar backup!');
+                }
+            } catch(e) {
+                alert('❌ Erro ao exportar: ' + e.message);
+            }
+        }
+        
+        window.importData = async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    let loansToImport = null;
+                    let debtsToImport = null;
+                    let contractsToImport = null;
+                    
+                    if (Array.isArray(data)) {
+                        loansToImport = data;
+                    } else if (data.data && data.data.loans) {
+                        // Formato novo Firebase: { data: { loans, debts, contracts } }
+                        loansToImport = data.data.loans || [];
+                        debtsToImport = data.data.debts || [];
+                        contractsToImport = data.data.contracts || [];
+                    } else if (data.loans && Array.isArray(data.loans)) {
+                        loansToImport = data.loans;
+                        debtsToImport = data.debts || [];
+                        contractsToImport = data.contracts || [];
+                    } else {
+                        alert('❌ Arquivo inválido!\n\nFormato não reconhecido.');
+                        return;
+                    }
+                    
+                    if (!loansToImport || loansToImport.length === 0) {
+                        alert('⚠️ Nenhum empréstimo encontrado no arquivo!');
+                        return;
+                    }
+                    
+                    const totalItens = (loansToImport||[]).length + (debtsToImport||[]).length + (contractsToImport||[]).length;
+                    if (confirm(`⚠️ Isso vai ADICIONAR:\n\n📊 ${(loansToImport||[]).length} empréstimo(s)\n💳 ${(debtsToImport||[]).length} dívida(s)\n📄 ${(contractsToImport||[]).length} contrato(s)\n\nTem certeza?`)) {
+                        for (const loan of (loansToImport||[])) {
+                            if (!loan.id) loan.id = 'LOAN_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+                            await saveLoan(loan);
+                        }
+                        for (const debt of (debtsToImport||[])) {
+                            if (!debt.id) debt.id = 'DEBT_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+                            const { saveDebt } = await import('./firebase-config.js');
+                            await saveDebt(debt);
+                        }
+                        for (const contract of (contractsToImport||[])) {
+                            if (!contract.id) contract.id = 'CONTRACT_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+                            await saveContract(contract);
+                        }
+                        alert(`✅ Importação concluída!\n\n📊 ${(loansToImport||[]).length} empréstimos, 💳 ${(debtsToImport||[]).length} dívidas, 📄 ${(contractsToImport||[]).length} contratos`);
+                        window.location.href = 'GT_Smart_Gestao.html';
+                    }
+                } catch (error) {
+                    alert('❌ Erro ao ler arquivo:\n\n' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        window.toggleDarkMode = function() {
+            const toggle = document.getElementById('darkModeToggle');
+            toggle.classList.toggle('active');
+            const isActive = toggle.classList.contains('active');
+            localStorage.setItem('gtSmartDarkMode', isActive);
+            
+            if (isActive) {
+                alert('🌙 Modo escuro ativado!\n\nRecarregue a página para ver o efeito.');
+            } else {
+                alert('☀️ Modo claro ativado!\n\nRecarregue a página para ver o efeito.');
+            }
+        }
+        
+        window.toggleAlerts = function() {
+            const toggle = document.getElementById('alertsToggle');
+            toggle.classList.toggle('active');
+            const isActive = toggle.classList.contains('active');
+            localStorage.setItem('gtSmartAlerts', isActive);
+        }
+        
+        function clearAllData() {
+            if (!confirm('⚠️⚠️⚠️ ATENÇÃO! ⚠️⚠️⚠️\n\nIsso vai APAGAR PERMANENTEMENTE:\n- Todos os empréstimos\n- Todos os contratos\n- Todo o histórico\n\nEsta ação NÃO PODE SER DESFEITA!\n\nTem CERTEZA ABSOLUTA?')) {
+                return;
+            }
+            
+            if (!confirm('ÚLTIMA CONFIRMAÇÃO!\n\nDigite OK mentalmente e confirme para apagar TUDO.')) {
+                return;
+            }
+            
+            localStorage.removeItem('gtSmartLoans');
+            localStorage.removeItem('gtSmartContracts');
+            
+            alert('✅ Todos os dados foram apagados!');
+            window.location.href = 'GT_Smart_Menu.html';
+        }
+    </script>
+</body>
+</html>

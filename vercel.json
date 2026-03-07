@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "gt-smart-equity",
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/GT_Smart_Login.html"
+    }
+  ]
+}

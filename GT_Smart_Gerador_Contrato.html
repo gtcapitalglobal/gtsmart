@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart Equity - Gerador de Contratos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 5px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-content {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+        
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .form-container {
+            padding: 15px 20px;
+        }
+        
+        .section {
+            margin-bottom: 18px;
+        }
+        
+        .section:last-of-type {
+            margin-bottom: 8px;
+        }
+        
+        .section-title {
+            font-size: 15px;
+            color: #667eea;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+            font-weight: 500;
+            font-size: 12px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .btn-generate {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 5px;
+        }
+        
+        .btn-generate:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .success {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .error {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        #loadingLibraries {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+            <div class="header-content">
+                <h1>💼 GT Smart Equity LLC</h1>
+                <p>Gerador Automático de Contratos de Empréstimo</p>
+            </div>
+            <div style="width: 90px;"></div>
+        </div>
+        
+        <div id="loadingLibraries">
+            ⏳ Carregando sistema... Aguarde alguns segundos...
+        </div>
+        
+        <div class="form-container" id="formContainer" style="display: none;">
+            <form id="contractForm">
+                <!-- Empresa Credora -->
+                <div class="section">
+                    <div class="section-title">🏢 Empresa Credora (Lender)</div>
+                    <div class="form-group">
+                        <label for="empresaSelect">Selecione a Empresa *</label>
+                        <select id="empresaSelect" onchange="selecionarEmpresa()" required>
+                            <option value="">Carregando empresas...</option>
+                        </select>
+                    </div>
+                    <div id="empresaPreview" style="background:#f5f7f8;border:1px solid #cfd8dc;border-radius:8px;padding:12px;font-size:13px;color:#37474f;display:none;margin-top:8px;"></div>
+                </div>
+
+                <!-- Informações do Cliente -->
+                <div class="section">
+                    <div class="section-title">
+                        📋 Informações do Cliente
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="clientName">Nome da Empresa *</label>
+                        <input type="text" id="clientName" required placeholder="Ex: ABC Construction LLC">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="clientAddress">Endereço Completo *</label>
+                        <input type="text" id="clientAddress" required placeholder="Ex: 123 Main St, City, State, ZIP">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="clientPhone">Telefone *</label>
+                            <input type="tel" id="clientPhone" required placeholder="Ex: (555) 123-4567">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="clientEmail">Email *</label>
+                            <input type="email" id="clientEmail" required placeholder="Ex: contact@company.com">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informações do Empréstimo -->
+                <div class="section">
+                    <div class="section-title">
+                        💰 Informações do Empréstimo
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="loanAmount">Valor do Empréstimo ($) *</label>
+                            <input type="number" id="loanAmount" required placeholder="Ex: 5000" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="numPayments">Número de Parcelas *</label>
+                            <input type="number" id="numPayments" required placeholder="Ex: 20">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="paymentAmount">Valor de Cada Parcela ($) *</label>
+                            <input type="number" id="paymentAmount" required placeholder="Ex: 275.50" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="firstPaymentDate">Data da Primeira Parcela *</label>
+                            <input type="date" id="firstPaymentDate" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quem Vai Assinar -->
+                <div class="section">
+                    <div class="section-title">
+                        ✍️ Quem Vai Assinar pelo Cliente
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="signerName">Nome Completo *</label>
+                            <input type="text" id="signerName" required placeholder="Ex: John Smith">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="signerTitle">Cargo *</label>
+                            <input type="text" id="signerTitle" required placeholder="Ex: Owner, CEO, Managing Member">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-generate" id="btnGenerate">📄 Gerar Contrato Word</button>
+                
+                <div class="loading" id="loading">
+                    ⏳ Gerando contrato...
+                </div>
+                
+                <div class="success" id="success">
+                    ✅ Contrato gerado com sucesso! O download começou automaticamente.
+                </div>
+
+                <div class="error" id="error">
+                    ❌ Erro ao gerar contrato. Por favor, tente novamente.
+                </div>
+            </form>
+        </div>
+    
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, saveContract } from "./firebase-config.js";
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "GT_Smart_Login.html"; });
+        // Esperar as bibliotecas carregarem
+        let librariesLoaded = false;
+        
+        function checkLibraries() {
+            if (typeof saveAs !== 'undefined' && typeof docx !== 'undefined') {
+                librariesLoaded = true;
+                document.getElementById('loadingLibraries').style.display = 'none';
+                document.getElementById('formContainer').style.display = 'block';
+                console.log('Bibliotecas carregadas com sucesso!');
+            } else {
+                setTimeout(checkLibraries, 100);
+            }
+        }
+        
+        // Iniciar verificação
+        checkLibraries();
+        
+        // Carregar dados salvos da calculadora (se houver)
+        let empresaAtual = null;
+
+        window.addEventListener('load', async function() {
+            // Carregar empresas do Firebase
+            try {
+                const { auth, onAuthStateChanged, getEmpresas } = await import('./firebase-config.js');
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) return;
+                    const empresas = await getEmpresas() || [];
+                    const sel = document.getElementById('empresaSelect');
+                    if (empresas.length === 0) {
+                        sel.innerHTML = '<option value="">⚠️ Nenhuma empresa cadastrada — Cadastre em Configurações</option>';
+                    } else {
+                        sel.innerHTML = '<option value="">Selecione a empresa...</option>' +
+                            empresas.map(e => `<option value="${e.id}" data-nome="${e.nome}" data-endereco="${e.endereco||''}" data-ein="${e.ein||''}" data-responsavel="${e.responsavel||''}">${e.nome}</option>`).join('') +
+                            '<option value="GT Smart Equity LLC" data-nome="GT Smart Equity LLC">GT Smart Equity LLC (padrão)</option>';
+                        // Selecionar primeira automaticamente
+                        if (empresas.length > 0) {
+                            sel.value = empresas[0].id;
+                            empresaAtual = empresas[0];
+                            mostrarPreviewEmpresa(empresas[0]);
+                        }
+                    }
+                    window._empresasLista = empresas;
+                });
+            } catch(e) { console.log('Erro ao carregar empresas:', e); }
+
+            const savedData = localStorage.getItem('gtSmartLoanData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    if (data.loanAmount) document.getElementById('loanAmount').value = data.loanAmount;
+                    if (data.numPayments) document.getElementById('numPayments').value = data.numPayments;
+                    if (data.paymentAmount) document.getElementById('paymentAmount').value = data.paymentAmount;
+                    if (data.firstPaymentDate) document.getElementById('firstPaymentDate').value = data.firstPaymentDate;
+                    localStorage.removeItem('gtSmartLoanData');
+                } catch (e) { console.log('Erro ao carregar dados salvos:', e); }
+            }
+        });
+
+        window.selecionarEmpresa = function() {
+            const sel = document.getElementById('empresaSelect');
+            const opt = sel.options[sel.selectedIndex];
+            if (!opt || !opt.value) { empresaAtual = null; document.getElementById('empresaPreview').style.display = 'none'; return; }
+            if (opt.value === 'GT Smart Equity LLC') {
+                empresaAtual = { nome: 'GT Smart Equity LLC', id: 'padrao' };
+                mostrarPreviewEmpresa(empresaAtual);
+                return;
+            }
+            const lista = window._empresasLista || [];
+            empresaAtual = lista.find(e => e.id === opt.value) || { nome: opt.dataset.nome };
+            mostrarPreviewEmpresa(empresaAtual);
+        };
+
+        function mostrarPreviewEmpresa(emp) {
+            if (!emp) { document.getElementById('empresaPreview').style.display = 'none'; return; }
+            document.getElementById('empresaPreview').style.display = 'block';
+            document.getElementById('empresaPreview').innerHTML = `
+                <strong>🏢 ${emp.nome}</strong><br>
+                ${emp.ein ? `EIN: ${emp.ein} &nbsp;|&nbsp; ` : ''}
+                ${emp.estado ? `Estado: ${emp.estado} &nbsp;|&nbsp; ` : ''}
+                ${emp.responsavel ? `Responsável: ${emp.responsavel}` : ''}
+                ${emp.endereco ? `<br>📍 ${emp.endereco}` : ''}`;
+        }
+        
+        document.getElementById('contractForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!librariesLoaded) {
+                alert('Sistema ainda está carregando. Aguarde alguns segundos e tente novamente.');
+                return;
+            }
+            
+            try {
+                // Mostrar loading
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('success').style.display = 'none';
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('btnGenerate').disabled = true;
+                
+                // Pegar dados do formulário
+                const nomeEmpresa = empresaAtual ? empresaAtual.nome : 'GT Smart Equity LLC';
+                const clientName = document.getElementById('clientName').value;
+                const clientAddress = document.getElementById('clientAddress').value;
+                const clientPhone = document.getElementById('clientPhone').value;
+                const clientEmail = document.getElementById('clientEmail').value;
+                const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+                const numPayments = parseInt(document.getElementById('numPayments').value);
+                const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+                const firstPaymentDate = document.getElementById('firstPaymentDate').value;
+                const signerName = document.getElementById('signerName').value;
+                const signerTitle = document.getElementById('signerTitle').value;
+                
+                // Formatar valores
+                const loanAmountFormatted = loanAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const paymentAmountFormatted = paymentAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                
+                let paymentText = `US$${paymentAmountFormatted} each`;
+                
+                // Calcular data final
+                const firstDate = new Date(firstPaymentDate);
+                const finalDate = new Date(firstDate);
+                finalDate.setDate(finalDate.getDate() + (numPayments - 1) * 7);
+                const finalDateFormatted = finalDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                
+                // Formatar primeira data
+                const firstDateFormatted = new Date(firstPaymentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                
+                // Data de hoje
+                const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                
+                // Valor por extenso
+                const amountInWords = numberToWords(loanAmount);
+                
+                // Usar docx do escopo global
+                const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+                
+                // Criar documento
+                const doc = new Document({
+                    styles: {
+                        default: {
+                            document: {
+                                run: { font: "Arial", size: 24 }
+                            }
+                        }
+                    },
+                    sections: [{
+                        properties: {
+                            page: {
+                                size: { width: 12240, height: 15840 },
+                                margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+                            }
+                        },
+                        children: [
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [new TextRun({ text: "LOAN AGREEMENT", bold: true, size: 32 })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: `This Loan Agreement ("Agreement") is made and entered into on ${today} ("Effective Date") between the following parties:` })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "LENDER: ", bold: true }), new TextRun({ text: nomeEmpresa })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Address: ", bold: true }), new TextRun({ text: "16632 NW 23rd Street, Apt 302, Pembroke Pines, FL 33028" })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Phone: ", bold: true }), new TextRun({ text: "786-303-9313" })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Zelle: ", bold: true }), new TextRun({ text: "gtsmartequity@gmail.com" })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "BORROWER: ", bold: true }), new TextRun({ text: clientName })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Address: ", bold: true }), new TextRun({ text: clientAddress })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Phone: ", bold: true }), new TextRun({ text: clientPhone })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Email: ", bold: true }), new TextRun({ text: clientEmail })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({ text: "WHEREAS", bold: true }),
+                                    new TextRun({ text: `, the Lender agrees to loan to the Borrower the principal sum of ${amountInWords} U.S. Dollars (US$${loanAmountFormatted}), and the Borrower agrees to repay said loan in accordance with the terms set forth below.` })
+                                ],
+                                spacing: { after: 320 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "1. Loan Terms", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "1.1 Principal Amount: ", bold: true }), new TextRun({ text: `US$${loanAmountFormatted}` })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "1.2 Number of Payments: ", bold: true }), new TextRun({ text: `${numPayments} weekly payments` })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "1.3 Payment Amount: ", bold: true }), new TextRun({ text: paymentText })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "1.4 First Payment Date: ", bold: true }), new TextRun({ text: firstDateFormatted })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "1.5 Final Payment Date: ", bold: true }), new TextRun({ text: `${finalDateFormatted} (approx.)` })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "1.6 Payment Method: ", bold: true }), new TextRun({ text: "All payments shall be made via Zelle transfer to gtsmartequity@gmail.com." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "2. Interest and Collateral", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "2.1 ", bold: true }), new TextRun({ text: "Interest is implicit in the payment structure and shall not be separately stated as an annual percentage rate (APR)." })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "2.2 ", bold: true }), new TextRun({ text: "This is an unsecured loan. No collateral or security is required from the Borrower." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "3. Early Payoff", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "The Borrower may pay the loan in full at any time prior to the final payment date without penalty or additional charge." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "4. Default, Late Fee, and Acceleration", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "4.1 Late Payment: ", bold: true }), new TextRun({ text: "If the Borrower fails to make a payment by the scheduled due date, a late fee of ten percent (10%) of the payment amount will be assessed for each week the payment remains outstanding." })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "4.2 Default Interest: ", bold: true }), new TextRun({ text: "In addition to late fees, any overdue amount shall accrue interest at a rate of one and one-half percent (1.5%) per month (eighteen percent (18%) per annum) until paid in full." })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "4.3 Cure Period: ", bold: true }), new TextRun({ text: "Before exercising the right of acceleration, the Lender shall provide the Borrower with written notice of default and a seven (7) day period to cure such default by making all past due payments, including applicable late fees and default interest." })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "4.4 Acceleration: ", bold: true }), new TextRun({ text: "If the Borrower fails to cure the default within the seven (7) day cure period, or if the Borrower fails to make three (3) consecutive weekly payments, the entire unpaid principal balance, together with all accrued late fees and default interest, shall immediately become due and payable in full at the Lender's sole discretion." })],
+                                spacing: { after: 120 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "4.5 Resolution: ", bold: true }), new TextRun({ text: "If the Borrower fails to make timely payments, the parties agree to resolve the matter amicably before pursuing any legal remedies." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "5. Personal Guarantee", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: `${signerName}, in their individual capacity, hereby unconditionally and irrevocably guarantees the full and timely payment of all amounts due under this Agreement. This personal guarantee shall remain in effect until all obligations under this Agreement have been fully satisfied. The guarantor waives any right to require the Lender to proceed first against the Borrower or any collateral.` })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "6. Non-Assignment", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Neither party may assign, transfer, or delegate any rights or obligations under this Agreement without the prior written consent of the other party. Any attempted assignment without such consent shall be null and void." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "7. Notices", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "All notices, requests, and communications required or permitted under this Agreement shall be in writing and sent to the contact information listed above. Notice shall be deemed effective upon receipt via email, phone, or certified mail." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "8. Attorney Fees and Collection Costs", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "In the event of default, the Borrower shall be responsible for all costs of collection, including but not limited to reasonable attorney fees, court costs, collection agency fees, and any other expenses incurred by the Lender in enforcing this Agreement or collecting amounts due hereunder." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "9. Waiver", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "No waiver by the Lender of any default or breach of this Agreement shall be deemed a waiver of any subsequent default or breach. The Lender's failure to enforce any provision of this Agreement shall not be construed as a waiver of the Lender's right to enforce such provision at a later time." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "10. Severability", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "If any provision of this Agreement is held to be invalid, illegal, or unenforceable by a court of competent jurisdiction, such provision shall be modified to the minimum extent necessary to make it valid and enforceable, or if such modification is not possible, such provision shall be severed from this Agreement. The remaining provisions of this Agreement shall continue in full force and effect." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "11. Amendments", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "This Agreement may not be amended, modified, or supplemented except by a written instrument signed by both parties. No oral modifications or amendments shall be valid or binding upon either party." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "12. Governing Law and Jurisdiction", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "This Agreement shall be governed by and construed in accordance with the laws of the State of Florida, United States of America. Any disputes arising from this Agreement shall be resolved in the courts of Florida." })],
+                                spacing: { after: 180 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "13. Execution", bold: true })],
+                                spacing: { before: 200, after: 140 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "This Agreement represents the entire understanding between the parties concerning the loan described herein. It may be executed electronically and shall be binding upon both parties as of the Effective Date." })],
+                                spacing: { after: 320 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "IN WITNESS WHEREOF", bold: true }), new TextRun({ text: ", the parties have executed this Agreement as of the date first above written." })],
+                                spacing: { after: 480 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Gustavo Araujo" })],
+                                spacing: { after: 80 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Authorized Representative" })],
+                                spacing: { after: 80 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: nomeEmpresa })],
+                                spacing: { after: 480 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: signerName })],
+                                spacing: { after: 80 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: signerTitle })],
+                                spacing: { after: 80 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: clientName, bold: true })],
+                                spacing: { after: 480 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: signerName })],
+                                spacing: { after: 80 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({ text: "Personal Guarantor", bold: true })]
+                            })
+                        ]
+                    }]
+                });
+                
+                // Gerar e baixar
+                const blob = await Packer.toBlob(doc);
+                const fileName = `Loan_Agreement_${clientName.replace(/[^a-z0-9]/gi, '_')}_${today.replace(/[^a-z0-9]/gi, '_')}.docx`;
+                saveAs(blob, fileName);
+                
+                // Salvar no histórico Firebase
+                await saveContract({
+                    id: 'CONTRACT_' + Date.now(),
+                    date: new Date().toISOString(),
+                    clientCompany: clientName,
+                    loanAmount: loanAmount,
+                    numPayments: numPayments,
+                    paymentAmount: paymentAmount,
+                    fileName: fileName
+                });
+                
+                // Salvar dados para gestão
+                localStorage.setItem('gtSmartLoanDataFromContract', JSON.stringify({
+                    clientName: clientName,
+                    loanAmount: loanAmount,
+                    numPayments: numPayments,
+                    paymentAmount: paymentAmount,
+                    firstPaymentDate: firstPaymentDate
+                }));
+                
+                // Mostrar sucesso com opção de enviar pro Drive
+                document.getElementById('loading').style.display = 'none';
+                
+                // Guardar blob pra upload posterior
+                window._lastContractBlob = blob;
+                window._lastContractFileName = fileName;
+                
+                document.getElementById('success').innerHTML = `
+                    ✅ Contrato gerado com sucesso!<br>
+                    📥 Baixado no celular<br><br>
+                    <button onclick="enviarParaDrive()" style="padding: 12px 24px; background: #4285f4; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; margin-bottom: 10px; width: 100%;">
+                        ☁️ Salvar no Google Drive
+                    </button><br>
+                    <button onclick="window.location.href='GT_Smart_Adicionar_Emprestimo.html'" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; margin-right: 10px; cursor: pointer;">✓ Registrar Empréstimo</button>
+                    <button onclick="window.location.href='GT_Smart_Menu.html'" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">↩ Menu</button>
+                `;
+                document.getElementById('success').style.display = 'block';
+                document.getElementById('btnGenerate').disabled = false;
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('btnGenerate').disabled = false;
+                
+                setTimeout(() => {
+                    document.getElementById('error').style.display = 'none';
+                }, 5000);
+            }
+        });
+        
+        function numberToWords(num) {
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            
+            if (num === 0) return 'Zero';
+            
+            let words = '';
+            
+            if (num >= 1000) {
+                const thousands = Math.floor(num / 1000);
+                words += numberToWords(thousands) + ' Thousand ';
+                num %= 1000;
+            }
+            
+            if (num >= 100) {
+                words += ones[Math.floor(num / 100)] + ' Hundred ';
+                num %= 100;
+            }
+            
+            if (num >= 20) {
+                words += tens[Math.floor(num / 10)] + ' ';
+                num %= 10;
+            } else if (num >= 10) {
+                words += teens[num - 10] + ' ';
+                num = 0;
+            }
+            
+            if (num > 0) {
+                words += ones[num] + ' ';
+            }
+            
+            return words.trim();
+        }
+
+        // ===== GOOGLE DRIVE UPLOAD =====
+        const GOOGLE_CLIENT_ID = '870054137437-ftgm5iq8v8c552dib3tbgd3avkipsn5h.apps.googleusercontent.com';
+        const DRIVE_FOLDER_ID = '1yosnY9qeZz0YVbrD8wwLJYJnJQ_mFyC9';
+
+        window.enviarParaDrive = async function() {
+            const blob = window._lastContractBlob;
+            const fileName = window._lastContractFileName;
+            if (!blob || !fileName) { alert('Erro: contrato não encontrado.'); return; }
+
+            // Mudar botão pra loading
+            document.getElementById('success').innerHTML = '✅ Contrato gerado!<br>📥 Baixado no celular<br><br>📤 Enviando pro Google Drive...';
+
+            try {
+                await uploadToGoogleDrive(blob, fileName);
+                document.getElementById('success').innerHTML = `
+                    ✅ Contrato gerado com sucesso!<br>
+                    📥 Baixado no celular<br>
+                    ☁️ Salvo no Google Drive (pasta "GT - Group")<br><br>
+                    <button onclick="window.location.href='GT_Smart_Adicionar_Emprestimo.html'" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; margin-right: 10px; cursor: pointer;">✓ Registrar Empréstimo</button>
+                    <button onclick="window.location.href='GT_Smart_Menu.html'" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">↩ Menu</button>
+                `;
+            } catch (err) {
+                console.error('Erro Drive:', err);
+                document.getElementById('success').innerHTML = `
+                    ✅ Contrato gerado!<br>
+                    📥 Baixado no celular<br>
+                    ⚠️ Erro ao enviar pro Drive: ${err.message}<br><br>
+                    <button onclick="enviarParaDrive()" style="padding: 10px 20px; background: #4285f4; color: white; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">🔄 Tentar de novo</button><br>
+                    <button onclick="window.location.href='GT_Smart_Adicionar_Emprestimo.html'" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; margin-right: 10px; cursor: pointer;">✓ Registrar</button>
+                    <button onclick="window.location.href='GT_Smart_Menu.html'" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">↩ Menu</button>
+                `;
+            }
+        };
+
+        function getGoogleAccessToken() {
+            return new Promise((resolve, reject) => {
+                const tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: GOOGLE_CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/drive',
+                    callback: (response) => {
+                        if (response.error) {
+                            reject(new Error(response.error));
+                        } else {
+                            resolve(response.access_token);
+                        }
+                    },
+                    error_callback: (error) => {
+                        reject(new Error('Erro na autenticação Google: ' + (error.message || 'cancelado')));
+                    }
+                });
+                tokenClient.requestAccessToken();
+            });
+        }
+
+        async function findOrCreateFolder(accessToken, folderName) {
+            // Procurar pasta existente
+            const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id,name)`;
+            const searchRes = await fetch(searchUrl, {
+                headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            const searchData = await searchRes.json();
+
+            if (searchData.files && searchData.files.length > 0) {
+                return searchData.files[0].id;
+            }
+
+            // Criar pasta se não existe
+            const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: folderName,
+                    mimeType: 'application/vnd.google-apps.folder'
+                })
+            });
+            const createData = await createRes.json();
+            return createData.id;
+        }
+
+        async function uploadToGoogleDrive(blob, fileName) {
+            // Pedir permissão do Google (popup)
+            const accessToken = await getGoogleAccessToken();
+
+            // Upload do arquivo direto na pasta GT - Group
+            const metadata = {
+                name: fileName,
+                mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                parents: [DRIVE_FOLDER_ID]
+            };
+
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', blob);
+
+            const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                body: form
+            });
+
+            if (!uploadRes.ok) {
+                throw new Error('Erro no upload: ' + uploadRes.status);
+            }
+
+            const result = await uploadRes.json();
+            console.log('Arquivo salvo no Drive:', result);
+            return result;
+        }
+    </script>
+</body>
+</html>

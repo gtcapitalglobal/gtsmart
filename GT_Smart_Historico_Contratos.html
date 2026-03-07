@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Histórico de Contratos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+
+        /* Summary */
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .summary-card { border-radius: 10px; padding: 12px; text-align: center; }
+        .summary-card .label { font-size: 11px; font-weight: 600; opacity: 0.8; margin-bottom: 4px; }
+        .summary-card .value { font-size: 18px; font-weight: 800; }
+        .summary-card.roxo { background: #f3e5f5; color: #6a1b9a; }
+        .summary-card.azul { background: #e3f2fd; color: #1565c0; }
+        .summary-card.verde { background: #e8f5e9; color: #1b5e20; }
+
+        /* Search */
+        .search-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; background: #f5f5f5; border-radius: 10px; padding: 8px 14px; border: 2px solid #e0e0e0; }
+        .search-bar input { border: none; background: none; outline: none; flex: 1; font-size: 14px; }
+        .search-bar .clear-btn { cursor: pointer; font-size: 16px; color: #999; display: none; }
+
+        /* Contract Cards */
+        .contract-list { display: flex; flex-direction: column; gap: 10px; }
+        .contract-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; transition: all 0.2s; }
+        .contract-card:hover { border-color: #764ba2; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
+        .contract-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .contract-client { font-size: 16px; font-weight: 700; color: #333; }
+        .contract-date { font-size: 12px; color: #888; background: #f5f5f5; padding: 3px 8px; border-radius: 12px; }
+
+        .contract-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .contract-detail { text-align: center; }
+        .contract-detail .detail-label { font-size: 10px; color: #999; font-weight: 600; text-transform: uppercase; }
+        .contract-detail .detail-value { font-size: 14px; font-weight: 700; color: #333; }
+
+        .contract-footer { display: flex; justify-content: space-between; align-items: center; }
+        .contract-file { font-size: 11px; color: #764ba2; font-weight: 600; }
+        .btn-delete { background: #fdecea; color: #c62828; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-delete:hover { background: #c62828; color: white; }
+
+        /* Sort */
+        .sort-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .sort-bar select { padding: 6px 10px; border-radius: 8px; border: 2px solid #ddd; font-size: 12px; font-weight: 600; }
+        .total-text { font-size: 12px; color: #888; font-weight: 600; }
+
+        /* Empty */
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .contract-card { border-color: #333; background: #16213e; }
+        body.dark-mode .contract-card:hover { border-color: #764ba2; }
+        body.dark-mode .contract-client { color: #e0e0e0; }
+        body.dark-mode .contract-date { background: #1a1a2e; color: #aaa; }
+        body.dark-mode .contract-detail .detail-value { color: #e0e0e0; }
+        body.dark-mode .search-bar { background: #16213e; border-color: #333; }
+        body.dark-mode .search-bar input { color: #e0e0e0; }
+        body.dark-mode .summary-card.roxo { background: #2d1a3e; }
+        body.dark-mode .summary-card.azul { background: #1a2e3e; }
+        body.dark-mode .summary-card.verde { background: #1a2e1a; }
+        body.dark-mode .sort-bar select { background: #16213e; color: #e0e0e0; border-color: #333; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(3, 1fr) !important; }
+            .contract-details { grid-template-columns: repeat(3, 1fr); }
+            .header { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📄 Histórico de Contratos</h2>
+            <div class="header-right">
+                <a href="GT_Smart_Gerador_Contrato.html" style="background: white; color: #764ba2; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none;">+ Novo Contrato</a>
+                <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Summary Cards -->
+            <div class="summary-grid" id="summaryCards">
+                <div class="summary-card roxo">
+                    <div class="label">TOTAL CONTRATOS</div>
+                    <div class="value" id="totalContratos">-</div>
+                </div>
+                <div class="summary-card azul">
+                    <div class="label">VALOR TOTAL</div>
+                    <div class="value" id="totalValor">-</div>
+                </div>
+                <div class="summary-card verde">
+                    <div class="label">ÚLTIMO CONTRATO</div>
+                    <div class="value" id="ultimoContrato" style="font-size:13px;">-</div>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" id="searchInput" placeholder="Buscar por cliente..." oninput="filtrar()">
+                <span class="clear-btn" id="clearBtn" onclick="limparBusca()">✕</span>
+            </div>
+
+            <!-- Sort -->
+            <div class="sort-bar">
+                <span class="total-text" id="totalFiltrado"></span>
+                <select id="sortSelect" onchange="filtrar()">
+                    <option value="recente">Mais Recentes</option>
+                    <option value="antigo">Mais Antigos</option>
+                    <option value="valor">Maior Valor</option>
+                    <option value="nome">A → Z</option>
+                </select>
+            </div>
+
+            <!-- Contract List -->
+            <div class="contract-list" id="contractList">
+                <div class="empty-state">
+                    <div class="icon">⏳</div>
+                    <h3>Carregando contratos...</h3>
+                </div>
+            </div>
+        </div>
+
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+
+    <!-- Floating Menu Button -->
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#764ba2;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, getContracts, deleteContract } from './firebase-config.js';
+
+        const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        let allContracts = [];
+
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+
+            allContracts = await getContracts();
+            renderSummary();
+            filtrar();
+        });
+
+        function renderSummary() {
+            document.getElementById('totalContratos').textContent = allContracts.length;
+
+            const totalValor = allContracts.reduce((sum, c) => sum + (parseFloat(c.loanAmount) || 0), 0);
+            document.getElementById('totalValor').textContent = fmt(totalValor);
+
+            if (allContracts.length > 0) {
+                const sorted = [...allContracts].sort((a, b) => new Date(b.date) - new Date(a.date));
+                const ultimo = sorted[0];
+                const dt = new Date(ultimo.date);
+                document.getElementById('ultimoContrato').textContent = dt.toLocaleDateString('pt-BR');
+            } else {
+                document.getElementById('ultimoContrato').textContent = '-';
+            }
+        }
+
+        window.filtrar = function() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const sort = document.getElementById('sortSelect').value;
+            const clearBtn = document.getElementById('clearBtn');
+            clearBtn.style.display = search ? 'block' : 'none';
+
+            let filtered = allContracts.filter(c => {
+                const cliente = (c.clientCompany || '').toLowerCase();
+                const arquivo = (c.fileName || '').toLowerCase();
+                return cliente.includes(search) || arquivo.includes(search);
+            });
+
+            // Sort
+            if (sort === 'recente') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            else if (sort === 'antigo') filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            else if (sort === 'valor') filtered.sort((a, b) => (parseFloat(b.loanAmount) || 0) - (parseFloat(a.loanAmount) || 0));
+            else if (sort === 'nome') filtered.sort((a, b) => (a.clientCompany || '').localeCompare(b.clientCompany || ''));
+
+            document.getElementById('totalFiltrado').textContent = filtered.length + ' contrato' + (filtered.length !== 1 ? 's' : '');
+
+            const container = document.getElementById('contractList');
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📄</div>
+                        <h3>${search ? 'Nenhum contrato encontrado para "' + search + '"' : 'Nenhum contrato gerado ainda'}</h3>
+                        <p>${search ? 'Tente outro termo' : 'Use o Gerador de Contratos para criar o primeiro!'}</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(c => {
+                const dt = new Date(c.date);
+                const dataFmt = dt.toLocaleDateString('pt-BR');
+                const horaFmt = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const totalLoan = parseFloat(c.loanAmount) || 0;
+                const numParcelas = c.numPayments || '?';
+                const valorParcela = parseFloat(c.paymentAmount) || 0;
+
+                return `
+                    <div class="contract-card">
+                        <div class="contract-header">
+                            <div class="contract-client">🏢 ${c.clientCompany || 'Sem nome'}</div>
+                            <div class="contract-date">📅 ${dataFmt} ${horaFmt}</div>
+                        </div>
+                        <div class="contract-details">
+                            <div class="contract-detail">
+                                <div class="detail-label">Empréstimo</div>
+                                <div class="detail-value">${fmt2(totalLoan)}</div>
+                            </div>
+                            <div class="contract-detail">
+                                <div class="detail-label">Parcelas</div>
+                                <div class="detail-value">${numParcelas}x</div>
+                            </div>
+                            <div class="contract-detail">
+                                <div class="detail-label">Valor Parcela</div>
+                                <div class="detail-value">${fmt2(valorParcela)}</div>
+                            </div>
+                        </div>
+                        <div class="contract-footer">
+                            <div class="contract-file">📎 ${c.fileName || 'arquivo não disponível'}</div>
+                            <button class="btn-delete" onclick="deletarContrato('${c.id}', '${(c.clientCompany || '').replace(/'/g, '')}')">🗑️ Deletar</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        };
+
+        window.deletarContrato = async function(id, nome) {
+            if (!confirm('🗑️ Deletar contrato de "' + nome + '"?\n\nEsta ação não pode ser desfeita!')) return;
+            try {
+                await deleteContract(id);
+                allContracts = allContracts.filter(c => c.id !== id);
+                renderSummary();
+                filtrar();
+            } catch(e) {
+                alert('❌ Erro ao deletar: ' + e.message);
+            }
+        };
+
+        window.limparBusca = function() {
+            document.getElementById('searchInput').value = '';
+            filtrar();
+        };
+    </script>
+</body>
+</html>

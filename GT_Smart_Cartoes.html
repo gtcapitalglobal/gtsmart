@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Gestão de Cartões</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1b5e20, #388e3c); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .btn-add { background: white; color: #1b5e20; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .content { padding: 15px 20px; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 0; flex-wrap: wrap; }
+        .tab { padding: 10px 16px; border: none; background: none; font-size: 13px; font-weight: 600; color: #888; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; white-space: nowrap; }
+        .tab.active { color: #1b5e20; border-bottom-color: #2e7d32; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Alertas */
+        .alertas { margin-bottom: 15px; }
+        .alerta { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+        .alerta-vermelho { background: #fdecea; color: #c62828; border-left: 4px solid #e53935; }
+        .alerta-amarelo { background: #fff8e1; color: #f57f17; border-left: 4px solid #ffc107; }
+        .alerta-azul { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1976d2; }
+        .alerta-verde { background: #e8f5e9; color: #1b5e20; border-left: 4px solid #43a047; }
+
+        /* Resumo */
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .summary-card { border-radius: 10px; padding: 12px; text-align: center; }
+        .summary-card .label { font-size: 11px; font-weight: 600; opacity: 0.8; margin-bottom: 4px; }
+        .summary-card .value { font-size: 18px; font-weight: 800; }
+        .s-limite { background: #e8f5e9; color: #2e7d32; }
+        .s-usado { background: #fff3e0; color: #e65100; }
+        .s-disponivel { background: #e3f2fd; color: #1565c0; }
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        /* Filtros */
+        .filters { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .filter-btn { padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #555; }
+        .filter-btn.active { background: #2e7d32; color: white; border-color: #2e7d32; }
+
+        /* Cards */
+        .section-title { font-size: 14px; font-weight: 700; color: #333; margin: 15px 0 10px; display: flex; align-items: center; gap: 8px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+        .card-item { border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s; }
+        .card-item:hover { border-color: #2e7d32; box-shadow: 0 4px 15px rgba(46,125,50,0.2); transform: translateY(-2px); }
+        .card-item.alerta-30 { border-color: #e53935; }
+        .card-item.ok { border-color: #a5d6a7; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .card-nome { font-size: 14px; font-weight: 700; color: #222; }
+        .card-digits { font-size: 11px; color: #888; margin-top: 2px; }
+        .card-titular { font-size: 11px; color: #555; }
+        .card-banco { font-size: 11px; background: #f5f5f5; padding: 3px 8px; border-radius: 10px; color: #555; }
+        .uso-label { font-size: 11px; color: #666; margin: 8px 0 4px; display: flex; justify-content: space-between; }
+        .barra { background: #f0f0f0; border-radius: 10px; height: 8px; overflow: hidden; }
+        .barra-fill { height: 100%; border-radius: 10px; transition: width 0.5s; }
+        .barra-verde { background: linear-gradient(90deg, #43a047, #66bb6a); }
+        .barra-amarelo { background: linear-gradient(90deg, #ffa000, #ffc107); }
+        .barra-vermelho { background: linear-gradient(90deg, #e53935, #ef5350); }
+        .card-footer { display: flex; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; gap: 5px; }
+        .card-badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 600; }
+        .badge-pessoal { background: #e3f2fd; color: #1565c0; }
+        .badge-business { background: #fce4ec; color: #880e4f; }
+        .badge-reward { background: #e8f5e9; color: #1b5e20; }
+        .badge-promo { background: #fff8e1; color: #f57f17; }
+        .badge-alert { background: #fdecea; color: #c62828; }
+        .datas-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .data-chip { font-size: 10px; background: #f5f5f5; padding: 3px 8px; border-radius: 8px; color: #444; }
+
+        /* Próximos Pagamentos - TOPO */
+        .proximos-box { background: linear-gradient(135deg, #fff8e1, #fff3e0); border: 2px solid #ff9800; border-radius: 12px; padding: 14px; margin-bottom: 18px; }
+        .proximos-title { font-size: 15px; font-weight: 800; color: #e65100; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .proximos-grid { display: grid; gap: 8px; }
+        .prox-card { background: white; border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; border-left: 4px solid #ff9800; }
+        .prox-card.prox-hoje { border-left-color: #e53935; background: #fff5f5; }
+        .prox-card.prox-atrasado { border-left-color: #b71c1c; background: #fce4ec; }
+        .prox-card.prox-amanha { border-left-color: #ffc107; }
+        .prox-info { flex: 1; min-width: 160px; }
+        .prox-nome { font-size: 13px; font-weight: 700; color: #333; }
+        .prox-sub { font-size: 11px; color: #666; margin-top: 2px; }
+        .prox-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 15px; }
+        .prox-tag-hoje { background: #e53935; color: white; }
+        .prox-tag-atrasado { background: #b71c1c; color: white; }
+        .prox-tag-amanha { background: #ffc107; color: #333; }
+        .prox-tag-breve { background: #e3f2fd; color: #1565c0; }
+        .prox-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .prox-valor { font-size: 16px; font-weight: 800; color: #e65100; }
+        .btn-pago { background: #43a047; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .btn-pago:hover { background: #2e7d32; transform: scale(1.05); }
+        .btn-pago:active { transform: scale(0.95); }
+        .proximos-ok { text-align: center; padding: 15px; color: #2e7d32; font-weight: 700; font-size: 14px; }
+
+        /* Tab Pagar Hoje */
+        .pagar-hoje-grid { display: grid; gap: 12px; }
+        .pagar-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .pagar-card.pagar-hoje { border-color: #43a047; background: #f0fff4; }
+        .pagar-card.pagar-amanha { border-color: #ffc107; background: #fffde7; }
+        .pagar-card.pagar-em-breve { border-color: #90caf9; background: #e3f2fd; }
+        .pagar-card.pagar-atrasado { border-color: #e53935; background: #fdecea; }
+        .pagar-info .nome { font-size: 15px; font-weight: 700; color: #222; }
+        .pagar-info .sub { font-size: 12px; color: #666; margin-top: 3px; }
+        .pagar-info .modo { font-size: 11px; font-weight: 700; margin-top: 4px; }
+        .pagar-right { text-align: right; }
+        .pagar-saldo { font-size: 18px; font-weight: 800; color: #1b5e20; }
+        .pagar-tag { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 4px; }
+        .tag-hoje { background: #43a047; color: white; }
+        .tag-amanha { background: #ffc107; color: #333; }
+        .tag-breve { background: #1976d2; color: white; }
+        .tag-atrasado { background: #e53935; color: white; }
+        .tag-nadever { background: #e0e0e0; color: #666; }
+
+        /* Tab Usar Agora */
+        .usar-section { background: #f0fff4; border: 2px solid #a5d6a7; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+        .usar-section h3 { font-size: 15px; color: #1b5e20; margin-bottom: 12px; font-weight: 700; }
+        .usar-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+        .usar-form > div { flex: 1; min-width: 130px; }
+        .usar-form label { display: block; font-size: 12px; font-weight: 600; color: #333; margin-bottom: 5px; }
+        .usar-form select, .usar-form input { width: 100%; padding: 10px; border: 2px solid #a5d6a7; border-radius: 8px; font-size: 13px; }
+        .usar-btn { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; white-space: nowrap; align-self: flex-end; }
+        .usar-resultado { margin-top: 15px; display: none; }
+        .resultado-card { background: white; border-radius: 10px; padding: 15px; border-left: 5px solid #2e7d32; margin-bottom: 10px; }
+        .resultado-card.segundo { border-left-color: #90caf9; opacity: 0.85; }
+        .resultado-rank { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 5px; }
+        .resultado-nome { font-size: 16px; font-weight: 800; color: #1b5e20; }
+        .resultado-detalhe { font-size: 12px; color: #555; margin-top: 5px; line-height: 1.6; }
+        .resultado-aviso { font-size: 11px; color: #880e4f; font-weight: 600; margin-top: 5px; }
+        .regras-box { background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; padding: 14px; margin-top: 15px; font-size: 12px; color: #555; line-height: 1.8; }
+        .regras-box strong { color: #1b5e20; }
+
+        /* Meta Bonus */
+        .meta-grid { display: grid; gap: 12px; }
+        .meta-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; }
+        .meta-card.urgente { border-color: #e53935; }
+        .meta-card.ok { border-color: #ffc107; }
+        .meta-card.concluida { border-color: #43a047; background: #f9fff9; }
+        .meta-nome { font-size: 14px; font-weight: 700; color: #222; margin-bottom: 5px; }
+        .meta-desc { font-size: 12px; color: #555; margin-bottom: 10px; }
+        .meta-barra-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .meta-barra { flex: 1; background: #f0f0f0; border-radius: 10px; height: 10px; overflow: hidden; }
+        .meta-barra-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #43a047, #66bb6a); }
+        .meta-barra-pct { font-size: 12px; font-weight: 700; color: #2e7d32; min-width: 38px; text-align: right; }
+        .meta-footer { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
+
+        .empty { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+
+        /* Busca */
+        .search-box { position: relative; margin-bottom: 15px; }
+        .search-box input { width: 100%; padding: 11px 14px 11px 40px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; font-family: inherit; background: #fafafa; transition: all 0.2s; }
+        .search-box input:focus { outline: none; border-color: #2e7d32; background: white; box-shadow: 0 2px 8px rgba(46,125,50,0.15); }
+        .search-box input::placeholder { color: #aaa; }
+        .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #888; pointer-events: none; }
+        .search-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: #e0e0e0; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: none; color: #555; line-height: 22px; text-align: center; }
+        .search-clear:hover { background: #ccc; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>💳 Gestão de Cartões</h2>
+            <div class="header-right">
+                <button class="btn-add" onclick="window.location.href='GT_Smart_Adicionar_Cartao.html'">+ Novo Cartão</button>
+                <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+            </div>
+        </div>
+        <div class="content">
+            <!-- Alertas sempre visíveis -->
+            <div class="alertas" id="alertasDiv"></div>
+
+            <!-- 🔔 Próximos Pagamentos - SEMPRE NO TOPO -->
+            <div id="proximosDiv"></div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('painel', this)">📊 Painel</button>
+                <button class="tab" onclick="switchTab('pagar', this)">💳 Pagar Hoje</button>
+                <button class="tab" onclick="switchTab('usar', this)">💡 Usar Agora</button>
+                <button class="tab" onclick="switchTab('bonus', this)">🎯 Metas & Bônus</button>
+            </div>
+
+            <!-- TAB PAINEL -->
+            <div class="tab-content active" id="tab-painel">
+                <div class="summary-grid" style="grid-template-columns: repeat(4, 1fr);">
+                    <div class="summary-card s-limite"><div class="label">💳 Limite Total</div><div class="value" id="sumLimite">—</div></div>
+                    <div class="summary-card s-usado"><div class="label">🔴 Total Usado</div><div class="value" id="sumUsado">—</div></div>
+                    <div class="summary-card s-disponivel"><div class="label">✅ Disponível</div><div class="value" id="sumDisponivel">—</div></div>
+                    <div class="summary-card" id="sumPctCard" style="background:#f3e5f5;color:#6a1b9a;"><div class="label">📊 % Uso Geral</div><div class="value" id="sumPct">—</div></div>
+                </div>
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filtrar('todos', this)">Todos</button>
+                    <button class="filter-btn" onclick="filtrar('gustavo', this)">👤 Gustavo</button>
+                    <button class="filter-btn" onclick="filtrar('telma', this)">👤 Telma</button>
+                    <button class="filter-btn" onclick="filtrar('pessoal', this)">🏠 Pessoal</button>
+                    <button class="filter-btn" onclick="filtrar('business', this)">🏢 Business</button>
+                    <button class="filter-btn" onclick="filtrar('alerta', this)">🔴 Acima 30%</button>
+                    <button class="filter-btn" onclick="filtrar('promo', this)">🎯 0% APY</button>
+                </div>
+                <div class="filters" id="filtrosEmpresa" style="display:none;"></div>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchBar" placeholder="Buscar por nome, banco, últimos 4 dígitos..." oninput="buscar(this.value)">
+                    <button class="search-clear" id="searchClear" onclick="limparBusca()">✕</button>
+                </div>
+                <div id="cardsContainer"></div>
+            </div>
+
+            <!-- TAB PAGAR HOJE -->
+            <div class="tab-content" id="tab-pagar">
+                <div id="pagarHojeContainer"></div>
+            </div>
+
+            <!-- TAB USAR AGORA -->
+            <div class="tab-content" id="tab-usar">
+                <div class="usar-section">
+                    <h3>💡 Qual cartão usar agora?</h3>
+                    <div class="usar-form">
+                        <div>
+                            <label>Categoria do gasto</label>
+                            <select id="categoriaSelect">
+                                <option value="">Selecione...</option>
+                                <option value="Restaurante">🍽️ Restaurante</option>
+                                <option value="Amazon">📦 Amazon</option>
+                                <option value="Apple">🍎 Apple</option>
+                                <option value="Online">🛒 Online</option>
+                                <option value="Supermercado">🛒 Supermercado/Gas</option>
+                                <option value="Gasolina">⛽ Gasolina</option>
+                                <option value="Firestone">🔧 Firestone</option>
+                                <option value="Travel">✈️ Travel</option>
+                                <option value="General">💰 Geral</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Valor (opcional)</label>
+                            <input type="number" id="valorGasto" placeholder="Ex: 150" step="0.01">
+                        </div>
+                        <div>
+                            <label>Titular</label>
+                            <select id="titularFiltro">
+                                <option value="">Qualquer</option>
+                                <option value="Gustavo">Gustavo</option>
+                                <option value="Telma">Telma</option>
+                            </select>
+                        </div>
+                        <button class="usar-btn" onclick="encontrarMelhorCartao()">🔍 Indicar</button>
+                    </div>
+                    <div class="usar-resultado" id="usarResultado"></div>
+                </div>
+                <div class="regras-box">
+                    <strong>📋 Regras aplicadas automaticamente:</strong><br>
+                    🔴 Nunca indica cartão com uso acima de 30%<br>
+                    🚫 Nunca indica cartão pessoal que fecha hoje ou amanhã<br>
+                    🏢 Cartões business da GT Capital Global não aparecem para gastos pessoais<br>
+                    🎯 Prioridade: Bônus ativo → Melhor reward → Mais dias até vencimento
+                </div>
+            </div>
+
+            <!-- TAB METAS & BONUS -->
+            <div class="tab-content" id="tab-bonus">
+                <div id="bonusContainer"></div>
+            </div>
+        </div>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.0 | 06/03/2026</p>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getCards, updateCard } from './firebase-config.js';
+
+        let cards = [];
+        let filtroAtivo = 'todos';
+        let searchQuery = '';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            cards = await getCards() || [];
+            renderTudo();
+        });
+
+        const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+        const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+        function calcDataBoaNum(c) {
+            if (c.tipo === 'Business') {
+                const modo = c.modoBusiness || 'normal';
+                const venc = parseInt(c.diaVencimento);
+                if (!venc) return null;
+                const dias = modo === 'turbo' ? 13 : 2;
+                let d = venc - dias;
+                if (d <= 0) d += 30;
+                return { dia: d, modo: modo === 'turbo' ? '🚀 Turbo (PAYDEX)' : '📅 Padrão', tipo: 'business' };
+            } else {
+                const fech = parseInt(c.diaFechamento);
+                if (!fech) return null;
+                let d = fech - 2;
+                if (d <= 0) d += 30;
+                return { dia: d, modo: '🏠 AZEO (antes fechamento)', tipo: 'pessoal' };
+            }
+        }
+
+        function renderTudo() {
+            renderAlertas();
+            renderProximosPagamentos();
+            renderFiltrosEmpresa();
+            renderCards();
+            renderPagarHoje();
+            renderBonus();
+        }
+
+        function getMesAtual() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        }
+
+        function renderProximosPagamentos() {
+            const today = new Date();
+            const todayDay = today.getDate();
+            const mesAtual = getMesAtual();
+
+            const pendentes = cards.map(c => {
+                // Se já marcou pago neste mês, não mostra
+                if (c.pagoMes === mesAtual) return null;
+
+                const db = calcDataBoaNum(c);
+                if (!db) return null;
+
+                const diff = db.dia - todayDay;
+                let tag, tagClass, prioridade;
+
+                if (diff < 0) {
+                    // Já passou a data e NÃO marcou pago → ATRASADO
+                    tag = `⚠️ ATRASADO (era dia ${db.dia})`;
+                    tagClass = 'prox-tag-atrasado';
+                    prioridade = -100 + diff; // mais atrasado = mais urgente
+                } else if (diff === 0) {
+                    tag = '🔴 PAGAR HOJE';
+                    tagClass = 'prox-tag-hoje';
+                    prioridade = 0;
+                } else if (diff === 1) {
+                    tag = '⏰ AMANHÃ';
+                    tagClass = 'prox-tag-amanha';
+                    prioridade = 1;
+                } else if (diff <= 7) {
+                    tag = `📅 Em ${diff} dias (dia ${db.dia})`;
+                    tagClass = 'prox-tag-breve';
+                    prioridade = diff;
+                } else {
+                    return null; // mais de 7 dias, não mostra
+                }
+
+                const cardClass = diff < 0 ? 'prox-atrasado' : diff === 0 ? 'prox-hoje' : diff === 1 ? 'prox-amanha' : '';
+                return { ...c, db, diff, tag, tagClass, cardClass, prioridade };
+            }).filter(Boolean).sort((a, b) => a.prioridade - b.prioridade);
+
+            if (pendentes.length === 0) {
+                document.getElementById('proximosDiv').innerHTML = `
+                    <div class="proximos-box" style="background:#e8f5e9;border-color:#43a047;">
+                        <div class="proximos-ok">✅ Todos os cartões estão pagos! Nenhum pendente nos próximos 7 dias.</div>
+                    </div>`;
+                return;
+            }
+
+            let html = `<div class="proximos-box">
+                <div class="proximos-title">🔔 Próximos Pagamentos (${pendentes.length} pendente${pendentes.length > 1 ? 's' : ''})</div>
+                <div class="proximos-grid">`;
+
+            pendentes.forEach(c => {
+                html += `<div class="prox-card ${c.cardClass}">
+                    <div class="prox-info">
+                        <div class="prox-nome">💳 ${c.nome} •••• ${c.ultimos4 || '????'}</div>
+                        <div class="prox-sub">👤 ${c.titular}${c.empresa ? ' — ' + c.empresa : ''} | ${c.banco}</div>
+                        <div class="prox-sub">${c.db.modo} — Pagar dia <strong>${c.db.dia}</strong></div>
+                        <span class="prox-tag ${c.tagClass}">${c.tag}</span>
+                    </div>
+                    <div class="prox-right">
+                        <div class="prox-valor">${fmt2(c.saldoUsado)}</div>
+                        <button class="btn-pago" onclick="event.stopPropagation(); marcarPago('${c.id}')">✅ Pago</button>
+                    </div>
+                </div>`;
+            });
+
+            html += '</div></div>';
+            document.getElementById('proximosDiv').innerHTML = html;
+        }
+
+        window.marcarPago = async function(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return;
+
+            const ok = confirm(`Marcar "${card.nome} •••• ${card.ultimos4}" como PAGO este mês?`);
+            if (!ok) return;
+
+            card.pagoMes = getMesAtual();
+            const resultado = await updateCard(card);
+
+            if (resultado) {
+                renderProximosPagamentos();
+                renderPagarHoje();
+            } else {
+                alert('❌ Erro ao salvar. Tente novamente.');
+            }
+        };
+
+        function renderAlertas() {
+            // Removido — alertas de uso e bônus não aparecem mais no topo
+            document.getElementById('alertasDiv').innerHTML = '';
+        }
+
+        function renderResumo(lista) {
+            const arr = lista || cards;
+            const totalLimite = arr.reduce((s,c) => s + (c.limite || 0), 0);
+            const totalUsado = arr.reduce((s,c) => s + (c.saldoUsado || 0), 0);
+            const pctGeral = totalLimite ? (totalUsado / totalLimite * 100) : 0;
+            document.getElementById('sumLimite').textContent = fmt(totalLimite);
+            document.getElementById('sumUsado').textContent = fmt(totalUsado);
+            document.getElementById('sumDisponivel').textContent = fmt(totalLimite - totalUsado);
+            document.getElementById('sumPct').textContent = pctGeral.toFixed(1) + '%';
+            const pctCard = document.getElementById('sumPctCard');
+            if (pctGeral >= 30) { pctCard.style.background = '#fdecea'; pctCard.style.color = '#c62828'; }
+            else if (pctGeral >= 20) { pctCard.style.background = '#fff8e1'; pctCard.style.color = '#f57f17'; }
+            else { pctCard.style.background = '#e8f5e9'; pctCard.style.color = '#2e7d32'; }
+        }
+
+        function getFiltered() {
+            let filtered = cards;
+            if (filtroAtivo === 'gustavo') filtered = cards.filter(c => c.titular?.toLowerCase() === 'gustavo');
+            else if (filtroAtivo === 'telma') filtered = cards.filter(c => c.titular?.toLowerCase() === 'telma');
+            else if (filtroAtivo === 'pessoal') filtered = cards.filter(c => c.tipo === 'Pessoal');
+            else if (filtroAtivo === 'business') filtered = cards.filter(c => c.tipo === 'Business');
+            else if (filtroAtivo === 'alerta') filtered = cards.filter(c => (c.saldoUsado || 0) / (c.limite || 1) * 100 >= 30);
+            else if (filtroAtivo === 'promo') filtered = cards.filter(c => c.promo);
+            else if (filtroAtivo.startsWith('emp:')) {
+                const emp = filtroAtivo.substring(4);
+                filtered = cards.filter(c => c.empresa === emp);
+            }
+            // Aplicar busca por texto
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filtered = filtered.filter(c => {
+                    const campos = [c.nome, c.ultimos4, c.banco, c.empresa, c.titular, c.categoriaReward, c.promo, c.rewards].join(' ').toLowerCase();
+                    return campos.includes(q);
+                });
+            }
+            return filtered;
+        }
+
+        function renderFiltrosEmpresa() {
+            const empresas = [...new Set(cards.filter(c => c.empresa).map(c => c.empresa))].sort();
+            if (empresas.length === 0) { document.getElementById('filtrosEmpresa').style.display = 'none'; return; }
+            let html = '<span style="font-size:11px;color:#888;font-weight:600;padding:6px 0;">🏢 Empresa:</span>';
+            empresas.forEach(e => {
+                const cls = filtroAtivo === 'emp:' + e ? 'filter-btn active' : 'filter-btn';
+                html += `<button class="${cls}" onclick="filtrar('emp:${e}', this)">${e}</button>`;
+            });
+            document.getElementById('filtrosEmpresa').innerHTML = html;
+            document.getElementById('filtrosEmpresa').style.display = 'flex';
+        }
+
+        function renderCards() {
+            const filtered = getFiltered();
+            renderResumo(filtered);
+
+            if (filtered.length === 0) {
+                document.getElementById('cardsContainer').innerHTML = '<div class="empty">Nenhum cartão encontrado' + (searchQuery ? ' para "' + searchQuery + '"' : ' para esse filtro') + '.</div>';
+                return;
+            }
+            const pessoais = filtered.filter(c => c.tipo === 'Pessoal');
+            const business = filtered.filter(c => c.tipo === 'Business');
+            let html = '';
+            if (pessoais.length > 0) { html += `<div class="section-title">🏠 Pessoais (${pessoais.length})</div><div class="cards-grid">`; html += pessoais.map(renderCardItem).join(''); html += '</div>'; }
+            if (business.length > 0) { html += `<div class="section-title">🏢 Business (${business.length})</div><div class="cards-grid">`; html += business.map(renderCardItem).join(''); html += '</div>'; }
+            document.getElementById('cardsContainer').innerHTML = html;
+        }
+
+        function renderCardItem(c) {
+            const pct = c.limite ? Math.min((c.saldoUsado || 0) / c.limite * 100, 100) : 0;
+            const barClass = pct >= 30 ? 'barra-vermelho' : pct >= 20 ? 'barra-amarelo' : 'barra-verde';
+            const alertaCls = pct >= 30 ? 'alerta-30' : 'ok';
+            const db = calcDataBoaNum(c);
+            const disponivel = (c.limite || 0) - (c.saldoUsado || 0);
+            const limite30 = (c.limite || 0) * 0.3;
+            const falta30 = limite30 - (c.saldoUsado || 0);
+            let badges = `<span class="card-badge ${c.tipo === 'Pessoal' ? 'badge-pessoal' : 'badge-business'}">${c.tipo}</span>`;
+            if (c.rewards) badges += `<span class="card-badge badge-reward">⭐ ${c.rewards}</span>`;
+            if (c.promo) badges += `<span class="card-badge badge-promo">🎯 0%</span>`;
+            if (pct >= 30) badges += `<span class="card-badge badge-alert">🔴 ${pct.toFixed(0)}%</span>`;
+            return `<div class="card-item ${alertaCls}" onclick="window.location.href='GT_Smart_Detalhe_Cartao.html?id=${c.id}'">
+                <div class="card-header">
+                    <div>
+                        <div class="card-nome">${c.nome}</div>
+                        <div class="card-digits">•••• ${c.ultimos4 || '????'}</div>
+                        <div class="card-titular">👤 ${c.titular}${c.empresa ? ' — ' + c.empresa : ''}</div>
+                    </div>
+                    <span class="card-banco">${c.banco || ''}</span>
+                </div>
+                <div class="uso-label">
+                    <span>Uso: ${fmt(c.saldoUsado || 0)} / ${fmt(c.limite)}</span>
+                    <span style="color:${pct>=30?'#e53935':pct>=20?'#f57f17':'#2e7d32'};font-weight:700;">${pct.toFixed(0)}%</span>
+                </div>
+                <div class="barra"><div class="barra-fill ${barClass}" style="width:${pct}%"></div></div>
+                <div style="font-size:10px;color:#666;margin-top:3px;">Disponível: ${fmt(disponivel)} | Falta pro 30%: ${falta30 > 0 ? fmt(falta30) : '<span style="color:#e53935">Passou!</span>'}</div>
+                <div class="datas-row">
+                    <span class="data-chip">📆 Fecha: ${c.diaFechamento || '—'}</span>
+                    <span class="data-chip">💳 Vence: ${c.diaVencimento || '—'}</span>
+                    <span class="data-chip">✅ Pagar: Dia ${db ? db.dia : '—'}</span>
+                </div>
+                <div class="card-footer">${badges}</div>
+            </div>`;
+        }
+
+        function renderPagarHoje() {
+            const today = new Date();
+            const todayDay = today.getDate();
+            const mesAtual = getMesAtual();
+
+            const comDatas = cards.map(c => {
+                if (c.pagoMes === mesAtual) return null; // já pago
+                const db = calcDataBoaNum(c);
+                if (!db) return null;
+                const diff = db.dia - todayDay;
+                let status, tagClass, tagText;
+                if (diff === 0) { status = 0; tagClass = 'tag-hoje'; tagText = '✅ PAGAR HOJE'; }
+                else if (diff === 1) { status = 1; tagClass = 'tag-amanha'; tagText = '⏰ Amanhã'; }
+                else if (diff > 1 && diff <= 5) { status = diff; tagClass = 'tag-breve'; tagText = `📅 Em ${diff} dias`; }
+                else if (diff < 0 && diff >= -3) { status = -1; tagClass = 'tag-atrasado'; tagText = `⚠️ Passou dia ${db.dia}`; }
+                else return null;
+                return { ...c, db, diff, status, tagClass, tagText };
+            }).filter(Boolean).sort((a,b) => a.diff - b.diff);
+
+            if (comDatas.length === 0) {
+                document.getElementById('pagarHojeContainer').innerHTML = '<div class="empty">✅ Nenhum cartão para pagar nos próximos dias.</div>';
+                return;
+            }
+
+            let html = '<div class="pagar-hoje-grid">';
+            const hoje = comDatas.filter(c => c.diff === 0);
+            const outros = comDatas.filter(c => c.diff !== 0);
+
+            if (hoje.length > 0) {
+                html += '<div class="section-title">✅ Pagar HOJE</div>';
+                hoje.forEach(c => {
+                    const pct = c.limite ? ((c.saldoUsado || 0) / c.limite * 100) : 0;
+                    html += `<div class="pagar-card pagar-hoje" onclick="window.location.href='GT_Smart_Detalhe_Cartao.html?id=${c.id}'">
+                        <div class="pagar-info">
+                            <div class="nome">💳 ${c.nome} •••• ${c.ultimos4 || '????'}</div>
+                            <div class="sub">👤 ${c.titular}${c.empresa ? ' — ' + c.empresa : ''} | ${c.banco}</div>
+                            <div class="modo" style="color:#1b5e20;">${c.db.modo}</div>
+                            ${pct >= 30 ? '<div style="color:#e53935;font-size:11px;font-weight:700;margin-top:3px;">⚠️ Acima de 30%! Priorize pagamento.</div>' : ''}
+                        </div>
+                        <div class="pagar-right">
+                            <div class="pagar-saldo">${fmt2(c.saldoUsado)}</div>
+                            <div style="font-size:10px;color:#888;">saldo atual</div>
+                            <span class="pagar-tag ${c.tagClass}">${c.tagText}</span>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            if (outros.length > 0) {
+                html += '<div class="section-title">📅 Próximos dias</div>';
+                outros.forEach(c => {
+                    const cardClass = c.diff < 0 ? 'pagar-atrasado' : c.diff === 1 ? 'pagar-amanha' : 'pagar-em-breve';
+                    html += `<div class="pagar-card ${cardClass}" onclick="window.location.href='GT_Smart_Detalhe_Cartao.html?id=${c.id}'">
+                        <div class="pagar-info">
+                            <div class="nome">💳 ${c.nome} •••• ${c.ultimos4 || '????'}</div>
+                            <div class="sub">👤 ${c.titular}${c.empresa ? ' — ' + c.empresa : ''}</div>
+                            <div class="modo">${c.db.modo}</div>
+                        </div>
+                        <div class="pagar-right">
+                            <div class="pagar-saldo">${fmt2(c.saldoUsado)}</div>
+                            <span class="pagar-tag ${c.tagClass}">${c.tagText}</span>
+                        </div>
+                    </div>`;
+                });
+            }
+            html += '</div>';
+            document.getElementById('pagarHojeContainer').innerHTML = html;
+        }
+
+        function renderBonus() {
+            const comBonus = cards.filter(c => c.metaBonus || c.promo || c.bonusPrazo);
+            if (comBonus.length === 0) {
+                document.getElementById('bonusContainer').innerHTML = '<div class="empty">Nenhuma meta ou promo cadastrada.<br><small>Adicione metas de bônus ao cadastrar/editar um cartão.</small></div>';
+                return;
+            }
+            const today = new Date();
+            let html = '<div class="meta-grid">';
+            comBonus.forEach(c => {
+                const prazoDate = c.bonusPrazo ? new Date(c.bonusPrazo) : null;
+                const diasRestantes = prazoDate ? Math.round((prazoDate - today) / 86400000) : null;
+                let cls = 'ok';
+                if (diasRestantes !== null && diasRestantes <= 15) cls = 'urgente';
+                if (diasRestantes !== null && diasRestantes < 0) cls = 'urgente';
+
+                let barHtml = '';
+                if (c.metaValor && c.saldoUsado) {
+                    const pct = Math.min((c.saldoUsado / c.metaValor) * 100, 100);
+                    barHtml = `<div class="meta-barra-wrap">
+                        <div class="meta-barra"><div class="meta-barra-fill" style="width:${pct}%"></div></div>
+                        <div class="meta-barra-pct">${pct.toFixed(0)}%</div>
+                    </div>`;
+                }
+
+                html += `<div class="meta-card ${cls}" onclick="window.location.href='GT_Smart_Detalhe_Cartao.html?id=${c.id}'">
+                    <div class="meta-nome">🎯 ${c.nome} •••• ${c.ultimos4 || '????'} (${c.titular})</div>
+                    ${c.metaBonus ? `<div class="meta-desc">📋 ${c.metaBonus}</div>` : ''}
+                    ${c.promo ? `<div class="meta-desc">💰 ${c.promo}</div>` : ''}
+                    ${barHtml}
+                    <div class="meta-footer">
+                        <span>${prazoDate ? '📅 Prazo: ' + prazoDate.toLocaleDateString('pt-BR') : ''}</span>
+                        <span style="color:${diasRestantes !== null && diasRestantes <= 15 ? '#e53935' : '#888'};font-weight:${diasRestantes !== null && diasRestantes <= 15 ? '700' : '400'}">
+                            ${diasRestantes !== null ? (diasRestantes >= 0 ? `⏱️ ${diasRestantes} dias restantes` : `❌ Expirou há ${Math.abs(diasRestantes)} dias`) : ''}
+                        </span>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            document.getElementById('bonusContainer').innerHTML = html;
+        }
+
+        window.switchTab = function(tab, btn) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+        };
+
+        window.buscar = function(valor) {
+            searchQuery = valor.trim();
+            document.getElementById('searchClear').style.display = searchQuery ? 'block' : 'none';
+            renderCards();
+        };
+
+        window.limparBusca = function() {
+            document.getElementById('searchBar').value = '';
+            searchQuery = '';
+            document.getElementById('searchClear').style.display = 'none';
+            renderCards();
+        };
+
+        window.filtrar = function(tipo, btn) {
+            filtroAtivo = tipo;
+            // Atualiza botões da linha principal
+            document.querySelectorAll('.filters .filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            // Se clicou empresa, desativa linha principal; se clicou principal, desativa empresas
+            if (tipo.startsWith('emp:')) {
+                document.querySelectorAll('.filters:first-of-type .filter-btn').forEach(b => b.classList.remove('active'));
+            } else {
+                document.querySelectorAll('#filtrosEmpresa .filter-btn').forEach(b => b.classList.remove('active'));
+            }
+            renderCards();
+        };
+
+        window.encontrarMelhorCartao = function() {
+            const categoria = document.getElementById('categoriaSelect').value;
+            const valor = parseFloat(document.getElementById('valorGasto').value) || 0;
+            const titularFiltro = document.getElementById('titularFiltro').value;
+            if (!categoria) { alert('Selecione uma categoria!'); return; }
+
+            const today = new Date();
+            const todayDay = today.getDate();
+
+            const disponiveis = cards.filter(c => {
+                const pct = c.limite ? ((c.saldoUsado || 0) / c.limite * 100) : 0;
+                if (pct >= 30) return false;
+                if (valor > 0) {
+                    const disponivel = (c.limite || 0) - (c.saldoUsado || 0);
+                    const limite30 = (c.limite || 0) * 0.3;
+                    const falta30 = limite30 - (c.saldoUsado || 0);
+                    if (valor > falta30) return false;
+                }
+                if (c.tipo === 'Pessoal') {
+                    const fech = parseInt(c.diaFechamento);
+                    if (fech === todayDay || fech === todayDay + 1) return false;
+                }
+                if (titularFiltro && c.titular !== titularFiltro) return false;
+                return true;
+            });
+
+            if (disponiveis.length === 0) {
+                document.getElementById('usarResultado').style.display = 'block';
+                document.getElementById('usarResultado').innerHTML = '<div style="background:#fdecea;padding:15px;border-radius:10px;color:#c62828;font-weight:600;">❌ Nenhum cartão disponível. Todos acima de 30%, sem margem para o valor, ou fechando hoje/amanhã.</div>';
+                return;
+            }
+
+            const pontuados = disponiveis.map(c => {
+                let score = 0;
+                const catCard = (c.categoriaReward || '').toLowerCase();
+                const catBusca = categoria.toLowerCase();
+                if (c.promo) score += 30;
+                const match = catCard.includes(catBusca) || catBusca.includes(catCard.split(' ')[0]) || catCard.includes(catBusca.split('/')[0]);
+                if (match) score += 20;
+                const pctReward = parseFloat((c.rewards || '0').replace(/[^0-9.]/g,'')) || 0;
+                score += pctReward * 4;
+                const venc = parseInt(c.diaVencimento) || 15;
+                const diasAteVenc = venc >= todayDay ? venc - todayDay : venc + 30 - todayDay;
+                score += Math.min(diasAteVenc, 10);
+                const pct = c.limite ? ((c.saldoUsado || 0) / c.limite * 100) : 0;
+                score += (30 - pct);
+                return { ...c, score, match, diasAteVenc };
+            }).sort((a,b) => b.score - a.score);
+
+            let html = '<div>';
+            pontuados.slice(0, 3).forEach((c, i) => {
+                const db = calcDataBoaNum(c);
+                const pct = c.limite ? ((c.saldoUsado || 0) / c.limite * 100) : 0;
+                const falta30 = ((c.limite || 0) * 0.3) - (c.saldoUsado || 0);
+                const rewardCalc = valor > 0 ? (parseFloat((c.rewards || '0').replace(/[^0-9.]/g,'')) || 0) / 100 * valor : null;
+                html += `<div class="resultado-card ${i > 0 ? 'segundo' : ''}">
+                    <div class="resultado-rank">${i === 0 ? '🥇 MELHOR OPÇÃO' : i === 1 ? '🥈 2ª opção' : '🥉 3ª opção'}</div>
+                    <div class="resultado-nome">💳 ${c.nome} •••• ${c.ultimos4 || '????'} (${c.titular})</div>
+                    <div class="resultado-detalhe">
+                        ⭐ ${c.rewards || 'Sem reward'}${rewardCalc ? ` → <strong>+$${rewardCalc.toFixed(2)} de cashback</strong>` : ''}<br>
+                        📊 Uso atual: ${pct.toFixed(0)}% | Margem: ${fmt2(falta30)}<br>
+                        ⏱️ Vence em ${c.diasAteVenc} dias<br>
+                        ✅ Data boa pagar: Dia ${db ? db.dia : '—'} ${db ? '(' + db.modo + ')' : ''}
+                        ${c.promo ? '<br>🎯 ' + c.promo : ''}
+                    </div>
+                    ${c.tipo === 'Business' ? '<div class="resultado-aviso">🏢 Business — Use apenas para despesa da empresa!</div>' : ''}
+                </div>`;
+            });
+            html += '</div>';
+            document.getElementById('usarResultado').innerHTML = html;
+            document.getElementById('usarResultado').style.display = 'block';
+        };
+    </script>
+</body>
+</html>

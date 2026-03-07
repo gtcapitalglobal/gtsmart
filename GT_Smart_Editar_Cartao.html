@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Editar Cartão</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20, #2e7d32); min-height: 100vh; padding: 15px; }
+        .container { max-width: 600px; margin: 10px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1b5e20, #388e3c); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 18px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; }
+        .content { padding: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 13px; }
+        input, select, textarea { width: 100%; padding: 11px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #2e7d32; }
+        .section-header { font-size: 13px; font-weight: 700; color: #1b5e20; background: #e8f5e9; padding: 8px 12px; border-radius: 8px; margin: 20px 0 12px; }
+        .preview-box { background: #f0fff4; border: 1px solid #a5d6a7; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: #1b5e20; }
+        .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-secondary { width: 100%; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+        .modo-turbo { background: #fff8e1; border: 2px solid #ffc107; border-radius: 8px; padding: 12px; margin-top: 10px; display: none; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>✏️ Editar Cartão</h2>
+            <button onclick="goBack()" class="btn-back">← Voltar</button>
+        </div>
+        <div class="content">
+            <form id="cardForm">
+                <div class="section-header">📋 Identificação</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🏷️ Nome do Cartão</label>
+                        <input type="text" id="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>🔢 Últimos 4 dígitos</label>
+                        <input type="text" id="ultimos4" maxlength="5">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>👤 Titular</label>
+                        <select id="titular" required>
+                            <option value="Gustavo">Gustavo</option>
+                            <option value="Telma">Telma</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>🏢 Tipo</label>
+                        <select id="tipo" onchange="tipoChanged()">
+                            <option value="Pessoal">Pessoal</option>
+                            <option value="Business">Business</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🏦 Banco</label>
+                        <input type="text" id="banco">
+                    </div>
+                    <div class="form-group">
+                        <label>🏬 Empresa (se Business)</label>
+                        <input type="text" id="empresa">
+                    </div>
+                </div>
+
+                <div class="section-header">💰 Limites e Uso</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>💳 Limite Total ($)</label>
+                        <input type="number" id="limite" step="0.01" oninput="calcPreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>🔴 Saldo Usado Atual ($)</label>
+                        <input type="number" id="saldoUsado" step="0.01" oninput="calcPreview()">
+                    </div>
+                </div>
+                <div class="preview-box" id="previewLimite" style="display:none;"></div>
+
+                <div class="section-header">📅 Datas</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>📆 Dia de Fechamento</label>
+                        <input type="number" id="diaFechamento" min="1" max="31" oninput="calcDataBoa()">
+                    </div>
+                    <div class="form-group">
+                        <label>💳 Dia de Vencimento</label>
+                        <input type="number" id="diaVencimento" min="1" max="31" oninput="calcDataBoa()">
+                    </div>
+                </div>
+                <div id="modoBusiness" class="modo-turbo">
+                    <label style="margin-bottom:8px;">🏢 Modo de Pagamento Business</label>
+                    <select id="modoBusiness_select" onchange="calcDataBoa()">
+                        <option value="normal">Padrão (2-3 dias antes do vencimento)</option>
+                        <option value="turbo">Turbo (10-15 dias antes — PAYDEX)</option>
+                    </select>
+                </div>
+                <div class="preview-box" id="previewData" style="margin-top:10px;"></div>
+
+                <div class="section-header">⭐ Rewards e Categoria</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🏷️ Categoria Principal</label>
+                        <select id="categoriaReward">
+                            <option value="">Sem Categoria</option>
+                            <option value="Restaurante 3%">Restaurante 3%</option>
+                            <option value="Amazon 5%">Amazon 5%</option>
+                            <option value="Apple 3%">Apple 3%</option>
+                            <option value="Online 3%">Online 3%</option>
+                            <option value="Supermercado/Gas 3%">Supermercado/Gas 3%</option>
+                            <option value="Gasolina 3%">Gasolina 3%</option>
+                            <option value="Firestone 4%">Firestone 4%</option>
+                            <option value="Travel 1.5 pontos">Travel 1.5 pontos</option>
+                            <option value="Transferencia 0%">Transferência</option>
+                            <option value="General 1.5%">General 1.5%</option>
+                            <option value="General 2%">General 2%</option>
+                            <option value="General 1%">General 1%</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>💵 % de Rewards</label>
+                        <input type="text" id="rewards">
+                    </div>
+                </div>
+
+                <div class="section-header">🎯 Promos e Bônus</div>
+                <div class="form-group">
+                    <label>🏷️ Promo Ativa</label>
+                    <input type="text" id="promo">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🎯 Meta de Bônus</label>
+                        <input type="text" id="metaBonus">
+                    </div>
+                    <div class="form-group">
+                        <label>📅 Prazo do Bônus</label>
+                        <input type="date" id="bonusPrazo">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>📝 Observações</label>
+                    <textarea id="observacoes" rows="2"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">💾 Salvar Alterações</button>
+                <button type="button" class="btn-secondary" onclick="goBack()">❌ Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getCards, updateCard } from './firebase-config.js';
+
+        let card = null;
+        const cardId = new URLSearchParams(window.location.search).get('id');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            const cards = await getCards();
+            card = cards.find(c => c.id === cardId);
+            if (!card) { alert('Cartão não encontrado!'); window.location.href = 'GT_Smart_Cartoes.html'; return; }
+            preencherForm();
+        });
+
+        function preencherForm() {
+            document.getElementById('nome').value = card.nome || '';
+            document.getElementById('ultimos4').value = card.ultimos4 || '';
+            document.getElementById('titular').value = card.titular || 'Gustavo';
+            document.getElementById('tipo').value = card.tipo || 'Pessoal';
+            document.getElementById('banco').value = card.banco || '';
+            document.getElementById('empresa').value = card.empresa || '';
+            document.getElementById('limite').value = card.limite || '';
+            document.getElementById('saldoUsado').value = card.saldoUsado || 0;
+            document.getElementById('diaFechamento').value = card.diaFechamento || '';
+            document.getElementById('diaVencimento').value = card.diaVencimento || '';
+            document.getElementById('modoBusiness_select').value = card.modoBusiness || 'normal';
+            document.getElementById('categoriaReward').value = card.categoriaReward || '';
+            document.getElementById('rewards').value = card.rewards || '';
+            document.getElementById('promo').value = card.promo || '';
+            document.getElementById('metaBonus').value = card.metaBonus || '';
+            document.getElementById('bonusPrazo').value = card.bonusPrazo || '';
+            document.getElementById('observacoes').value = card.observacoes || '';
+            tipoChanged();
+            calcPreview();
+            calcDataBoa();
+        }
+
+        window.goBack = () => window.location.href = `GT_Smart_Detalhe_Cartao.html?id=${cardId}`;
+
+        window.tipoChanged = function() {
+            const tipo = document.getElementById('tipo').value;
+            document.getElementById('modoBusiness').style.display = tipo === 'Business' ? 'block' : 'none';
+            calcDataBoa();
+        };
+
+        window.calcPreview = function() {
+            const limite = parseFloat(document.getElementById('limite').value) || 0;
+            const usado = parseFloat(document.getElementById('saldoUsado').value) || 0;
+            if (!limite) { document.getElementById('previewLimite').style.display = 'none'; return; }
+            const pct = (usado / limite * 100).toFixed(1);
+            const limite30 = limite * 0.3;
+            const falta = limite30 - usado;
+            const cor = pct >= 30 ? '#c62828' : pct >= 20 ? '#e65100' : '#1b5e20';
+            document.getElementById('previewLimite').style.display = 'block';
+            document.getElementById('previewLimite').innerHTML =
+                `💳 30% do limite: <strong>$${limite30.toLocaleString('en-US',{minimumFractionDigits:2})}</strong> | Uso: <strong style="color:${cor}">${pct}%</strong> | ${falta > 0 ? `Pode usar mais: <strong>$${falta.toLocaleString('en-US',{minimumFractionDigits:2})}</strong>` : '<span style="color:#c62828">⚠️ Passou 30%!</span>'}`;
+        };
+
+        window.calcDataBoa = function() {
+            const tipo = document.getElementById('tipo').value;
+            const fech = parseInt(document.getElementById('diaFechamento').value);
+            const venc = parseInt(document.getElementById('diaVencimento').value);
+            const modo = document.getElementById('modoBusiness_select')?.value || 'normal';
+            const box = document.getElementById('previewData');
+            if (tipo === 'Business' && venc) {
+                const dias = modo === 'turbo' ? 13 : 2;
+                let d = venc - dias; if (d <= 0) d += 30;
+                box.innerHTML = `✅ Data boa para pagar: <strong>Dia ${d}</strong> (${modo === 'turbo' ? '🚀 Turbo: 13 dias antes' : '📅 Padrão: 2 dias antes'})`;
+                box.style.display = 'block';
+            } else if (tipo === 'Pessoal' && fech) {
+                let d = fech - 2; if (d <= 0) d += 30;
+                box.innerHTML = `✅ Data boa para pagar: <strong>Dia ${d}</strong> (2 dias antes do fechamento — AZEO)`;
+                box.style.display = 'block';
+            } else { box.style.display = 'none'; }
+        };
+
+        document.getElementById('cardForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const updated = {
+                ...card,
+                nome: document.getElementById('nome').value,
+                ultimos4: document.getElementById('ultimos4').value,
+                titular: document.getElementById('titular').value,
+                tipo: document.getElementById('tipo').value,
+                banco: document.getElementById('banco').value,
+                empresa: document.getElementById('empresa').value,
+                limite: parseFloat(document.getElementById('limite').value) || 0,
+                saldoUsado: parseFloat(document.getElementById('saldoUsado').value) || 0,
+                diaFechamento: document.getElementById('diaFechamento').value,
+                diaVencimento: document.getElementById('diaVencimento').value,
+                modoBusiness: document.getElementById('modoBusiness_select')?.value || 'normal',
+                categoriaReward: document.getElementById('categoriaReward').value,
+                rewards: document.getElementById('rewards').value,
+                promo: document.getElementById('promo').value,
+                metaBonus: document.getElementById('metaBonus').value,
+                bonusPrazo: document.getElementById('bonusPrazo').value,
+                observacoes: document.getElementById('observacoes').value,
+                updatedAt: new Date().toISOString()
+            };
+            const ok = await updateCard(updated);
+            if (ok !== null) { alert('✅ Cartão atualizado!'); window.location.href = `GT_Smart_Detalhe_Cartao.html?id=${card.id}`; }
+            else alert('❌ Erro ao salvar.');
+        });
+    </script>
+
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+</body>
+</html>

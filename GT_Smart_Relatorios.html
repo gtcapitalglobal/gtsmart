@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Relatórios</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 18px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+        .report-section { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .section-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #667eea; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .stat-item { background: white; padding: 12px; border-radius: 8px; border-left: 3px solid #667eea; }
+        .stat-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+        .stat-value { font-size: 20px; font-weight: 700; color: #333; }
+        .client-list { background: white; border-radius: 8px; overflow: hidden; }
+        .client-item { padding: 10px 12px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+        .client-item:last-child { border-bottom: none; }
+        .client-name { font-size: 13px; font-weight: 600; color: #333; }
+        .client-value { font-size: 14px; font-weight: 700; color: #667eea; }
+        .export-btn { padding: 12px 20px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .tabs-report { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab-report { padding: 8px 15px; border: 2px solid #667eea; border-radius: 8px; background: white; color: #667eea; font-weight: 600; font-size: 13px; cursor: pointer; }
+        .tab-report.active { background: #667eea; color: white; }
+        .debt-section { border-left-color: #ff6b6b; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; z-index: 9999; font-size: 18px; color: #667eea; font-weight: 600; }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div style="font-size: 40px;">📊</div>
+        <div>Carregando relatórios...</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2>📈 Relatórios</h2>
+            <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+        </div>
+        <div class="content">
+
+            <!-- Abas: Empréstimos / Dívidas / Combinado -->
+            <div class="tabs-report">
+                <button class="tab-report active" onclick="showReportTab('emprestimos', this)">💼 Empréstimos</button>
+                <button class="tab-report" onclick="showReportTab('dividas', this)">💳 Dívidas</button>
+                <button class="tab-report" onclick="showReportTab('combinado', this)">📊 Visão Geral</button>
+            </div>
+
+            <!-- ABA EMPRÉSTIMOS -->
+            <div id="tabEmprestimos">
+                <div class="report-section">
+                    <div class="section-title">📊 Gráficos</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                        <div style="background:white; padding:15px; border-radius:8px;"><canvas id="statusChart" style="max-height:200px;"></canvas></div>
+                        <div style="background:white; padding:15px; border-radius:8px;"><canvas id="monthlyChart" style="max-height:200px;"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">💰 Resumo Geral de Empréstimos</div>
+                    <div class="stats-grid" id="generalStats"></div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">📅 Previsão de Recebimentos - Próximos 30 Dias</div>
+                    <div id="forecast30Days"></div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">👥 Top Clientes (Por Valor Total)</div>
+                    <div class="client-list" id="topClients"></div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">⚠️ Clientes com Atrasos</div>
+                    <div class="client-list" id="lateClients"></div>
+                </div>
+            </div>
+
+            <!-- ABA DÍVIDAS -->
+            <div id="tabDividas" style="display:none;">
+                <div class="report-section">
+                    <div class="section-title">💳 Resumo das Minhas Dívidas</div>
+                    <div class="stats-grid" id="debtStats"></div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">📅 Próximos Pagamentos de Dívidas (30 dias)</div>
+                    <div id="debtForecast"></div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">📋 Dívidas por Credor</div>
+                    <div class="client-list" id="debtsByCreditor"></div>
+                </div>
+            </div>
+
+            <!-- ABA COMBINADO -->
+            <div id="tabCombinado" style="display:none;">
+                <div class="report-section">
+                    <div class="section-title">📊 Visão Geral Financeira</div>
+                    <div class="stats-grid" id="combinedStats"></div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">💹 Fluxo de Caixa - Próximos 30 Dias</div>
+                    <div id="cashflowForecast"></div>
+                </div>
+
+                <div class="report-section" style="border-left:4px solid #2e7d32;">
+                    <div class="section-title" style="border-bottom-color:#2e7d32;">💳 Resumo de Cartões de Crédito</div>
+                    <div class="stats-grid" id="cardsSummary"></div>
+                    <div id="cardsDetail" style="margin-top:12px;"></div>
+                </div>
+            </div>
+
+            <!-- Botões de Backup -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
+                <button class="export-btn" onclick="exportarRelatorio()">📄 Exportar Relatório</button>
+                <button class="export-btn" onclick="exportarBackup()" style="background:#17a2b8;">💾 Backup Completo (Firebase)</button>
+                <button class="export-btn" onclick="document.getElementById('restoreFile').click()" style="background:#6c757d;">📥 Restaurar Backup</button>
+            </div>
+            <input type="file" id="restoreFile" accept=".json" style="display:none;" onchange="restaurarBackup(event)">
+        </div>
+    
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getLoans, getDebts, getCards, exportFullBackup, importFullBackup } from './firebase-config.js';
+
+        let loans = [];
+        let debts = [];
+        let cards = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            [loans, debts, cards] = await Promise.all([getLoans(), getDebts(), getCards()]);
+            document.getElementById('loadingOverlay').style.display = 'none';
+            generateAll();
+        });
+
+        const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(v);
+        const parseLocalDate = (ds) => { if(!ds) return new Date(); const p=ds.split('T')[0].split('-'); const d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])); d.setHours(0,0,0,0); return d; };
+        const formatDateBR = (dateStr) => {
+            if (!dateStr) return '';
+            const parts = dateStr.split('T')[0].split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
+        };
+
+        window.showReportTab = function(tab, el) {
+            document.querySelectorAll('.tabs-report .tab-report').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('tabEmprestimos').style.display = tab === 'emprestimos' ? '' : 'none';
+            document.getElementById('tabDividas').style.display = tab === 'dividas' ? '' : 'none';
+            document.getElementById('tabCombinado').style.display = tab === 'combinado' ? '' : 'none';
+        };
+
+        function generateAll() {
+            generateCharts();
+            generateLoanReport();
+            generateForecast30();
+            generateDebtReport();
+            generateCombinedReport();
+            generateCardsReport();
+        }
+
+        function generateCharts() {
+            const activeCount = loans.filter(l => l.status === 'active' && !l.archived).length;
+            const finishedCount = loans.filter(l => l.status === 'finished').length;
+            const archivedCount = loans.filter(l => l.archived).length;
+
+            new Chart(document.getElementById('statusChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ativos', 'Quitados', 'Arquivados'],
+                    datasets: [{ data: [activeCount, finishedCount, archivedCount], backgroundColor: ['#667eea', '#28a745', '#6c757d'], borderWidth: 2, borderColor: '#fff' }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Status dos Empréstimos' } } }
+            });
+
+            const monthlyData = {};
+            loans.forEach(loan => loan.payments.forEach(p => {
+                if (p.paid && p.paidDate) {
+                    const d = new Date(p.paidDate);
+                    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                    monthlyData[key] = (monthlyData[key] || 0) + p.amount;
+                }
+            }));
+            const months = Object.keys(monthlyData).sort().slice(-6);
+            const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+            new Chart(document.getElementById('monthlyChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: months.map(m => { const [y,mo] = m.split('-'); return `${monthNames[parseInt(mo)-1]}/${y.slice(2)}`; }),
+                    datasets: [{ label: 'Recebido ($)', data: months.map(m => monthlyData[m]), backgroundColor: '#667eea' }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false }, title: { display: true, text: 'Recebimentos (Últimos 6 Meses)' } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString() } } } }
+            });
+        }
+
+        function generateLoanReport() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            let totalLent = 0, totalReceived = 0, totalPending = 0, totalLate = 0, active = 0, finished = 0;
+            const clientStats = {};
+
+            loans.forEach(loan => {
+                totalLent += loan.totalAmount;
+                if (loan.status === 'finished') finished++; else active++;
+                if (!clientStats[loan.clientName]) clientStats[loan.clientName] = { totalLent: 0, received: 0, pending: 0, late: 0, lateCount: 0 };
+                clientStats[loan.clientName].totalLent += loan.totalAmount;
+                loan.payments.forEach(p => {
+                    if (p.paid) { totalReceived += p.amount; clientStats[loan.clientName].received += p.amount; }
+                    else if (!p.negotiated) {
+                        totalPending += p.amount; clientStats[loan.clientName].pending += p.amount;
+                        const d = parseLocalDate(p.date);
+                        if (d < today) { totalLate += p.amount; clientStats[loan.clientName].late += p.amount; clientStats[loan.clientName].lateCount++; }
+                    }
+                });
+            });
+
+            const rate = totalLent > 0 ? (totalReceived / totalLent * 100) : 0;
+            document.getElementById('generalStats').innerHTML = `
+                <div class="stat-item"><div class="stat-label">Total Emprestado</div><div class="stat-value">${formatCurrency(totalLent)}</div></div>
+                <div class="stat-item"><div class="stat-label">Já Recebido</div><div class="stat-value" style="color:#28a745;">${formatCurrency(totalReceived)}</div></div>
+                <div class="stat-item"><div class="stat-label">A Receber</div><div class="stat-value" style="color:#ffc107;">${formatCurrency(totalPending)}</div></div>
+                <div class="stat-item"><div class="stat-label">Em Atraso</div><div class="stat-value" style="color:#dc3545;">${formatCurrency(totalLate)}</div></div>
+                <div class="stat-item"><div class="stat-label">Ativos / Quitados</div><div class="stat-value">${active} / ${finished}</div></div>
+                <div class="stat-item"><div class="stat-label">Taxa de Recebimento</div><div class="stat-value" style="color:${rate>80?'#28a745':rate>50?'#ffc107':'#dc3545'};">${rate.toFixed(1)}%</div></div>
+            `;
+
+            const top = Object.entries(clientStats).sort((a,b) => b[1].totalLent - a[1].totalLent).slice(0,10);
+            document.getElementById('topClients').innerHTML = top.length > 0
+                ? top.map(([n,s]) => `<div class="client-item"><div class="client-name">${n}</div><div class="client-value">${formatCurrency(s.totalLent)}</div></div>`).join('')
+                : '<div class="client-item"><div class="client-name">Nenhum cliente</div></div>';
+
+            const late = Object.entries(clientStats).filter(([,s]) => s.lateCount > 0).sort((a,b) => b[1].late - a[1].late);
+            document.getElementById('lateClients').innerHTML = late.length > 0
+                ? late.map(([n,s]) => `<div class="client-item"><div><div class="client-name">${n}</div><div style="font-size:11px;color:#dc3545;">${s.lateCount} parcela${s.lateCount>1?'s':''} atrasada${s.lateCount>1?'s':''}</div></div><div class="client-value" style="color:#dc3545;">${formatCurrency(s.late)}</div></div>`).join('')
+                : '<div class="client-item"><div class="client-name" style="color:#28a745;">✅ Nenhum cliente com atraso!</div></div>';
+        }
+
+        function generateForecast30() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const next30 = new Date(today); next30.setDate(next30.getDate() + 30);
+            let forecast = [];
+
+            loans.forEach(loan => {
+                if (loan.archived || loan.status === 'finished') return;
+                loan.payments.forEach(p => {
+                    if (!p.paid && !p.negotiated) {
+                        const d = parseLocalDate(p.date);
+                        if (d >= today && d <= next30) {
+                            forecast.push({ clientName: loan.clientName, date: p.date, amount: p.amount, number: p.number });
+                        }
+                    }
+                });
+            });
+
+            forecast.sort((a,b) => new Date(a.date) - new Date(b.date));
+            const total = forecast.reduce((s,p) => s+p.amount, 0);
+
+            let html = `<div style="background:white;padding:15px;border-radius:8px;margin-bottom:10px;">
+                <div style="font-size:22px;font-weight:700;color:#28a745;margin-bottom:8px;">💰 Total Previsto: ${formatCurrency(total)}</div>
+                <div style="color:#666;font-size:13px;">📅 ${forecast.length} parcela${forecast.length!==1?'s':''} nos próximos 30 dias</div>
+            </div>`;
+
+            if (forecast.length === 0) {
+                html += '<div style="text-align:center;padding:20px;color:#999;">Nenhum recebimento previsto para os próximos 30 dias</div>';
+            } else {
+                html += '<div style="max-height:300px;overflow-y:auto;">';
+                forecast.forEach(p => {
+                    const d = parseLocalDate(p.date);
+                    const daysUntil = Math.ceil((d - today) / (1000*60*60*24));
+                    html += `<div style="background:white;padding:12px;border-radius:8px;margin-bottom:8px;border-left:4px solid #667eea;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-weight:600;color:#333;">${p.clientName}</div>
+                            <div style="font-size:12px;color:#666;">Parcela #${p.number} - ${formatDateBR(p.date)} (${daysUntil === 0 ? 'Hoje' : daysUntil + ' dias'})</div>
+                        </div>
+                        <div style="font-size:18px;font-weight:700;color:#28a745;">${formatCurrency(p.amount)}</div>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+
+            document.getElementById('forecast30Days').innerHTML = html;
+        }
+
+        function generateDebtReport() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const next30 = new Date(today); next30.setDate(next30.getDate() + 30);
+
+            let totalDebt = 0, totalPaid = 0, totalPending = 0, totalLate = 0;
+            const creditorStats = {};
+            const forecastDebts = [];
+
+            debts.forEach(debt => {
+                if (debt.status === 'paid') return;
+                const pending = (debt.payments || []).filter(p => !p.paid).reduce((s,p) => s+p.amount, 0);
+                const paid = (debt.payments || []).filter(p => p.paid).reduce((s,p) => s+p.amount, 0);
+                totalDebt += debt.totalAmount || 0;
+                totalPaid += paid;
+                totalPending += pending;
+
+                if (!creditorStats[debt.creditorName || debt.clientName || 'Desconhecido']) {
+                    creditorStats[debt.creditorName || debt.clientName || 'Desconhecido'] = { total: 0, pending: 0 };
+                }
+                creditorStats[debt.creditorName || debt.clientName || 'Desconhecido'].total += debt.totalAmount || 0;
+                creditorStats[debt.creditorName || debt.clientName || 'Desconhecido'].pending += pending;
+
+                (debt.payments || []).forEach(p => {
+                    if (!p.paid) {
+                        const d = parseLocalDate(p.date);
+                        if (d < today) totalLate += p.amount;
+                        if (d >= today && d <= next30) {
+                            forecastDebts.push({ name: debt.creditorName || debt.clientName || 'Credor', date: p.date, amount: p.amount });
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('debtStats').innerHTML = `
+                <div class="stat-item" style="border-left-color:#ff6b6b;"><div class="stat-label">Total de Dívidas</div><div class="stat-value" style="color:#dc3545;">${formatCurrency(totalDebt)}</div></div>
+                <div class="stat-item" style="border-left-color:#28a745;"><div class="stat-label">Já Pago</div><div class="stat-value" style="color:#28a745;">${formatCurrency(totalPaid)}</div></div>
+                <div class="stat-item" style="border-left-color:#ffc107;"><div class="stat-label">Ainda Devo</div><div class="stat-value" style="color:#ffc107;">${formatCurrency(totalPending)}</div></div>
+                <div class="stat-item" style="border-left-color:#dc3545;"><div class="stat-label">Em Atraso</div><div class="stat-value" style="color:#dc3545;">${formatCurrency(totalLate)}</div></div>
+                <div class="stat-item"><div class="stat-label">Nº de Dívidas Ativas</div><div class="stat-value">${debts.filter(d=>d.status!=='paid').length}</div></div>
+            `;
+
+            forecastDebts.sort((a,b) => new Date(a.date) - new Date(b.date));
+            const totalForecast = forecastDebts.reduce((s,p) => s+p.amount, 0);
+            document.getElementById('debtForecast').innerHTML = `
+                <div style="background:white;padding:12px;border-radius:8px;margin-bottom:10px;border-left:4px solid #ff6b6b;">
+                    <div style="font-size:20px;font-weight:700;color:#dc3545;">💸 Total a Pagar: ${formatCurrency(totalForecast)}</div>
+                    <div style="font-size:12px;color:#666;">${forecastDebts.length} pagamento${forecastDebts.length!==1?'s':''} nos próximos 30 dias</div>
+                </div>
+                ${forecastDebts.length === 0 ? '<div style="text-align:center;padding:15px;color:#999;">Nenhum pagamento previsto</div>' :
+                forecastDebts.map(p => `<div style="background:white;padding:10px;border-radius:8px;margin-bottom:6px;border-left:4px solid #ff6b6b;display:flex;justify-content:space-between;">
+                    <div><div style="font-weight:600;">${p.name}</div><div style="font-size:12px;color:#666;">${formatDateBR(p.date)}</div></div>
+                    <div style="font-size:16px;font-weight:700;color:#dc3545;">${formatCurrency(p.amount)}</div>
+                </div>`).join('')}
+            `;
+
+            const creditors = Object.entries(creditorStats).sort((a,b) => b[1].pending - a[1].pending);
+            document.getElementById('debtsByCreditor').innerHTML = creditors.length > 0
+                ? creditors.map(([n,s]) => `<div class="client-item"><div><div class="client-name">${n}</div><div style="font-size:11px;color:#dc3545;">Pendente: ${formatCurrency(s.pending)}</div></div><div class="client-value" style="color:#dc3545;">${formatCurrency(s.total)}</div></div>`).join('')
+                : '<div class="client-item"><div class="client-name" style="color:#28a745;">✅ Sem dívidas ativas!</div></div>';
+        }
+
+        function generateCombinedReport() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const next30 = new Date(today); next30.setDate(next30.getDate() + 30);
+
+            let totalReceive = 0, totalPay = 0, totalLateReceive = 0, totalLatePay = 0;
+            const cashflow = {};
+
+            loans.forEach(loan => {
+                if (loan.archived || loan.status === 'finished') return;
+                loan.payments.forEach(p => {
+                    if (!p.paid && !p.negotiated) {
+                        const d = parseLocalDate(p.date);
+                        if (d < today) totalLateReceive += p.amount;
+                        if (d >= today && d <= next30) {
+                            totalReceive += p.amount;
+                            const key = p.date.split('T')[0];
+                            if (!cashflow[key]) cashflow[key] = { receive: 0, pay: 0 };
+                            cashflow[key].receive += p.amount;
+                        }
+                    }
+                });
+            });
+
+            debts.forEach(debt => {
+                if (debt.status === 'paid') return;
+                (debt.payments || []).forEach(p => {
+                    if (!p.paid) {
+                        const d = parseLocalDate(p.date);
+                        if (d < today) totalLatePay += p.amount;
+                        if (d >= today && d <= next30) {
+                            totalPay += p.amount;
+                            const key = p.date.split('T')[0];
+                            if (!cashflow[key]) cashflow[key] = { receive: 0, pay: 0 };
+                            cashflow[key].pay += p.amount;
+                        }
+                    }
+                });
+            });
+
+            const balance = totalReceive - totalPay;
+            document.getElementById('combinedStats').innerHTML = `
+                <div class="stat-item" style="border-left-color:#28a745;"><div class="stat-label">🟢 A Receber (30 dias)</div><div class="stat-value" style="color:#28a745;">${formatCurrency(totalReceive)}</div></div>
+                <div class="stat-item" style="border-left-color:#dc3545;"><div class="stat-label">🔴 A Pagar (30 dias)</div><div class="stat-value" style="color:#dc3545;">${formatCurrency(totalPay)}</div></div>
+                <div class="stat-item" style="border-left-color:${balance>=0?'#28a745':'#dc3545'};"><div class="stat-label">💹 Saldo Líquido (30 dias)</div><div class="stat-value" style="color:${balance>=0?'#28a745':'#dc3545'};">${formatCurrency(balance)}</div></div>
+                <div class="stat-item" style="border-left-color:#ffc107;"><div class="stat-label">⚠️ Atrasado a Receber</div><div class="stat-value" style="color:#ffc107;">${formatCurrency(totalLateReceive)}</div></div>
+                <div class="stat-item" style="border-left-color:#dc3545;"><div class="stat-label">⚠️ Atrasado a Pagar</div><div class="stat-value" style="color:#dc3545;">${formatCurrency(totalLatePay)}</div></div>
+            `;
+
+            const sortedDays = Object.keys(cashflow).sort();
+            document.getElementById('cashflowForecast').innerHTML = sortedDays.length === 0
+                ? '<div style="text-align:center;padding:20px;color:#999;">Nenhum fluxo de caixa nos próximos 30 dias</div>'
+                : '<div style="max-height:350px;overflow-y:auto;">' + sortedDays.map(day => {
+                    const cf = cashflow[day];
+                    const net = cf.receive - cf.pay;
+                    return `<div style="background:white;padding:10px;border-radius:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;border-left:4px solid ${net>=0?'#28a745':'#dc3545'};">
+                        <div style="font-weight:600;">${formatDateBR(day)}</div>
+                        <div style="display:flex;gap:15px;font-size:13px;">
+                            ${cf.receive > 0 ? `<span style="color:#28a745;">+${formatCurrency(cf.receive)}</span>` : ''}
+                            ${cf.pay > 0 ? `<span style="color:#dc3545;">-${formatCurrency(cf.pay)}</span>` : ''}
+                            <strong style="color:${net>=0?'#28a745':'#dc3545'};">${net>=0?'+':''}${formatCurrency(net)}</strong>
+                        </div>
+                    </div>`;
+                }).join('') + '</div>';
+        }
+
+        window.exportarRelatorio = function() {
+            const today = new Date();
+            let report = `📊 RELATÓRIO GT SMART EQUITY LLC\n${'='.repeat(50)}\nData: ${today.toLocaleDateString('pt-BR')}\n\n`;
+            let totalLent = 0, totalReceived = 0;
+            loans.forEach(loan => {
+                totalLent += loan.totalAmount;
+                loan.payments.forEach(p => { if (p.paid) totalReceived += p.amount; });
+            });
+            report += `💰 Empréstimos\nTotal Emprestado: ${formatCurrency(totalLent)}\nJá Recebido: ${formatCurrency(totalReceived)}\n\n`;
+
+            let totalDebts = 0;
+            debts.forEach(d => { if (d.status !== 'paid') totalDebts += d.totalAmount || 0; });
+            report += `💳 Dívidas Ativas: ${formatCurrency(totalDebts)}\n`;
+
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Relatorio_GT_Smart_${today.toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        window.exportarBackup = async function() {
+            const resultado = await exportFullBackup();
+            if (resultado) {
+                alert(`✅ Backup exportado!\n\n📊 ${resultado.loans} empréstimos\n💳 ${resultado.debts} dívidas\n📄 ${resultado.contracts} contratos`);
+            } else {
+                alert('❌ Erro ao exportar backup.');
+            }
+        };
+
+        function generateCardsReport() {
+            if (!cards || cards.length === 0) {
+                if (document.getElementById('cardsSummary')) document.getElementById('cardsSummary').innerHTML = '<p style="color:#aaa;font-size:13px;">Nenhum cartão cadastrado.</p>';
+                return;
+            }
+            const totalLimite = cards.reduce((s,c) => s + (c.limite || 0), 0);
+            const totalUsado = cards.reduce((s,c) => s + (c.saldoUsado || 0), 0);
+            const totalDisponivel = totalLimite - totalUsado;
+            const pctMedio = totalLimite ? (totalUsado / totalLimite * 100).toFixed(1) : 0;
+            const acima30 = cards.filter(c => c.limite && (c.saldoUsado || 0) / c.limite * 100 >= 30).length;
+            if (document.getElementById('cardsSummary')) {
+                document.getElementById('cardsSummary').innerHTML = `
+                    <div class="stat-card"><div class="stat-value">${cards.length}</div><div class="stat-label">Total de Cartões</div></div>
+                    <div class="stat-card"><div class="stat-value">${formatCurrency(totalLimite)}</div><div class="stat-label">Limite Total</div></div>
+                    <div class="stat-card"><div class="stat-value" style="color:#e53935">${formatCurrency(totalUsado)}</div><div class="stat-label">Total Usado</div></div>
+                    <div class="stat-card"><div class="stat-value" style="color:#2e7d32">${formatCurrency(totalDisponivel)}</div><div class="stat-label">Disponível</div></div>
+                    <div class="stat-card"><div class="stat-value" style="color:${pctMedio >= 30 ? '#e53935' : '#f57f17'}">${pctMedio}%</div><div class="stat-label">Utilização Média</div></div>
+                    <div class="stat-card"><div class="stat-value" style="color:#e53935">${acima30}</div><div class="stat-label">Acima de 30%</div></div>`;
+                const sorted = [...cards].sort((a,b) => { const pA = a.limite ? (a.saldoUsado||0)/a.limite : 0; const pB = b.limite ? (b.saldoUsado||0)/b.limite : 0; return pB - pA; });
+                let html = '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;"><tr style="background:#f0f0f0;"><th style="padding:8px;text-align:left;">Cartão</th><th style="padding:8px;">Titular</th><th style="padding:8px;">Limite</th><th style="padding:8px;">Usado</th><th style="padding:8px;">Uso%</th><th style="padding:8px;">Vence</th></tr>';
+                sorted.forEach(c => {
+                    const pct = c.limite ? ((c.saldoUsado||0)/c.limite*100) : 0;
+                    const cor = pct >= 30 ? '#e53935' : pct >= 20 ? '#f57f17' : '#2e7d32';
+                    html += `<tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:8px;font-weight:600;">${c.nome} ••${c.ultimos4||'??'}</td><td style="padding:8px;text-align:center;">${c.titular}</td><td style="padding:8px;text-align:right;">${formatCurrency(c.limite||0)}</td><td style="padding:8px;text-align:right;">${formatCurrency(c.saldoUsado||0)}</td><td style="padding:8px;text-align:center;color:${cor};font-weight:700;">${pct.toFixed(0)}%</td><td style="padding:8px;text-align:center;">Dia ${c.diaVencimento||'—'}</td></tr>`;
+                });
+                html += '</table>';
+                document.getElementById('cardsDetail').innerHTML = html;
+            }
+        }
+
+        window.restaurarBackup = async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    if (!backup.data || backup.system !== 'GT Smart Equity') {
+                        alert('❌ Arquivo inválido!');
+                        return;
+                    }
+                    const ok = await importFullBackup(e.target.result);
+                    if (ok) {
+                        alert('✅ Backup restaurado com sucesso!\n\nA página vai recarregar.');
+                        location.reload();
+                    } else {
+                        alert('❌ Erro ao restaurar backup.');
+                    }
+                } catch (err) {
+                    alert('❌ Erro ao ler arquivo: ' + err.message);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        };
+    </script>
+</body>
+</html>

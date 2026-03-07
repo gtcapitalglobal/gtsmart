@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Calendário de Cartões</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .content { padding: 15px 20px; }
+
+        /* Summary */
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .summary-card { border-radius: 10px; padding: 10px 6px; text-align: center; }
+        .summary-card .label { font-size: 9px; font-weight: 700; opacity: 0.8; margin-bottom: 3px; text-transform: uppercase; }
+        .summary-card .value { font-size: 16px; font-weight: 800; }
+        .sc-fecham { background: #fff3e0; color: #e65100; }
+        .sc-pagar { background: #e3f2fd; color: #1565c0; }
+        .sc-pagos { background: #e8f5e9; color: #1b5e20; }
+        .sc-total { background: #f3e5f5; color: #6a1b9a; }
+
+        /* Nav */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .month-year { font-size: 18px; font-weight: 700; color: #333; }
+        .nav-buttons { display: flex; gap: 8px; }
+        .nav-btn { background: #2e7d32; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+
+        /* Legend */
+        .legend { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: #555; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .ld-fech { background: #ff9800; }
+        .ld-pagar { background: #1976d2; }
+        .ld-venc { background: #e53935; }
+        .ld-pago { background: #43a047; }
+
+        /* Calendar Grid */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 15px; }
+        .calendar-header-day { text-align: center; padding: 6px; font-weight: 700; font-size: 11px; color: #2e7d32; background: #e8f5e9; border-radius: 6px; }
+        .calendar-day { border: 2px solid #e8e8e8; border-radius: 8px; padding: 3px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; min-height: 52px; }
+        .calendar-day:hover { border-color: #2e7d32; box-shadow: 0 2px 8px rgba(46,125,50,0.3); transform: scale(1.03); }
+        .calendar-day.other-month { opacity: 0.15; pointer-events: none; }
+        .calendar-day.today { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; border-color: #1b5e20; }
+        .calendar-day.today .day-amount { color: #fff; }
+        .calendar-day.selected { border-color: #2e7d32; border-width: 3px; box-shadow: 0 0 0 2px rgba(46,125,50,0.3); }
+        .calendar-day.has-events { background: #f5f5f5; border-color: #bbb; }
+        .calendar-day.has-pagar { background: #e3f2fd; border-color: #1976d2; }
+        .calendar-day.has-fechamento { background: #fff8e1; border-color: #ff9800; }
+        .calendar-day.has-vencimento { background: #ffebee; border-color: #e53935; }
+        .calendar-day.has-pago { background: #e8f5e9; border-color: #43a047; }
+        .day-number { font-size: 12px; font-weight: 700; }
+        .day-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .dot-fech { background: #ff9800; }
+        .dot-pagar { background: #1976d2; }
+        .dot-venc { background: #e53935; }
+        .dot-pago { background: #43a047; }
+        .day-count { font-size: 8px; font-weight: 700; text-align: center; color: #555; margin-top: 1px; }
+
+        /* Detail Section */
+        .detail-section { background: #f5f7fa; padding: 15px; border-radius: 12px; margin-top: 10px; }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .detail-title { font-size: 15px; font-weight: 700; color: #333; }
+        .detail-subtitle { font-size: 12px; color: #888; }
+
+        .event-item { background: white; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid #ccc; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+        .event-item:hover { transform: translateX(3px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .event-item.ev-fechamento { border-left-color: #ff9800; }
+        .event-item.ev-pagar { border-left-color: #1976d2; }
+        .event-item.ev-vencimento { border-left-color: #e53935; }
+        .event-item.ev-pago { border-left-color: #43a047; background: #f8fff8; }
+
+        .event-left { flex: 1; }
+        .event-name { font-size: 14px; font-weight: 700; color: #333; }
+        .event-info { font-size: 11px; color: #888; margin-top: 2px; }
+        .event-right { text-align: right; }
+        .event-amount { font-size: 15px; font-weight: 800; }
+        .event-type { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 3px; }
+        .et-fechamento { background: #fff3e0; color: #e65100; }
+        .et-pagar { background: #e3f2fd; color: #1565c0; }
+        .et-vencimento { background: #ffebee; color: #c62828; }
+        .et-pago { background: #e8f5e9; color: #1b5e20; }
+
+        .badge-tipo { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
+        .bt-business { background: #e3f2fd; color: #1565c0; }
+        .bt-pessoal { background: #f3e5f5; color: #6a1b9a; }
+
+        .empty-day { text-align: center; padding: 20px; color: #999; font-size: 13px; }
+
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #0a2e0a 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .month-year { color: #e0e0e0; }
+        body.dark-mode .calendar-header-day { background: #0a2e0a; color: #4caf50; }
+        body.dark-mode .calendar-day { border-color: #2a2a4a; background: #16213e; color: #e0e0e0; }
+        body.dark-mode .calendar-day.has-events { background: #1a1a3e; }
+        body.dark-mode .calendar-day.has-pagar { background: #152030; border-color: #1976d2; }
+        body.dark-mode .calendar-day.has-fechamento { background: #2e2515; border-color: #ff9800; }
+        body.dark-mode .calendar-day.has-vencimento { background: #2e1515; border-color: #e53935; }
+        body.dark-mode .calendar-day.has-pago { background: #152e15; border-color: #43a047; }
+        body.dark-mode .calendar-day.other-month { opacity: 0.1; }
+        body.dark-mode .day-count { color: #aaa; }
+        body.dark-mode .detail-section { background: #16213e; }
+        body.dark-mode .detail-title { color: #e0e0e0; }
+        body.dark-mode .event-item { background: #1a1a3e; }
+        body.dark-mode .event-name { color: #e0e0e0; }
+        body.dark-mode .legend-item { color: #aaa; }
+        body.dark-mode .summary-card.sc-fecham { background: #2e2515; }
+        body.dark-mode .summary-card.sc-pagar { background: #152030; }
+        body.dark-mode .summary-card.sc-pagos { background: #152e15; }
+        body.dark-mode .summary-card.sc-total { background: #2d1a3e; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .header { flex-direction: column; text-align: center; }
+            .calendar-day { min-height: 44px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>💳 Calendário de Cartões</h2>
+            <div class="header-right">
+                <a href="GT_Smart_Estrategia.html" class="btn-back">🎯 Estratégia</a>
+                <a href="GT_Smart_Cartoes.html" class="btn-back">💳 Cartões</a>
+                <a href="GT_Smart_Menu.html" class="btn-back">← Menu</a>
+            </div>
+        </div>
+        <div class="content">
+            <!-- Summary -->
+            <div class="summary-grid">
+                <div class="summary-card sc-fecham">
+                    <div class="label">📋 Fechamentos</div>
+                    <div class="value" id="sumFech">—</div>
+                </div>
+                <div class="summary-card sc-pagar">
+                    <div class="label">💰 A Pagar</div>
+                    <div class="value" id="sumPagar">—</div>
+                </div>
+                <div class="summary-card sc-pagos">
+                    <div class="label">✅ Pagos</div>
+                    <div class="value" id="sumPagos">—</div>
+                </div>
+                <div class="summary-card sc-total">
+                    <div class="label">💵 Total Mês</div>
+                    <div class="value" id="sumTotal">—</div>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <div class="calendar-header">
+                <div class="month-year" id="monthYear"></div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="previousMonth()">‹</button>
+                    <button class="nav-btn" onclick="goToday()">Hoje</button>
+                    <button class="nav-btn" onclick="nextMonth()">›</button>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot ld-fech"></div><span>Fechamento</span></div>
+                <div class="legend-item"><div class="legend-dot ld-pagar"></div><span>Data Boa (pagar)</span></div>
+                <div class="legend-item"><div class="legend-dot ld-venc"></div><span>Vencimento</span></div>
+                <div class="legend-item"><div class="legend-dot ld-pago"></div><span>Já Pago</span></div>
+            </div>
+
+            <!-- Calendar -->
+            <div class="calendar-grid" id="calendar"></div>
+
+            <!-- Detail -->
+            <div class="detail-section" id="detailSection" style="display:none;">
+                <div class="detail-header">
+                    <span class="detail-title" id="detailTitle"></span>
+                    <span class="detail-subtitle" id="detailSub"></span>
+                </div>
+                <div id="detailList"></div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 06/03/2026</p>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, getCards } from './firebase-config.js';
+
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') document.body.classList.add('dark-mode');
+
+        let currentDate = new Date();
+        let selectedDateStr = '';
+        let cards = [];
+        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            cards = (await getCards()) || [];
+            renderCalendar();
+            showDay(new Date().getDate());
+        });
+
+        function getPayDay(card) {
+            if (card.tipo === 'Business') {
+                const venc = parseInt(card.diaVencimento) || 0;
+                const dias = card.modoBusiness === 'turbo' ? 13 : 2;
+                let d = venc - dias;
+                return d > 0 ? d : d + 30;
+            } else {
+                const fech = parseInt(card.diaFechamento) || 0;
+                let d = fech - 2;
+                return d > 0 ? d : d + 30;
+            }
+        }
+
+        function getEventsForDay(day) {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const mesStr = year + '-' + String(month + 1).padStart(2, '0');
+            const events = [];
+
+            cards.forEach(c => {
+                const fech = parseInt(c.diaFechamento) || 0;
+                const venc = parseInt(c.diaVencimento) || 0;
+                const payDay = getPayDay(c);
+                const jaPago = c.pagoMes === mesStr;
+                const saldo = c.saldoUsado || 0;
+
+                // Fechamento
+                if (fech === day) {
+                    events.push({
+                        card: c,
+                        type: 'fechamento',
+                        label: 'Fechamento',
+                        emoji: '📋',
+                        cls: 'ev-fechamento',
+                        typeCls: 'et-fechamento',
+                        dotCls: 'dot-fech',
+                        amount: saldo
+                    });
+                }
+
+                // Data boa (pagar)
+                if (payDay === day) {
+                    events.push({
+                        card: c,
+                        type: jaPago ? 'pago' : 'pagar',
+                        label: jaPago ? 'Pago ✓' : (c.tipo === 'Business' ? 'Pagar (PAYDEX)' : 'Pagar (AZEO)'),
+                        emoji: jaPago ? '✅' : '💰',
+                        cls: jaPago ? 'ev-pago' : 'ev-pagar',
+                        typeCls: jaPago ? 'et-pago' : 'et-pagar',
+                        dotCls: jaPago ? 'dot-pago' : 'dot-pagar',
+                        amount: saldo
+                    });
+                }
+
+                // Vencimento
+                if (venc === day && venc !== payDay) {
+                    events.push({
+                        card: c,
+                        type: 'vencimento',
+                        label: 'Vencimento',
+                        emoji: '⏰',
+                        cls: 'ev-vencimento',
+                        typeCls: 'et-vencimento',
+                        dotCls: 'dot-venc',
+                        amount: saldo
+                    });
+                }
+            });
+
+            return events;
+        }
+
+        function updateSummary() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const mesStr = year + '-' + String(month + 1).padStart(2, '0');
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let fechamentos = 0, aPagar = 0, pagos = 0, totalMes = 0;
+
+            cards.forEach(c => {
+                const fech = parseInt(c.diaFechamento) || 0;
+                if (fech >= 1 && fech <= daysInMonth) fechamentos++;
+
+                const saldo = c.saldoUsado || 0;
+                const jaPago = c.pagoMes === mesStr;
+
+                if (saldo > 0) {
+                    totalMes += saldo;
+                    if (jaPago) pagos++;
+                    else aPagar += saldo;
+                }
+            });
+
+            document.getElementById('sumFech').textContent = fechamentos;
+            document.getElementById('sumPagar').textContent = fmt(aPagar);
+            document.getElementById('sumPagos').textContent = pagos + '/' + cards.length;
+            document.getElementById('sumTotal').textContent = fmt(totalMes);
+        }
+
+        function renderCalendar() {
+            updateSummary();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            document.getElementById('monthYear').textContent = monthNames[month] + ' ' + year;
+
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+            const todayDay = today.getDate();
+            const firstDayOfWeek = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+
+            let html = '';
+            ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(d => {
+                html += '<div class="calendar-header-day">' + d + '</div>';
+            });
+
+            // Previous month
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                html += '<div class="calendar-day other-month"><div class="day-number">' + (prevMonthDays - i) + '</div></div>';
+            }
+
+            // Current month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const events = getEventsForDay(day);
+                const isToday = isCurrentMonth && day === todayDay;
+                const isSelected = day === parseInt(selectedDateStr);
+
+                let cls = 'calendar-day';
+                if (isToday) cls += ' today';
+                if (isSelected) cls += ' selected';
+
+                // Prioridade de cor do dia
+                if (events.length > 0 && !isToday) {
+                    const types = events.map(e => e.type);
+                    if (types.includes('pagar')) cls += ' has-pagar';
+                    else if (types.includes('fechamento')) cls += ' has-fechamento';
+                    else if (types.includes('vencimento')) cls += ' has-vencimento';
+                    else if (types.includes('pago')) cls += ' has-pago';
+                    else cls += ' has-events';
+                }
+
+                // Dots
+                let dots = '';
+                if (events.length > 0) {
+                    const uniqueDots = [];
+                    const seen = new Set();
+                    events.forEach(e => {
+                        if (!seen.has(e.dotCls)) {
+                            seen.add(e.dotCls);
+                            uniqueDots.push(e.dotCls);
+                        }
+                    });
+                    dots = '<div class="day-dots">' + uniqueDots.map(d => '<div class="dot ' + d + '"></div>').join('') + '</div>';
+                }
+
+                const count = events.length > 0 ? '<div class="day-count">' + events.length + ' cartão' + (events.length > 1 ? 's' : '') + '</div>' : '';
+
+                html += '<div class="' + cls + '" onclick="showDay(' + day + ')">' +
+                    '<div class="day-number">' + day + '</div>' +
+                    dots + count + '</div>';
+            }
+
+            // Next month
+            const totalCells = firstDayOfWeek + daysInMonth;
+            const remaining = 7 - (totalCells % 7);
+            if (remaining < 7) {
+                for (let i = 1; i <= remaining; i++) {
+                    html += '<div class="calendar-day other-month"><div class="day-number">' + i + '</div></div>';
+                }
+            }
+
+            document.getElementById('calendar').innerHTML = html;
+        }
+
+        window.showDay = function(day) {
+            selectedDateStr = String(day);
+            renderCalendar();
+
+            const events = getEventsForDay(day);
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+            document.getElementById('detailTitle').textContent = '📅 Dia ' + day + ' de ' + monthNames[month];
+
+            if (events.length === 0) {
+                document.getElementById('detailSub').textContent = '';
+                document.getElementById('detailList').innerHTML = '<div class="empty-day">Nenhum evento de cartão neste dia</div>';
+                document.getElementById('detailSection').style.display = 'block';
+                document.getElementById('detailSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return;
+            }
+
+            document.getElementById('detailSub').textContent = events.length + ' evento' + (events.length > 1 ? 's' : '');
+
+            // Ordenar: pagar primeiro, depois fechamento, depois vencimento
+            const order = { pagar: 0, fechamento: 1, vencimento: 2, pago: 3 };
+            events.sort((a, b) => (order[a.type] || 0) - (order[b.type] || 0));
+
+            document.getElementById('detailList').innerHTML = events.map(e => {
+                const c = e.card;
+                const uso = c.limite ? ((c.saldoUsado || 0) / c.limite * 100).toFixed(0) : 0;
+                const tipoBadge = c.tipo === 'Business' ? '<span class="badge-tipo bt-business">🏢 Business</span>' : '<span class="badge-tipo bt-pessoal">👤 Pessoal</span>';
+                
+                let info = '';
+                if (e.type === 'fechamento') {
+                    info = 'Saldo será reportado ao bureau. Uso: ' + uso + '%';
+                    if (c.tipo === 'Pessoal') info += ' — AZEO: zerar antes!';
+                } else if (e.type === 'pagar') {
+                    const modo = c.tipo === 'Business' ? (c.modoBusiness === 'turbo' ? 'TURBO (13d antes)' : 'Normal (2d antes)') : 'AZEO (2d antes fech.)';
+                    info = modo + ' | Venc: dia ' + (c.diaVencimento || '?');
+                } else if (e.type === 'vencimento') {
+                    info = 'Último dia para pagar sem juros';
+                } else {
+                    info = '✓ Pagamento já realizado este mês';
+                }
+
+                const amtColor = e.type === 'pago' ? '#43a047' : (e.amount > 0 ? '#333' : '#999');
+
+                return '<div class="event-item ' + e.cls + '" onclick="window.location.href=\'GT_Smart_Detalhe_Cartao.html?id=' + c.id + '\'">' +
+                    '<div class="event-left">' +
+                        '<div class="event-name">' + e.emoji + ' ' + (c.nome || 'Cartão') + tipoBadge + '</div>' +
+                        '<div class="event-info">' + (c.ultimos4 ? '•••• ' + c.ultimos4 + ' | ' : '') + (c.titular || '') + '</div>' +
+                        '<div class="event-info">' + info + '</div>' +
+                    '</div>' +
+                    '<div class="event-right">' +
+                        '<div class="event-amount" style="color:' + amtColor + '">' + fmt(e.amount) + '</div>' +
+                        '<div class="event-type ' + e.typeCls + '">' + e.label + '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            document.getElementById('detailSection').style.display = 'block';
+            document.getElementById('detailSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
+
+        window.previousMonth = function() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            selectedDateStr = '';
+            renderCalendar();
+            document.getElementById('detailSection').style.display = 'none';
+        };
+        window.nextMonth = function() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            selectedDateStr = '';
+            renderCalendar();
+            document.getElementById('detailSection').style.display = 'none';
+        };
+        window.goToday = function() {
+            currentDate = new Date();
+            selectedDateStr = '';
+            renderCalendar();
+            showDay(new Date().getDate());
+        };
+    </script>
+</body>
+</html>

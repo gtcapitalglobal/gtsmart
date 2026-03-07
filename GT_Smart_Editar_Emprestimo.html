@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Editar Empréstimo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 5px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h2 { font-size: 18px; }
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .content { padding: 15px 20px; }
+        .section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .payment-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .payment-header {
+            font-size: 13px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #856404;
+        }
+        .paid-badge {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
+            .header { flex-direction: column; text-align: center; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>✏️ Editar Empréstimo Completo</h2>
+            <a href="#" onclick="goBack(); return false;" class="btn-back">← Voltar</a>
+        </div>
+        <div class="content">
+            <div class="info-box">
+                ⚠️ <strong>Atenção:</strong> Você pode editar todos os campos abaixo. Alterações nas parcelas afetam o cronograma. Revise antes de salvar.
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Dados Gerais do Empréstimo</div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nome do Cliente *</label>
+                    <input type="text" id="clientName" class="form-input" placeholder="Nome completo do cliente">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📱 WhatsApp (com código do país, ex: 13051234567)</label>
+                    <input type="tel" id="clientPhone" class="form-input" placeholder="13051234567">
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Data do Empréstimo *</label>
+                        <input type="date" id="loanDate" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Data do Primeiro Pagamento *</label>
+                        <input type="date" id="firstPaymentDate" class="form-input">
+                    </div>
+                </div>
+
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Valor Total ($)</label>
+                        <input type="number" id="totalAmount" class="form-input" placeholder="0.00" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Taxa de Juros (%)</label>
+                        <input type="number" id="interestRate" class="form-input" placeholder="5.00" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Frequência</label>
+                        <select id="frequency" class="form-input">
+                            <option value="weekly">Semanal</option>
+                            <option value="biweekly">Quinzenal</option>
+                            <option value="monthly">Mensal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantidade de Parcelas</label>
+                    <input type="number" id="numPayments" class="form-input" readonly style="background: #f0f0f0; cursor: not-allowed;" title="Calculado automaticamente baseado nas parcelas abaixo">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações / Notas</label>
+                    <textarea id="notes" class="form-input" rows="3" placeholder="Notas adicionais sobre o empréstimo..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">💰 Editar Parcelas Individualmente</div>
+                
+                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                    <div style="font-size: 12px; color: #856404; margin-bottom: 8px;">
+                        ⚠️ <strong>Datas bagunçadas?</strong> Use o botão abaixo para reorganizar todas as datas automaticamente baseado na primeira parcela.
+                    </div>
+                    <button onclick="reorganizeDates()" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                        🔄 Reorganizar Todas as Datas
+                    </button>
+                </div>
+                
+                <div id="paymentsList"></div>
+            </div>
+
+            <button class="btn-save" onclick="saveChanges()">💾 Salvar Todas as Alterações</button>
+        </div>
+    
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    </div>
+    <script type="module">
+        // Dark mode
+        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-config.js";
+        let loan = null;
+        const loanId = new URLSearchParams(window.location.search).get('id');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = "GT_Smart_Login.html"; return; }
+            await loadLoan();
+        });
+
+        async function loadLoan() {
+            const loans = await getLoans();
+            loan = loans.find(l => l.id === loanId);
+
+            if (!loan) {
+                alert('❌ Empréstimo não encontrado!');
+                window.location.href = 'GT_Smart_Gestao.html';
+                return;
+            }
+
+            // Preenche dados gerais
+            document.getElementById('clientName').value = loan.clientName || '';
+            document.getElementById('clientPhone').value = loan.clientPhone || '';
+            document.getElementById('loanDate').value = loan.loanDate || '';
+            document.getElementById('firstPaymentDate').value = loan.firstPaymentDate || '';
+            document.getElementById('totalAmount').value = loan.totalAmount || 0;
+            document.getElementById('interestRate').value = loan.interestRate || 5;
+            document.getElementById('frequency').value = loan.frequency || 'weekly';
+            document.getElementById('numPayments').value = loan.numPayments || loan.payments.length;
+            document.getElementById('notes').value = loan.notes || '';
+
+            // Renderiza parcelas
+            renderPayments();
+        }
+
+        function renderPayments() {
+            const formatDateForInput = (dateStr) => {
+                // Converte para formato YYYY-MM-DD para input type="date"
+                const date = new Date(dateStr);
+                return date.toISOString().split('T')[0];
+            };
+
+            const formatDateDisplay = (dateStr) => {
+                if (!dateStr) return '';
+                const parts = dateStr.split('T')[0].split('-');
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return dateStr;
+            };
+
+            document.getElementById('paymentsList').innerHTML = loan.payments.map((payment, index) => `
+                <div class="payment-item">
+                    <div class="payment-header">
+                        <span>📅 Parcela #${payment.number}</span>
+                        ${payment.paid ? '<span class="paid-badge">✅ PAGA</span>' : '<span style="color: #999; font-size: 11px;">Pendente</span>'}
+                    </div>
+                    <div class="payment-grid">
+                        <div class="form-group">
+                            <label class="form-label">Data de Vencimento</label>
+                            <input type="date" 
+                                   class="form-input" 
+                                   value="${formatDateForInput(payment.date)}"
+                                   onchange="updatePaymentDate(${index}, this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Valor da Parcela ($)</label>
+                            <input type="number" 
+                                   class="form-input" 
+                                   value="${payment.amount.toFixed(2)}"
+                                   step="0.01"
+                                   onchange="updatePaymentAmount(${index}, this.value)">
+                        </div>
+                    </div>
+                    ${payment.paid ? `<div style="margin-top: 8px; font-size: 11px; color: #28a745;">✓ Paga em ${formatDateDisplay(payment.paidDate)}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        window.updatePaymentDate = function updatePaymentDate(index, newDate) {
+            loan.payments[index].date = newDate;
+        }
+
+        window.updatePaymentAmount = function updatePaymentAmount(index, newAmount) {
+            loan.payments[index].amount = parseFloat(newAmount);
+        }
+
+        window.reorganizeDates = function() {
+            if (!confirm('🔄 Reorganizar TODAS as datas?\n\nIsso vai:\n✅ Manter a primeira parcela com a data atual\n✅ Recalcular todas as outras baseado na frequência\n✅ Manter quais estão pagas e quais estão pendentes\n✅ NÃO alterar valores\n\nConfirmar?')) {
+                return;
+            }
+            
+            if (loan.payments.length === 0) {
+                alert('❌ Não há parcelas para reorganizar!');
+                return;
+            }
+            
+            // Pega a data da primeira parcela
+            const firstDate = new Date(loan.payments[0].date);
+            
+            // Define incremento baseado na frequência
+            let dayIncrement = 7; // semanal
+            if (loan.frequency === 'biweekly') {
+                dayIncrement = 14;
+            } else if (loan.frequency === 'monthly') {
+                dayIncrement = 30;
+            }
+            
+            // Reorganiza as datas
+            let currentDate = new Date(firstDate);
+            
+            loan.payments.forEach((payment, index) => {
+                if (index === 0) {
+                    // Primeira parcela mantém a data
+                    return;
+                }
+                
+                // Calcula próxima data
+                currentDate = new Date(currentDate);
+                currentDate.setDate(currentDate.getDate() + dayIncrement);
+                
+                // Atualiza a data (mantém paid, paidDate, amount, etc)
+                payment.date = currentDate.toISOString().split('T')[0];
+            });
+            
+            // Re-renderiza para mostrar as mudanças
+            renderPayments();
+            
+            alert('✅ Datas reorganizadas!\n\nVERIFIQUE se ficaram corretas e clique em "Salvar Todas as Alterações" no final da página.');
+        }
+
+        window.saveChanges = async function() {
+            // Atualiza dados gerais
+            const newName = document.getElementById('clientName').value.trim();
+            const newLoanDate = document.getElementById('loanDate').value;
+            const newFirstPaymentDate = document.getElementById('firstPaymentDate').value;
+            const newTotal = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const newRate = parseFloat(document.getElementById('interestRate').value) || 5;
+            const newFrequency = document.getElementById('frequency').value;
+            const newNotes = document.getElementById('notes').value.trim();
+
+            if (!newName) {
+                alert('❌ Nome do cliente é obrigatório!');
+                return;
+            }
+
+            if (!newLoanDate) {
+                alert('❌ Data do empréstimo é obrigatória!');
+                return;
+            }
+
+            if (!newFirstPaymentDate) {
+                alert('❌ Data do primeiro pagamento é obrigatória!');
+                return;
+            }
+
+            // Valida parcelas
+            let totalParcelas = 0;
+            for (let payment of loan.payments) {
+                if (!payment.date || payment.amount <= 0) {
+                    alert('❌ Todas as parcelas devem ter data e valor válidos!');
+                    return;
+                }
+                totalParcelas += payment.amount;
+            }
+
+            // Atualiza dados
+            loan.clientName = newName;
+            loan.clientPhone = document.getElementById('clientPhone').value.trim().replace(/\D/g, '');
+            loan.loanDate = newLoanDate;
+            loan.firstPaymentDate = newFirstPaymentDate;
+            loan.totalAmount = newTotal;
+            loan.interestRate = newRate;
+            loan.frequency = newFrequency;
+            loan.notes = newNotes;
+            loan.numPayments = loan.payments.length;
+
+            // Recalcula valor da parcela (média)
+            if (loan.payments.length > 0) {
+                loan.paymentAmount = totalParcelas / loan.payments.length;
+            }
+
+            const result = await updateLoan(loanId, loan);
+            if (result) {
+                alert('✅ Todas as alterações foram salvas com sucesso!');
+                window.location.href = `GT_Smart_Detalhe_Emprestimo.html?id=${loanId}`;
+            } else {
+                alert('❌ Erro ao salvar alterações!');
+            }
+        }
+
+        window.goBack = function() {
+            if (confirm('⚠️ Descartar alterações e voltar?')) {
+                window.location.href = `GT_Smart_Detalhe_Emprestimo.html?id=${loanId}`;
+            }
+        }
+    </script>
+<a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#667eea;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+</body>
+</html>
