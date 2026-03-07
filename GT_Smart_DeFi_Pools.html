@@ -147,7 +147,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>🌊 DeFi Pools <span style="font-size:10px;opacity:0.7;">v1.0</span></h2>
+            <h2>🌊 DeFi Pools <span style="font-size:10px;opacity:0.7;">v2.0</span></h2>
             <div class="header-right">
                 <button class="btn-add" onclick="openPoolModal()">+ Nova Pool</button>
                 <a href="GT_Smart_DeFi_Borrows.html" class="btn-link">🏦 Borrows</a>
@@ -242,10 +242,7 @@
                 <div class="modal-label">Quantidade Token B HOJE</div>
                 <input type="number" class="modal-input" id="tokenBCurrentAmount" placeholder="Ex: 2200 (atual na pool)" step="any" oninput="updatePoolPreview()">
 
-                <div class="modal-separator">📊 Ratio & Range</div>
-
-                <div class="modal-label">Preço da Pool na Entrada (ratio Token A/B)</div>
-                <input type="number" class="modal-input" id="poolEntryRatio" placeholder="Ex: 209.47 (1 ETH = 209.47 LINK)" step="any">
+                <div class="modal-separator">📊 Range</div>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                     <div>
@@ -256,6 +253,19 @@
                         <div class="modal-label">Range Máximo</div>
                         <input type="number" class="modal-input" id="poolRangeMax" placeholder="Ex: 200" step="any">
                     </div>
+                </div>
+
+                <div class="modal-separator">🏦 Borrow Vinculado</div>
+
+                <div class="modal-label">Vincular ao Borrow (opcional)</div>
+                <select class="modal-select" id="poolBorrowId" onchange="updateBorrowLink()">
+                    <option value="">— Nenhum borrow vinculado —</option>
+                </select>
+
+                <div id="borrowLinkDetails" style="display:none;">
+                    <div class="modal-label">Quantidade usada do Borrow</div>
+                    <input type="number" class="modal-input" id="poolBorrowQtyUsed" placeholder="Ex: 2589.30" step="any" oninput="updateBorrowLink()">
+                    <div class="modal-preview" id="borrowLinkPreview" style="margin-top:6px;"></div>
                 </div>
 
                 <div class="modal-label">Blockchain</div>
@@ -312,6 +322,7 @@
 
         let allCryptos = [];
         let pools = [];
+        let borrows = [];
         let userId = null;
         let selectedTokenA = null;
         let selectedTokenB = null;
@@ -351,6 +362,52 @@
             try { await deleteDoc(doc(db, 'users', userId, 'defi_pools', id)); return true; }
             catch(e) { console.error('Erro deletar:', e); return false; }
         }
+
+        async function loadBorrows() {
+            if (!userId) return;
+            try {
+                const snap = await getDocs(collection(db, 'users', userId, 'defi_borrows'));
+                borrows = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+            } catch(e) { console.error('Erro borrows:', e); borrows = []; }
+        }
+
+        function populateBorrowSelect() {
+            const sel = document.getElementById('poolBorrowId');
+            const current = sel.value;
+            sel.innerHTML = '<option value="">— Nenhum borrow vinculado —</option>' +
+                borrows.map(b => {
+                    const sym = (b.cryptoSymbol || '?').toUpperCase();
+                    const amt = parseFloat(b.amount || 0).toLocaleString('en-US', {maximumFractionDigits:4});
+                    return '<option value="' + b.id + '">' + sym + ' — ' + amt + ' (' + (b.chain || '') + ', ' + (b.protocol || '') + ')</option>';
+                }).join('');
+            if (current) sel.value = current;
+        }
+
+        window.updateBorrowLink = function() {
+            const borrowId = document.getElementById('poolBorrowId').value;
+            const detailsDiv = document.getElementById('borrowLinkDetails');
+            const preview = document.getElementById('borrowLinkPreview');
+
+            if (!borrowId) {
+                detailsDiv.style.display = 'none';
+                preview.textContent = '';
+                return;
+            }
+
+            detailsDiv.style.display = 'block';
+            const borrow = borrows.find(b => b.id === borrowId);
+            if (!borrow) return;
+
+            const qtyUsed = parseFloat(document.getElementById('poolBorrowQtyUsed').value) || 0;
+            const sym = (borrow.cryptoSymbol || '?').toUpperCase();
+            const totalBorrow = parseFloat(borrow.amount || 0);
+            const pct = totalBorrow > 0 ? ((qtyUsed / totalBorrow) * 100).toFixed(1) : 0;
+            const price = getPrice(borrow.cryptoId);
+            const debtUsd = qtyUsed * price;
+
+            preview.innerHTML = qtyUsed > 0 ?
+                '🏦 Usando <strong>' + qtyUsed.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) + ' = <strong>' + pct + '%</strong> do borrow<br>💰 Dívida: ' + fmtUsd(debtUsd) : '';
+        };
 
         // ===== PRICES =====
         async function loadPrices() {
@@ -445,11 +502,30 @@
                 const dexCls = 'dex-' + (p.dex || 'default').toLowerCase().replace(/\s/g, '');
                 const statusCls = p.status === 'closed' ? 'status-closed' : 'status-active';
                 const ratio = priceB > 0 ? (priceA / priceB) : 0;
-                const entryRatio = (p.entryPriceA && p.entryPriceB) ? (p.entryPriceA / p.entryPriceB) : (p.entryRatio || 0);
+                const entryRatio = (p.entryPriceA && p.entryPriceB && p.entryPriceB > 0) ? (p.entryPriceA / p.entryPriceB) : 0;
                 const symA = (p.tokenASymbol || '?').toUpperCase();
                 const symB = (p.tokenBSymbol || '?').toUpperCase();
                 const poolTitle = p.poolName || (symA + '-' + symB);
-                const hasCurrentAmounts = p.currentAmountA || p.currentAmountB;
+                const bothHaveInvest = investA > 0 && investB > 0;
+
+                // Borrow info
+                let borrowInfo = '';
+                if (p.borrowId) {
+                    const borrow = borrows.find(b => b.id === p.borrowId);
+                    if (borrow) {
+                        const bSym = (borrow.cryptoSymbol || '?').toUpperCase();
+                        const bTotal = parseFloat(borrow.amount || 0);
+                        const bUsed = parseFloat(p.borrowQtyUsed || 0);
+                        const bPct = bTotal > 0 ? ((bUsed / bTotal) * 100).toFixed(1) : 0;
+                        const bPrice = getPrice(borrow.cryptoId);
+                        const debtUsd = bUsed * bPrice;
+                        const poolVal = totalVal;
+                        const realPnl = poolVal - debtUsd;
+                        borrowInfo = bUsed.toLocaleString('en-US',{maximumFractionDigits:4}) + ' ' + bSym + ' de ' + bTotal.toLocaleString('en-US',{maximumFractionDigits:4}) + ' (' + bPct + '%) — ' + borrow.protocol + ' ' + borrow.chain +
+                            '<br>💰 Dívida: ' + fmtUsd(debtUsd) + ' | Pool: ' + fmtUsd(poolVal) +
+                            '<br><span style="font-size:14px;color:' + (realPnl >= 0 ? '#2e7d32' : '#c62828') + ';">Lucro Real: ' + (realPnl >= 0 ? '+' : '') + fmtUsd(realPnl) + '</span>';
+                    }
+                }
 
                 // Days in pool
                 const poolStart = new Date(p.poolDate || p.createdAt);
@@ -493,6 +569,7 @@
                                     '<span class="chain-badge ' + chainCls + '">' + (p.chain || 'Outro') + '</span>' +
                                     '<span class="dex-badge ' + dexCls + '">' + (p.dex || 'DEX') + '</span>' +
                                     '<span class="status-badge ' + statusCls + '">' + (p.status === 'closed' ? '⏹️ Encerrada' : '✅ Ativa') + '</span>' +
+                                    (p.notes ? '<span class="chain-badge chain-default" style="font-style:italic;">' + p.notes + '</span>' : '') +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
@@ -506,19 +583,20 @@
                             '<div class="pab-label">' + symA + '</div>' +
                             '<div class="pab-value">' + parseFloat(curAmtA).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
                             '<div class="pab-usd">Valor: ' + fmtUsd(valA) + '</div>' +
-                            (hasCurrentAmounts && p.amountA ? '<div class="pab-usd" style="color:#999;">Entrada: ' + parseFloat(p.amountA).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' : '') +
+                            '<div class="pab-usd" style="color:#999;">Entrada: ' + parseFloat(p.amountA || 0).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
                             (p.entryPriceA ? '<div class="pab-usd">Preço entrada: ' + fmtUsd(p.entryPriceA) + '</div>' : '') +
-                            (investA > 0 ? '<div class="pab-usd">Investiu: ' + fmtUsd(investA) + '</div>' : '') +
+                            (bothHaveInvest ? '<div class="pab-usd">Investiu: ' + fmtUsd(investA) + '</div>' : '') +
                         '</div>' +
                         '<div class="pool-amount-box">' +
                             '<div class="pab-label">' + symB + '</div>' +
                             '<div class="pab-value">' + parseFloat(curAmtB).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
                             '<div class="pab-usd">Valor: ' + fmtUsd(valB) + '</div>' +
-                            (hasCurrentAmounts && p.amountB ? '<div class="pab-usd" style="color:#999;">Entrada: ' + parseFloat(p.amountB).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' : '') +
+                            '<div class="pab-usd" style="color:#999;">Entrada: ' + parseFloat(p.amountB || 0).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
                             (p.entryPriceB ? '<div class="pab-usd">Preço entrada: ' + fmtUsd(p.entryPriceB) + '</div>' : '') +
-                            (investB > 0 ? '<div class="pab-usd">Investiu: ' + fmtUsd(investB) + '</div>' : '') +
+                            (bothHaveInvest ? '<div class="pab-usd">Investiu: ' + fmtUsd(investB) + '</div>' : '') +
                         '</div>' +
                     '</div>' +
+                    (borrowInfo ? '<div class="pool-grid" style="margin-bottom:4px;"><div class="pool-stat" style="grid-column:1/-1;background:#f5f0ff;"><div class="ps-label">🏦 Borrow Vinculado</div><div class="ps-value">' + borrowInfo + '</div></div></div>' : '') +
                     '<div class="pool-grid">' +
                         '<div class="pool-stat"><div class="ps-label">Investimento Total</div><div class="ps-value">' + (totalInvest > 0 ? fmtUsd(totalInvest) : '—') + '</div></div>' +
                         '<div class="pool-stat"><div class="ps-label">Valor Atual</div><div class="ps-value">' + fmtUsd(totalVal) + '</div></div>' +
@@ -533,7 +611,6 @@
                         ((p.rangeMin || p.rangeMax) ? '<div class="pool-stat"><div class="ps-label">Range Mínimo</div><div class="ps-value">' + (p.rangeMin || '—') + '</div></div>' : '') +
                         ((p.rangeMin || p.rangeMax) ? '<div class="pool-stat"><div class="ps-label">Range Máximo</div><div class="ps-value">' + (p.rangeMax || '—') + '</div></div>' : '') +
                     '</div>' +
-                    (p.notes ? '<div class="pool-notes">📝 ' + p.notes + '</div>' : '') +
                     '<div class="pool-notes">📅 Pool criada: ' + (p.poolDate || new Date(p.createdAt).toLocaleDateString('pt-BR')) + '</div>' +
                 '</div>';
             }).join('');
@@ -556,7 +633,9 @@
             document.getElementById('tokenBAmount').value = '';
             document.getElementById('tokenBEntryPrice').value = '';
             document.getElementById('tokenBCurrentAmount').value = '';
-            document.getElementById('poolEntryRatio').value = '';
+            document.getElementById('poolBorrowId').value = '';
+            document.getElementById('poolBorrowQtyUsed').value = '';
+            document.getElementById('borrowLinkDetails').style.display = 'none';
             document.getElementById('poolRangeMin').value = '';
             document.getElementById('poolRangeMax').value = '';
             document.getElementById('poolChain').value = 'Ethereum';
@@ -567,6 +646,7 @@
             document.getElementById('poolPreview').textContent = '';
             document.getElementById('poolSaveBtn').textContent = 'Salvar';
             filterTokenList('A'); filterTokenList('B');
+            populateBorrowSelect();
             document.getElementById('poolModal').classList.add('show');
         };
 
@@ -667,7 +747,8 @@
                 investmentA: (amtA || 0) * entryA, investmentB: (amtB || 0) * entryB,
                 currentAmountA: parseFloat(document.getElementById('tokenACurrentAmount').value) || 0,
                 currentAmountB: parseFloat(document.getElementById('tokenBCurrentAmount').value) || 0,
-                entryRatio: parseFloat(document.getElementById('poolEntryRatio').value) || 0,
+                borrowId: document.getElementById('poolBorrowId').value || '',
+                borrowQtyUsed: parseFloat(document.getElementById('poolBorrowQtyUsed').value) || 0,
                 rangeMin: parseFloat(document.getElementById('poolRangeMin').value) || 0,
                 rangeMax: parseFloat(document.getElementById('poolRangeMax').value) || 0,
                 chain: document.getElementById('poolChain').value,
@@ -705,7 +786,8 @@
             document.getElementById('tokenBAmount').value = p.amountB || '';
             document.getElementById('tokenBEntryPrice').value = p.entryPriceB || '';
             document.getElementById('tokenBCurrentAmount').value = p.currentAmountB || '';
-            document.getElementById('poolEntryRatio').value = p.entryRatio || '';
+            document.getElementById('poolBorrowId').value = p.borrowId || '';
+            document.getElementById('poolBorrowQtyUsed').value = p.borrowQtyUsed || '';
             document.getElementById('poolRangeMin').value = p.rangeMin || '';
             document.getElementById('poolRangeMax').value = p.rangeMax || '';
             document.getElementById('poolChain').value = p.chain || 'Ethereum';
@@ -714,7 +796,10 @@
             document.getElementById('poolStatus').value = p.status || 'active';
             document.getElementById('poolNotes').value = p.notes || '';
             document.getElementById('poolSaveBtn').textContent = 'Atualizar';
-            filterTokenList('A'); filterTokenList('B'); updatePoolPreview();
+            filterTokenList('A'); filterTokenList('B');
+            populateBorrowSelect();
+            setTimeout(() => { document.getElementById('poolBorrowId').value = p.borrowId || ''; updateBorrowLink(); }, 100);
+            updatePoolPreview();
             document.getElementById('poolModal').classList.add('show');
         };
 
@@ -733,6 +818,7 @@
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
             userId = user.uid;
             await loadPrices();
+            await loadBorrows();
             await loadPools();
             renderPoolList();
             setInterval(async () => { await loadPrices(); renderPoolList(); }, 60000);
