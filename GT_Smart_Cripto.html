@@ -27,19 +27,40 @@
         .fav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .fav-title { font-size: 15px; font-weight: 800; color: #f7931a; }
         .fav-count { font-size: 11px; color: #999; }
-        .fav-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
-        .fav-scroll::-webkit-scrollbar { height: 4px; }
-        .fav-scroll::-webkit-scrollbar-thumb { background: #f7931a; border-radius: 2px; }
-        .fav-card { min-width: 140px; border: 2px solid #f7931a; border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; flex-shrink: 0; }
+        .fav-scroll { display: flex; flex-direction: column; gap: 8px; }
+        .fav-card { border: 2px solid #f7931a; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; position: relative; }
         .fav-card:hover { box-shadow: 0 4px 15px rgba(247,147,26,0.3); transform: translateY(-2px); }
-        .fav-remove { position: absolute; top: 4px; right: 6px; font-size: 14px; cursor: pointer; opacity: 0.5; background: none; border: none; color: #c62828; }
+        .fav-remove { position: absolute; top: 8px; right: 8px; font-size: 14px; cursor: pointer; opacity: 0.5; background: none; border: none; color: #c62828; }
         .fav-remove:hover { opacity: 1; }
-        .fav-icon { width: 32px; height: 32px; border-radius: 50%; margin: 0 auto 6px; }
-        .fav-name { font-size: 12px; font-weight: 700; color: #333; }
-        .fav-symbol { font-size: 10px; color: #999; text-transform: uppercase; }
-        .fav-price { font-size: 16px; font-weight: 800; color: #333; margin-top: 4px; }
-        .fav-change { font-size: 11px; font-weight: 700; }
+        .fav-icon { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+        .fav-info { flex: 1; }
+        .fav-name { font-size: 14px; font-weight: 700; color: #333; }
+        .fav-symbol { font-size: 11px; color: #999; text-transform: uppercase; }
+        .fav-right { text-align: right; }
+        .fav-price { font-size: 18px; font-weight: 800; color: #333; }
+        .fav-change { font-size: 12px; font-weight: 700; }
         .fav-empty { text-align: center; padding: 15px; color: #999; font-size: 13px; border: 2px dashed #e0e0e0; border-radius: 12px; width: 100%; }
+
+        /* Stablecoin Favoritas */
+        .stable-section { margin-bottom: 15px; }
+        .stable-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .stable-title { font-size: 15px; font-weight: 800; color: #2e7d32; }
+        .stable-count { font-size: 11px; color: #999; }
+        .stable-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .stable-card { border: 2px solid #43a047; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; position: relative; }
+        .stable-card:hover { box-shadow: 0 4px 15px rgba(67,160,71,0.3); transform: translateY(-2px); }
+        .stable-remove { position: absolute; top: 8px; right: 8px; font-size: 14px; cursor: pointer; opacity: 0.5; background: none; border: none; color: #c62828; }
+        .stable-remove:hover { opacity: 1; }
+        .stable-icon { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+        .stable-info { flex: 1; }
+        .stable-name { font-size: 14px; font-weight: 700; color: #333; }
+        .stable-symbol { font-size: 11px; color: #999; text-transform: uppercase; }
+        .stable-right { text-align: right; }
+        .stable-price { font-size: 18px; font-weight: 800; color: #2e7d32; }
+        .stable-mcap { font-size: 11px; color: #999; }
+        .stable-empty { text-align: center; padding: 15px; color: #999; font-size: 13px; border: 2px dashed #e0e0e0; border-radius: 12px; }
+        .btn-add-stable { background: #43a047; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; width: 100%; }
+        .btn-add-stable:hover { background: #2e7d32; }
         .converter { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .converter-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 10px; }
         .converter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
@@ -101,6 +122,10 @@
         body.dark-mode .summary-card.sc-dom { background: #152030; }
         body.dark-mode .fav-card { border-color: #f7931a; background: #2e2515; }
         body.dark-mode .fav-empty { border-color: #333; color: #666; }
+        body.dark-mode .stable-card { border-color: #43a047; background: #152e15; }
+        body.dark-mode .stable-name { color: #e0e0e0; }
+        body.dark-mode .stable-empty { border-color: #333; color: #666; }
+        body.dark-mode .btn-add-stable { background: #2e7d32; }
         body.dark-mode .detail-stat { background: #16213e; }
         body.dark-mode .detail-stat .ds-value, body.dark-mode .detail-name, body.dark-mode .detail-price-big { color: #e0e0e0; }
         body.dark-mode .converter { background: #16213e; }
@@ -182,14 +207,13 @@
         @media (max-width: 600px) {
             .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
             .header { flex-direction: column; text-align: center; }
-            .fav-card { min-width: 120px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>₿ Cripto — Preços ao Vivo <span style="font-size:10px;opacity:0.7;margin-left:5px;">v3.0</span></h2>
+            <h2>₿ Cripto — Preços ao Vivo <span style="font-size:10px;opacity:0.7;margin-left:5px;">v3.1</span></h2>
             <div class="header-right">
                 <button class="btn-refresh" onclick="loadPrices()">🔄 Atualizar</button>
                 <a href="GT_Smart_Menu.html" class="btn-back">← Menu</a>
@@ -210,7 +234,7 @@
             <!-- Pools -->
             <div class="pool-section">
                 <div class="pool-header">
-                    <div class="pool-title">🔄 Minhas Pools</div>
+                    <div class="pool-title">🔄 Preços de Pool Favoritas</div>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <div class="pool-count" id="poolCount">0 pools</div>
                         <button class="btn-add-pool" onclick="openPoolModal()">+ Nova Pool</button>
@@ -237,6 +261,28 @@
                     <div class="modal-btns">
                         <button class="modal-btn modal-btn-cancel" onclick="closePoolModal()">Cancelar</button>
                         <button class="modal-btn modal-btn-save" id="poolSaveBtn" onclick="saveNewPool()" disabled>Criar Pool</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Stablecoin Favoritas -->
+            <div class="stable-section">
+                <div class="stable-header">
+                    <div class="stable-title">💵 Stablecoin Favoritas</div>
+                    <div class="stable-count" id="stableCount">0 favoritas</div>
+                </div>
+                <div class="stable-list" id="stableList">
+                    <div class="stable-empty" id="stableEmpty">Clique em "+ Adicionar" pra escolher suas stablecoins favoritas</div>
+                </div>
+                <button class="btn-add-stable" onclick="openStableModal()">+ Adicionar Stablecoin</button>
+            </div>
+            <!-- Stable Modal -->
+            <div class="modal-overlay" id="stableModal">
+                <div class="modal-box">
+                    <div class="modal-title">💵 Adicionar Stablecoin</div>
+                    <input type="text" class="modal-search" id="stableSearch" placeholder="🔍 Buscar stablecoin..." oninput="filterStableList()">
+                    <div class="modal-coin-list" id="stableModalList"></div>
+                    <div class="modal-btns">
+                        <button class="modal-btn modal-btn-cancel" onclick="closeStableModal()">Fechar</button>
                     </div>
                 </div>
             </div>
@@ -344,13 +390,119 @@
                 return '<div class="fav-card" onclick="showDetail(\'' + c.id + '\')">' +
                     '<button class="fav-remove" onclick="toggleFav(\'' + c.id + '\', event)" title="Remover">✕</button>' +
                     '<img class="fav-icon" src="' + c.image + '" onerror="this.style.display=\'none\'">' +
-                    '<div class="fav-name">' + c.name + '</div>' +
-                    '<div class="fav-symbol">' + c.symbol + '</div>' +
-                    '<div class="fav-price">' + fmtUsd(c.current_price) + '</div>' +
-                    '<div class="fav-change ' + cls + '">' + icon + ' ' + fmtChange(ch) + '</div>' +
+                    '<div class="fav-info">' +
+                        '<div class="fav-name">' + c.name + '</div>' +
+                        '<div class="fav-symbol">' + c.symbol + ' | MCap: ' + fmtUsd(c.market_cap||0) + '</div>' +
+                    '</div>' +
+                    '<div class="fav-right">' +
+                        '<div class="fav-price">' + fmtUsd(c.current_price) + '</div>' +
+                        '<div class="fav-change ' + cls + '">' + icon + ' ' + fmtChange(ch) + '</div>' +
+                    '</div>' +
                 '</div>';
             }).join('');
         }
+
+        // ===== STABLECOIN FAVORITES (Firebase) =====
+        let stableFavs = [];
+
+        // Extended stablecoin list for detection
+        const allStableIds = ['tether', 'usd-coin', 'dai', 'true-usd', 'paxos-standard', 'frax', 'usdd', 'first-digital-usd', 'ethena-usde', 'paypal-usd', 'ondo-us-dollar-yield', 'usual-usd', 'tether-eurt', 'gemini-dollar', 'celo-dollar', 'usdk', 'husd', 'sai', 'nusd', 'vai'];
+
+        async function loadStableFavs() {
+            if (!userId) return;
+            try {
+                const snap = await getDoc(doc(db, 'users', userId, 'settings', 'stable_favorites'));
+                if (snap.exists()) stableFavs = snap.data().ids || [];
+            } catch(e) { console.error('Erro stable favs:', e); }
+        }
+
+        async function saveStableFavs() {
+            if (!userId) return;
+            try {
+                await setDoc(doc(db, 'users', userId, 'settings', 'stable_favorites'), { ids: stableFavs, updatedAt: new Date().toISOString() });
+            } catch(e) { console.error('Erro salvar stable favs:', e); }
+        }
+
+        function renderStableFavs() {
+            const container = document.getElementById('stableList');
+            document.getElementById('stableCount').textContent = stableFavs.length + ' favorita' + (stableFavs.length !== 1 ? 's' : '');
+
+            if (stableFavs.length === 0) {
+                container.innerHTML = '<div class="stable-empty">Clique em "+ Adicionar" pra escolher suas stablecoins favoritas</div>';
+                return;
+            }
+
+            const stableCryptos = stableFavs.map(id => allCryptos.find(c => c.id === id)).filter(Boolean);
+            if (stableCryptos.length === 0) {
+                container.innerHTML = '<div class="stable-empty">Carregando preços...</div>';
+                return;
+            }
+
+            container.innerHTML = stableCryptos.map(c => {
+                const ch = c.price_change_percentage_24h || 0;
+                const cls = ch >= 0 ? 'change-up' : 'change-down';
+                const icon = ch >= 0 ? '▲' : '▼';
+                return '<div class="stable-card" onclick="showDetail(\'' + c.id + '\')">' +
+                    '<button class="stable-remove" onclick="toggleStableFav(\'' + c.id + '\', event)" title="Remover">✕</button>' +
+                    '<img class="stable-icon" src="' + c.image + '" onerror="this.style.display=\'none\'">' +
+                    '<div class="stable-info">' +
+                        '<div class="stable-name">' + c.name + '</div>' +
+                        '<div class="stable-symbol">' + c.symbol + ' | MCap: ' + fmtUsd(c.market_cap||0) + '</div>' +
+                    '</div>' +
+                    '<div class="stable-right">' +
+                        '<div class="stable-price">' + fmtUsd(c.current_price) + '</div>' +
+                        '<div class="stable-mcap ' + cls + '">' + icon + ' ' + fmtChange(ch) + '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        window.toggleStableFav = async function(coinId, e) {
+            if (e) e.stopPropagation();
+            const idx = stableFavs.indexOf(coinId);
+            if (idx >= 0) stableFavs.splice(idx, 1);
+            else stableFavs.push(coinId);
+            await saveStableFavs();
+            renderStableFavs();
+            // Refresh modal list if open
+            if (document.getElementById('stableModal').classList.contains('show')) filterStableList();
+        };
+
+        window.openStableModal = function() {
+            document.getElementById('stableSearch').value = '';
+            filterStableList();
+            document.getElementById('stableModal').classList.add('show');
+        };
+
+        window.closeStableModal = function() {
+            document.getElementById('stableModal').classList.remove('show');
+        };
+
+        window.filterStableList = function() {
+            const search = (document.getElementById('stableSearch').value || '').toLowerCase().trim();
+            const container = document.getElementById('stableModalList');
+
+            // Filter stablecoins from allCryptos
+            let stables = allCryptos.filter(c => {
+                const isStable = allStableIds.includes(c.id) || c.name.toLowerCase().includes('usd') || c.symbol.toLowerCase().includes('usd') || c.name.toLowerCase().includes('dai') || c.name.toLowerCase().includes('stablecoin');
+                if (search) return isStable && (c.name.toLowerCase().includes(search) || c.symbol.toLowerCase().includes(search));
+                return isStable;
+            });
+
+            if (stables.length === 0) {
+                container.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:12px;">Nenhuma stablecoin encontrada</div>';
+                return;
+            }
+
+            container.innerHTML = stables.map(c => {
+                const isSel = stableFavs.includes(c.id);
+                return '<div class="modal-coin-item' + (isSel ? ' selected' : '') + '" onclick="toggleStableFav(\'' + c.id + '\')">' +
+                    '<img src="' + c.image + '" onerror="this.style.display=\'none\'" style="width:24px;height:24px;border-radius:50%;">' +
+                    '<div><div class="mci-name">' + (isSel ? '✅ ' : '') + c.name + '</div><div class="mci-symbol">' + c.symbol + '</div></div>' +
+                    '<div class="mci-price">' + fmtUsd(c.current_price) + '</div>' +
+                '</div>';
+            }).join('');
+        };
 
         // ===== POOLS (Firebase) =====
         let pools = []; // array of {base: 'ethereum', quote: 'chainlink'}
@@ -558,6 +710,7 @@
                 updateSummary();
                 updateConverter();
                 renderFavorites();
+                renderStableFavs();
                 renderPools();
                 filterCryptos();
                 document.getElementById('lastUpdate').textContent = '🕐 ' + new Date().toLocaleTimeString('pt-BR') + ' — CoinGecko | Auto-refresh 60s';
@@ -682,6 +835,7 @@
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
             userId = user.uid;
             await loadFavorites();
+            await loadStableFavs();
             await loadPools();
             await loadPrices();
             setInterval(loadPrices, 60000);
