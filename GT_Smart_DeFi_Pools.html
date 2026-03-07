@@ -747,22 +747,45 @@
                     '</div>' +
 
                     // === FEE COLLECTIONS ===
-                    '<div class="fee-section">' +
-                        '<div class="fee-header">' +
-                            '<div><div class="fee-title">💵 Fees Coletados</div><div class="fee-total">' + fmtUsd(poolTotalFees) + '</div></div>' +
-                            '<button class="fee-btn" onclick="openFeeModal(\'' + p.id + '\')">+ Nova Coleta</button>' +
-                        '</div>' +
-                        (parseFloat(p.feesEarned || 0) > 0 ? '<div class="fee-base">Já resgatado antes: ' + fmtUsd(p.feesEarned) + '</div>' : '') +
-                        ((p.feeCollections || []).length > 0 ?
-                            '<div class="fee-list">' + (p.feeCollections || []).map((fc, idx) =>
-                                '<div class="fee-item">' +
-                                    '<span class="fee-item-date">📅 ' + fc.date + '</span>' +
-                                    '<span><span class="fee-item-value">' + fmtUsd(fc.amount) + '</span>' +
-                                    '<button class="fee-item-del" onclick="deleteFeeCollection(\'' + p.id + '\',' + idx + ')">✕</button></span>' +
-                                '</div>'
-                            ).join('') + '</div>'
-                        : '') +
-                    '</div>' +
+                    (function() {
+                        const collections = (p.feeCollections || []);
+                        const colCount = collections.length;
+                        const colTotal = collections.reduce((s, c) => s + parseFloat(c.amount || 0), 0);
+                        const feMonths = new Set();
+                        collections.forEach(c => { const d = new Date(c.date); feMonths.add(d.getFullYear() + '-' + d.getMonth()); });
+                        const feAvg = feMonths.size > 0 ? colTotal / feMonths.size : 0;
+                        const lastCol = collections.length > 0 ? collections[0] : null;
+                        const fmtDate = (d) => { const p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; };
+                        const show3 = collections.slice(0, 3);
+
+                        return '<div class="fee-section">' +
+                            '<div class="fee-header">' +
+                                '<div><div class="fee-title">💵 Fees Coletados</div><div class="fee-total">' + fmtUsd(poolTotalFees) + '</div></div>' +
+                                '<button class="fee-btn" onclick="openFeeModal(\'' + p.id + '\')">+ Nova Coleta</button>' +
+                            '</div>' +
+                            '<div class="fee-base">' + colCount + ' coletas | Média: ' + fmtUsd(feAvg) + '/mês' +
+                                (lastCol ? ' | Última: ' + fmtDate(lastCol.date) : '') +
+                            '</div>' +
+                            (parseFloat(p.feesEarned || 0) > 0 ? '<div class="fee-base" style="color:#f57f17;">Já resgatado antes: ' + fmtUsd(p.feesEarned) + '</div>' : '') +
+                            (colCount > 0 ?
+                                '<div class="fee-list">' + show3.map((fc, idx) =>
+                                    '<div class="fee-item">' +
+                                        '<span class="fee-item-date">📅 ' + fmtDate(fc.date) + '</span>' +
+                                        '<span><span class="fee-item-value">' + fmtUsd(fc.amount) + '</span>' +
+                                        '<button class="fee-item-del" onclick="deleteFeeCollection(\'' + p.id + '\',' + idx + ')">✕</button></span>' +
+                                    '</div>'
+                                ).join('') + '</div>' +
+                                (colCount > 3 ? '<div style="text-align:center;margin-top:4px;"><button onclick="showAllFees(\'' + p.id + '\')" id="feebtn-' + p.id + '" style="background:none;border:1px solid #ddd;border-radius:12px;padding:3px 12px;font-size:10px;font-weight:600;color:#2e7d32;cursor:pointer;">Ver todas (' + colCount + ')</button><div id="allfees-' + p.id + '" style="display:none;">' +
+                                    collections.slice(3).map((fc, idx) =>
+                                        '<div class="fee-item" style="margin-top:4px;">' +
+                                            '<span class="fee-item-date">📅 ' + fmtDate(fc.date) + '</span>' +
+                                            '<span><span class="fee-item-value">' + fmtUsd(fc.amount) + '</span>' +
+                                            '<button class="fee-item-del" onclick="deleteFeeCollection(\'' + p.id + '\',' + (idx + 3) + ')">✕</button></span>' +
+                                        '</div>'
+                                    ).join('') + '</div></div>' : '')
+                            : '') +
+                        '</div>';
+                    })() +
 
                     // === BLOCO 3: DETALHES (colapsável) ===
                     '<div style="text-align:center;margin-bottom:4px;"><button onclick="toggleDetails(\'' + p.id + '\')" id="toggle-' + p.id + '" style="background:none;border:1px solid #ddd;border-radius:15px;padding:4px 14px;font-size:11px;font-weight:600;color:#888;cursor:pointer;">▼ Detalhes</button></div>' +
@@ -995,6 +1018,20 @@
 
         // ===== FEE COLLECTIONS =====
         let feeEditPoolId = null;
+
+        window.showAllFees = function(poolId) {
+            const el = document.getElementById('allfees-' + poolId);
+            const btn = document.getElementById('feebtn-' + poolId);
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                btn.textContent = '▲ Esconder';
+            } else {
+                el.style.display = 'none';
+                const pool = pools.find(p => p.id === poolId);
+                const count = (pool?.feeCollections || []).length;
+                btn.textContent = 'Ver todas (' + count + ')';
+            }
+        };
 
         window.openFeeModal = function(poolId) {
             feeEditPoolId = poolId;
