@@ -135,6 +135,8 @@
             <h2>🏦 DeFi Borrows <span style="font-size:10px;opacity:0.7;">v1.0</span></h2>
             <div class="header-right">
                 <button class="btn-add" onclick="openBorrowModal()">+ Novo Borrow</button>
+                <a href="GT_Smart_DeFi_Dashboard.html" class="btn-link">📊 DeFi</a>
+                <a href="GT_Smart_DeFi_Pools.html" class="btn-link">🌊 Pools</a>
                 <a href="GT_Smart_Cripto.html" class="btn-link">🪙 Cripto</a>
                 <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
             </div>
@@ -231,6 +233,7 @@
 
         let allCryptos = [];
         let borrows = [];
+        let pools = [];
         let userId = null;
         let selectedCryptoId = null;
         let editingId = null;
@@ -278,6 +281,27 @@
                 const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
                 if (res.ok) allCryptos = await res.json();
             } catch(e) { console.error('Erro preços:', e); }
+        }
+
+        async function loadPools() {
+            if (!userId) return;
+            try {
+                const snap = await getDocs(collection(db, 'users', userId, 'defi_pools'));
+                pools = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+            } catch(e) { console.error('Erro pools:', e); pools = []; }
+        }
+
+        function getPoolAllocations(borrowId) {
+            const allocs = [];
+            pools.forEach(p => {
+                if (p.borrowIdA === borrowId && p.borrowPctA > 0) {
+                    allocs.push({ poolName: p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '/' + (p.tokenBSymbol||'?').toUpperCase()), pct: p.borrowPctA, side: 'Token A' });
+                }
+                if (p.borrowIdB === borrowId && p.borrowPctB > 0) {
+                    allocs.push({ poolName: p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '/' + (p.tokenBSymbol||'?').toUpperCase()), pct: p.borrowPctB, side: 'Token B' });
+                }
+            });
+            return allocs;
         }
 
         function getCryptoPrice(cryptoId) {
@@ -350,6 +374,16 @@
                 const chainCls = 'chain-' + (b.chain || 'default').toLowerCase();
                 const protoCls = b.protocol === 'Aave' ? 'proto-aave' : b.protocol === 'Compound' ? 'proto-compound' : 'proto-other';
 
+                // Pool allocations
+                const allocs = getPoolAllocations(b.id);
+                const totalPct = allocs.reduce((s, a) => s + parseFloat(a.pct), 0);
+                const allocHtml = allocs.length > 0 ?
+                    '<div class="borrow-stat" style="grid-column:1/-1;background:#f5f0ff;"><div class="bs-label">🌊 Alocado em Pools (' + totalPct.toFixed(1) + '%)</div><div class="bs-value" style="font-size:12px;">' +
+                    allocs.map(a => a.poolName + ': <strong>' + a.pct + '%</strong>').join(' | ') +
+                    '</div></div>' +
+                    '<div class="borrow-stat" style="grid-column:1/-1;"><div class="bs-label">Disponível</div><div class="bs-value" style="color:' + (100 - totalPct > 0 ? '#2e7d32' : '#c62828') + ';">' + (100 - totalPct).toFixed(1) + '% (' + ((b.amount || 0) * (1 - totalPct/100)).toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + (b.cryptoSymbol || '').toUpperCase() + ')</div></div>'
+                    : '';
+
                 return '<div class="borrow-card">' +
                     '<div class="borrow-top">' +
                         '<div class="borrow-crypto">' +
@@ -372,6 +406,7 @@
                         '<div class="borrow-stat"><div class="bs-label">Valor Atual (USD)</div><div class="bs-value">' + fmtUsd(totalUsd) + '</div></div>' +
                         '<div class="borrow-stat"><div class="bs-label">Preço Unitário</div><div class="bs-value">' + fmtUsd(price) + '</div></div>' +
                         '<div class="borrow-stat"><div class="bs-label">APY (Juros)</div><div class="bs-value">' + (b.rate ? b.rate + '%' : '—') + '</div></div>' +
+                        allocHtml +
                     '</div>' +
                     (b.notes ? '<div class="borrow-date">📝 ' + b.notes + '</div>' : '') +
                     '<div class="borrow-date">📅 ' + new Date(b.createdAt).toLocaleDateString('pt-BR') + '</div>' +
@@ -512,6 +547,7 @@
             userId = user.uid;
             await loadPrices();
             await loadBorrows();
+            await loadPools();
             renderBorrows();
             // Auto refresh prices every 60s
             setInterval(async () => { await loadPrices(); renderBorrows(); }, 60000);

@@ -163,6 +163,7 @@
             <h2>🌊 DeFi Pools <span style="font-size:10px;opacity:0.7;">v2.0</span></h2>
             <div class="header-right">
                 <button class="btn-add" onclick="openPoolModal()">+ Nova Pool</button>
+                <a href="GT_Smart_DeFi_Dashboard.html" class="btn-link">📊 DeFi</a>
                 <a href="GT_Smart_DeFi_Borrows.html" class="btn-link">🏦 Borrows</a>
                 <a href="GT_Smart_Cripto.html" class="btn-link">🪙 Cripto</a>
                 <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
@@ -187,6 +188,12 @@
                     <div class="label">📊 PnL</div>
                     <div class="value" id="sumPnl">—</div>
                 </div>
+            </div>
+
+            <!-- Range Alert -->
+            <div id="rangeAlert" style="display:none;background:#fdecea;border-left:4px solid #c62828;border-radius:8px;padding:12px;margin-bottom:12px;">
+                <div style="font-weight:700;color:#c62828;font-size:13px;">⚠️ Pools fora do Range</div>
+                <div id="rangeAlertList" style="font-size:12px;color:#c62828;margin-top:4px;"></div>
             </div>
 
             <!-- Filters -->
@@ -270,22 +277,22 @@
 
                 <div class="modal-separator">🏦 Borrows Vinculados</div>
 
-                <div class="modal-label">Borrow do Token A</div>
+                <div class="modal-label" id="borrowLabelA">Borrow do Token A</div>
                 <select class="modal-select" id="poolBorrowIdA" onchange="updateBorrowLinkA()">
                     <option value="">— Nenhum —</option>
                 </select>
                 <div id="borrowLinkDetailsA" style="display:none;">
-                    <div class="modal-label">% do Borrow usado (Token A)</div>
+                    <div class="modal-label">% do Borrow usado</div>
                     <input type="number" class="modal-input" id="poolBorrowPctA" placeholder="Ex: 100" step="any" min="0" max="100" oninput="updateBorrowLinkA()">
                     <div class="modal-preview" id="borrowLinkPreviewA" style="margin-top:6px;"></div>
                 </div>
 
-                <div class="modal-label">Borrow do Token B</div>
+                <div class="modal-label" id="borrowLabelB">Borrow do Token B</div>
                 <select class="modal-select" id="poolBorrowIdB" onchange="updateBorrowLinkB()">
                     <option value="">— Nenhum —</option>
                 </select>
                 <div id="borrowLinkDetailsB" style="display:none;">
-                    <div class="modal-label">% do Borrow usado (Token B)</div>
+                    <div class="modal-label">% do Borrow usado</div>
                     <input type="number" class="modal-input" id="poolBorrowPctB" placeholder="Ex: 72.11" step="any" min="0" max="100" oninput="updateBorrowLinkB()">
                     <div class="modal-preview" id="borrowLinkPreviewB" style="margin-top:6px;"></div>
                 </div>
@@ -497,9 +504,45 @@
             renderPoolList();
         };
 
+        function checkRangeAlerts() {
+            const alertDiv = document.getElementById('rangeAlert');
+            const alertList = document.getElementById('rangeAlertList');
+            const outOfRange = [];
+            pools.forEach(p => {
+                if (p.status === 'closed') return;
+                const priceA = getPrice(p.tokenAId);
+                const priceB = getPrice(p.tokenBId);
+                if (!priceB || !p.rangeMin && !p.rangeMax) return;
+                const ratio = priceA / priceB;
+                if (ratio < (p.rangeMin || 0) || ratio > (p.rangeMax || Infinity)) {
+                    const name = p.poolName || ((p.tokenASymbol || '?').toUpperCase() + '/' + (p.tokenBSymbol || '?').toUpperCase());
+                    outOfRange.push('❌ <strong>' + name + '</strong> — Ratio: ' + ratio.toFixed(2) + ' (Range: ' + (p.rangeMin||'—') + ' — ' + (p.rangeMax||'—') + ')');
+                }
+            });
+            if (outOfRange.length > 0) {
+                alertDiv.style.display = 'block';
+                alertList.innerHTML = outOfRange.join('<br>');
+            } else {
+                alertDiv.style.display = 'none';
+            }
+        }
+
+        window.toggleDetails = function(id) {
+            const el = document.getElementById('details-' + id);
+            const btn = document.getElementById('toggle-' + id);
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                btn.textContent = '▲ Detalhes';
+            } else {
+                el.style.display = 'none';
+                btn.textContent = '▼ Detalhes';
+            }
+        };
+
         function renderPoolList() {
             updateSummary();
             renderFilters();
+            checkRangeAlerts();
 
             let filtered = [...pools];
             if (currentFilter !== 'all') filtered = filtered.filter(p => (p.dex || 'Outro') === currentFilter);
@@ -668,9 +711,9 @@
                         : '') +
                     '</div>' +
 
-                    // === BLOCO 3: DETALHES ===
-                    '<div class="pool-block" style="background:#f8f9fa;">' +
-                        '<div class="pool-block-title">ℹ️ Detalhes</div>' +
+                    // === BLOCO 3: DETALHES (colapsável) ===
+                    '<div style="text-align:center;margin-bottom:4px;"><button onclick="toggleDetails(\'' + p.id + '\')" id="toggle-' + p.id + '" style="background:none;border:1px solid #ddd;border-radius:15px;padding:4px 14px;font-size:11px;font-weight:600;color:#888;cursor:pointer;">▼ Detalhes</button></div>' +
+                    '<div id="details-' + p.id + '" class="pool-block" style="background:#f8f9fa;display:none;">' +
                         (entryRatio > 0 ? '<div class="pool-block-row"><span class="pbr-label">Ratio Entrada</span><span class="pbr-value">1 ' + symA + ' = ' + (entryRatio >= 1 ? entryRatio.toFixed(4) : entryRatio.toFixed(6)) + ' ' + symB + '</span></div>' : '') +
                         '<div class="pool-block-row"><span class="pbr-label">Ratio Hoje</span><span class="pbr-value">1 ' + symA + ' = ' + (ratio >= 1 ? ratio.toFixed(4) : ratio.toFixed(6)) + ' ' + symB + '</span></div>' +
                         (hasRange ? '<div class="pool-block-row"><span class="pbr-label">Status Range</span><span class="pbr-value" style="' + rangeCls + '">' + rangeStatus + '</span></div>' : '') +
@@ -680,6 +723,7 @@
                         '<div class="pool-block-row"><span class="pbr-label">Dias na Pool</span><span class="pbr-value">' + daysInPool + ' dias</span></div>' +
                         '<div class="pool-block-row"><span class="pbr-label">Impermanent Loss</span><span class="pbr-value" style="color:#c62828;">' + ilText + '</span></div>' +
                         '<div class="pool-block-row"><span class="pbr-label">Pool criada</span><span class="pbr-value">' + (p.poolDate || new Date(p.createdAt).toLocaleDateString('pt-BR')) + '</span></div>' +
+                        (p.lastQtyUpdate ? '<div class="pool-block-row"><span class="pbr-label">Última atualização</span><span class="pbr-value">' + new Date(p.lastQtyUpdate).toLocaleDateString('pt-BR') + ' ' + new Date(p.lastQtyUpdate).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) + '</span></div>' : '') +
                     '</div>' +
                 '</div>';
             }).join('');
@@ -748,10 +792,10 @@
                 selectedTokenA = id;
                 document.getElementById('tokenASelected').textContent = '✅ ' + crypto.name + ' (' + crypto.symbol.toUpperCase() + ')';
                 document.getElementById('tokenASearch').value = '';
-                // Auto-fill current price as entry price
                 if (!document.getElementById('tokenAEntryPrice').value) {
                     document.getElementById('tokenAEntryPrice').value = crypto.current_price;
                 }
+                document.getElementById('borrowLabelA').textContent = '🏦 Borrow do ' + crypto.symbol.toUpperCase();
             } else {
                 selectedTokenB = id;
                 document.getElementById('tokenBSelected').textContent = '✅ ' + crypto.name + ' (' + crypto.symbol.toUpperCase() + ')';
@@ -759,6 +803,7 @@
                 if (!document.getElementById('tokenBEntryPrice').value) {
                     document.getElementById('tokenBEntryPrice').value = crypto.current_price;
                 }
+                document.getElementById('borrowLabelB').textContent = '🏦 Borrow do ' + crypto.symbol.toUpperCase();
             }
             filterTokenList(side);
             updatePoolPreview();
@@ -819,6 +864,7 @@
                 investmentA: (amtA || 0) * entryA, investmentB: (amtB || 0) * entryB,
                 currentAmountA: parseFloat(document.getElementById('tokenACurrentAmount').value) || 0,
                 currentAmountB: parseFloat(document.getElementById('tokenBCurrentAmount').value) || 0,
+                lastQtyUpdate: (parseFloat(document.getElementById('tokenACurrentAmount').value) || parseFloat(document.getElementById('tokenBCurrentAmount').value)) ? new Date().toISOString() : (editingId ? (pools.find(p => p.id === editingId)?.lastQtyUpdate || '') : ''),
                 borrowIdA: document.getElementById('poolBorrowIdA').value || '',
                 borrowPctA: parseFloat(document.getElementById('poolBorrowPctA').value) || 0,
                 borrowIdB: document.getElementById('poolBorrowIdB').value || '',
@@ -852,11 +898,13 @@
             document.getElementById('poolDex').value = p.dex || 'Uniswap';
             document.getElementById('tokenASearch').value = '';
             document.getElementById('tokenASelected').textContent = '✅ ' + (p.tokenAName || '') + ' (' + (p.tokenASymbol || '').toUpperCase() + ')';
+            document.getElementById('borrowLabelA').textContent = '🏦 Borrow do ' + (p.tokenASymbol || 'Token A').toUpperCase();
             document.getElementById('tokenAAmount').value = p.amountA || '';
             document.getElementById('tokenAEntryPrice').value = p.entryPriceA || '';
             document.getElementById('tokenACurrentAmount').value = p.currentAmountA || '';
             document.getElementById('tokenBSearch').value = '';
             document.getElementById('tokenBSelected').textContent = '✅ ' + (p.tokenBName || '') + ' (' + (p.tokenBSymbol || '').toUpperCase() + ')';
+            document.getElementById('borrowLabelB').textContent = '🏦 Borrow do ' + (p.tokenBSymbol || 'Token B').toUpperCase();
             document.getElementById('tokenBAmount').value = p.amountB || '';
             document.getElementById('tokenBEntryPrice').value = p.entryPriceB || '';
             document.getElementById('tokenBCurrentAmount').value = p.currentAmountB || '';
