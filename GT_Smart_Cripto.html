@@ -28,8 +28,12 @@
         .fav-title { font-size: 15px; font-weight: 800; color: #f7931a; }
         .fav-count { font-size: 11px; color: #999; }
         .fav-scroll { display: flex; flex-direction: column; gap: 8px; }
-        .fav-card { border: 2px solid #f7931a; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; position: relative; }
-        .fav-card:hover { box-shadow: 0 4px 15px rgba(247,147,26,0.3); transform: translateY(-2px); }
+        .fav-card { border: 2px solid #f7931a; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; position: relative; user-select: none; }
+        .fav-card:hover { box-shadow: 0 4px 15px rgba(247,147,26,0.3); }
+        .fav-card.dragging { opacity: 0.4; border-style: dashed; }
+        .fav-card.drag-over { border-color: #333; border-width: 3px; transform: scale(1.02); }
+        .fav-drag { font-size: 18px; cursor: grab; color: #ccc; padding: 4px; touch-action: none; flex-shrink: 0; }
+        .fav-drag:active { cursor: grabbing; color: #f7931a; }
         .fav-remove { position: absolute; top: 8px; right: 8px; font-size: 14px; cursor: pointer; opacity: 0.5; background: none; border: none; color: #c62828; }
         .fav-remove:hover { opacity: 1; }
         .fav-icon { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
@@ -47,8 +51,12 @@
         .stable-title { font-size: 15px; font-weight: 800; color: #2e7d32; }
         .stable-count { font-size: 11px; color: #999; }
         .stable-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-        .stable-card { border: 2px solid #43a047; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; position: relative; }
-        .stable-card:hover { box-shadow: 0 4px 15px rgba(67,160,71,0.3); transform: translateY(-2px); }
+        .stable-card { border: 2px solid #43a047; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; position: relative; user-select: none; }
+        .stable-card:hover { box-shadow: 0 4px 15px rgba(67,160,71,0.3); }
+        .stable-card.dragging { opacity: 0.4; border-style: dashed; }
+        .stable-card.drag-over { border-color: #333; border-width: 3px; transform: scale(1.02); }
+        .stable-drag { font-size: 18px; cursor: grab; color: #ccc; padding: 4px; touch-action: none; flex-shrink: 0; }
+        .stable-drag:active { cursor: grabbing; color: #43a047; }
         .stable-remove { position: absolute; top: 8px; right: 8px; font-size: 14px; cursor: pointer; opacity: 0.5; background: none; border: none; color: #c62828; }
         .stable-remove:hover { opacity: 1; }
         .stable-icon { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
@@ -139,8 +147,12 @@
         .pool-title { font-size: 15px; font-weight: 800; color: #627eea; }
         .pool-count { font-size: 11px; color: #999; }
         .btn-add-pool { background: #627eea; color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; }
-        .pool-card { border: 2px solid #627eea; border-radius: 12px; padding: 14px; margin-bottom: 10px; position: relative; transition: all 0.2s; }
+        .pool-card { border: 2px solid #627eea; border-radius: 12px; padding: 14px; margin-bottom: 10px; position: relative; transition: all 0.2s; user-select: none; }
         .pool-card:hover { box-shadow: 0 4px 15px rgba(98,126,234,0.2); }
+        .pool-card.dragging { opacity: 0.4; border-style: dashed; }
+        .pool-card.drag-over { border-color: #333; border-width: 3px; transform: scale(1.02); }
+        .pool-drag { font-size: 18px; cursor: grab; color: #ccc; touch-action: none; }
+        .pool-drag:active { cursor: grabbing; color: #627eea; }
         .pool-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .pool-pair { display: flex; align-items: center; gap: 6px; }
         .pool-icons { display: flex; }
@@ -338,6 +350,97 @@
         };
         const fmtChange = (v) => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
 
+        // ===== DRAG & DROP REORDER =====
+        let dragIdx = null;
+        let dragElement = null;
+        let dragClone = null;
+        let startY = 0;
+
+        window.startDrag = function(e, idx) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragIdx = idx;
+            const cards = document.querySelectorAll('.fav-card');
+            dragElement = cards[idx];
+            dragElement.classList.add('dragging');
+
+            const touch = e.touches ? e.touches[0] : e;
+            startY = touch.clientY;
+
+            // Create floating clone
+            dragClone = dragElement.cloneNode(true);
+            dragClone.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;width:' + dragElement.offsetWidth + 'px;opacity:0.85;box-shadow:0 8px 25px rgba(0,0,0,0.3);transform:scale(1.03);left:' + dragElement.getBoundingClientRect().left + 'px;top:' + dragElement.getBoundingClientRect().top + 'px;';
+            document.body.appendChild(dragClone);
+
+            if (e.touches) {
+                document.addEventListener('touchmove', onDragMove, { passive: false });
+                document.addEventListener('touchend', onDragEnd);
+            } else {
+                document.addEventListener('mousemove', onDragMove);
+                document.addEventListener('mouseup', onDragEnd);
+            }
+        };
+
+        function onDragMove(e) {
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            const dy = touch.clientY - startY;
+
+            if (dragClone) {
+                dragClone.style.top = (dragElement.getBoundingClientRect().top + dy) + 'px';
+            }
+
+            // Find which card we're over
+            const cards = document.querySelectorAll('.fav-card');
+            cards.forEach((card, i) => {
+                card.classList.remove('drag-over');
+                if (i === dragIdx) return;
+                const rect = card.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (touch.clientY > rect.top && touch.clientY < rect.bottom) {
+                    card.classList.add('drag-over');
+                }
+            });
+        }
+
+        function onDragEnd(e) {
+            const touch = e.changedTouches ? e.changedTouches[0] : e;
+
+            // Find drop target
+            const cards = document.querySelectorAll('.fav-card');
+            let dropIdx = dragIdx;
+
+            cards.forEach((card, i) => {
+                if (card.classList.contains('drag-over')) {
+                    dropIdx = i;
+                }
+                card.classList.remove('drag-over');
+                card.classList.remove('dragging');
+            });
+
+            // Remove clone
+            if (dragClone) {
+                dragClone.remove();
+                dragClone = null;
+            }
+
+            // Reorder if moved
+            if (dropIdx !== dragIdx && dragIdx !== null) {
+                const item = favorites.splice(dragIdx, 1)[0];
+                favorites.splice(dropIdx, 0, item);
+                saveFavorites();
+                renderFavorites();
+            }
+
+            dragIdx = null;
+            dragElement = null;
+
+            document.removeEventListener('touchmove', onDragMove);
+            document.removeEventListener('touchend', onDragEnd);
+            document.removeEventListener('mousemove', onDragMove);
+            document.removeEventListener('mouseup', onDragEnd);
+        }
+
         // ===== FAVORITES (Firebase) =====
         async function loadFavorites() {
             if (!userId) return;
@@ -383,18 +486,19 @@
                 return;
             }
 
-            container.innerHTML = favCryptos.map(c => {
+            container.innerHTML = favCryptos.map((c, idx) => {
                 const ch = c.price_change_percentage_24h || 0;
                 const cls = ch >= 0 ? 'change-up' : 'change-down';
                 const icon = ch >= 0 ? '▲' : '▼';
-                return '<div class="fav-card" onclick="showDetail(\'' + c.id + '\')">' +
+                return '<div class="fav-card" data-idx="' + idx + '" data-id="' + c.id + '">' +
+                    '<div class="fav-drag" ontouchstart="startDrag(event, ' + idx + ')" onmousedown="startDrag(event, ' + idx + ')">☰</div>' +
                     '<button class="fav-remove" onclick="toggleFav(\'' + c.id + '\', event)" title="Remover">✕</button>' +
-                    '<img class="fav-icon" src="' + c.image + '" onerror="this.style.display=\'none\'">' +
-                    '<div class="fav-info">' +
+                    '<img class="fav-icon" src="' + c.image + '" onerror="this.style.display=\'none\'" onclick="showDetail(\'' + c.id + '\')">' +
+                    '<div class="fav-info" onclick="showDetail(\'' + c.id + '\')">' +
                         '<div class="fav-name">' + c.name + '</div>' +
                         '<div class="fav-symbol">' + c.symbol + ' | MCap: ' + fmtUsd(c.market_cap||0) + '</div>' +
                     '</div>' +
-                    '<div class="fav-right">' +
+                    '<div class="fav-right" onclick="showDetail(\'' + c.id + '\')">' +
                         '<div class="fav-price">' + fmtUsd(c.current_price) + '</div>' +
                         '<div class="fav-change ' + cls + '">' + icon + ' ' + fmtChange(ch) + '</div>' +
                     '</div>' +
@@ -438,18 +542,19 @@
                 return;
             }
 
-            container.innerHTML = stableCryptos.map(c => {
+            container.innerHTML = stableCryptos.map((c, idx) => {
                 const ch = c.price_change_percentage_24h || 0;
                 const cls = ch >= 0 ? 'change-up' : 'change-down';
                 const icon = ch >= 0 ? '▲' : '▼';
-                return '<div class="stable-card" onclick="showDetail(\'' + c.id + '\')">' +
+                return '<div class="stable-card" data-idx="' + idx + '" data-id="' + c.id + '">' +
+                    '<div class="stable-drag" ontouchstart="startDragStable(event, ' + idx + ')" onmousedown="startDragStable(event, ' + idx + ')">☰</div>' +
                     '<button class="stable-remove" onclick="toggleStableFav(\'' + c.id + '\', event)" title="Remover">✕</button>' +
-                    '<img class="stable-icon" src="' + c.image + '" onerror="this.style.display=\'none\'">' +
-                    '<div class="stable-info">' +
+                    '<img class="stable-icon" src="' + c.image + '" onerror="this.style.display=\'none\'" onclick="showDetail(\'' + c.id + '\')">' +
+                    '<div class="stable-info" onclick="showDetail(\'' + c.id + '\')">' +
                         '<div class="stable-name">' + c.name + '</div>' +
                         '<div class="stable-symbol">' + c.symbol + ' | MCap: ' + fmtUsd(c.market_cap||0) + '</div>' +
                     '</div>' +
-                    '<div class="stable-right">' +
+                    '<div class="stable-right" onclick="showDetail(\'' + c.id + '\')">' +
                         '<div class="stable-price">' + fmtUsd(c.current_price) + '</div>' +
                         '<div class="stable-mcap ' + cls + '">' + icon + ' ' + fmtChange(ch) + '</div>' +
                     '</div>' +
