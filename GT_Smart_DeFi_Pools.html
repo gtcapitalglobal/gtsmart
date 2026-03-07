@@ -263,8 +263,8 @@
                 </select>
 
                 <div id="borrowLinkDetails" style="display:none;">
-                    <div class="modal-label">Quantidade usada do Borrow</div>
-                    <input type="number" class="modal-input" id="poolBorrowQtyUsed" placeholder="Ex: 2589.30" step="any" oninput="updateBorrowLink()">
+                    <div class="modal-label">% do Borrow usado nesta Pool</div>
+                    <input type="number" class="modal-input" id="poolBorrowPct" placeholder="Ex: 68.05" step="any" min="0" max="100" oninput="updateBorrowLink()">
                     <div class="modal-preview" id="borrowLinkPreview" style="margin-top:6px;"></div>
                 </div>
 
@@ -398,15 +398,16 @@
             const borrow = borrows.find(b => b.id === borrowId);
             if (!borrow) return;
 
-            const qtyUsed = parseFloat(document.getElementById('poolBorrowQtyUsed').value) || 0;
+            const pct = parseFloat(document.getElementById('poolBorrowPct').value) || 0;
             const sym = (borrow.cryptoSymbol || '?').toUpperCase();
             const totalBorrow = parseFloat(borrow.amount || 0);
-            const pct = totalBorrow > 0 ? ((qtyUsed / totalBorrow) * 100).toFixed(1) : 0;
+            const qtyUsed = totalBorrow * (pct / 100);
             const price = getPrice(borrow.cryptoId);
             const debtUsd = qtyUsed * price;
 
-            preview.innerHTML = qtyUsed > 0 ?
-                '🏦 Usando <strong>' + qtyUsed.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) + ' = <strong>' + pct + '%</strong> do borrow<br>💰 Dívida: ' + fmtUsd(debtUsd) : '';
+            preview.innerHTML = pct > 0 ?
+                '🏦 Usando <strong>' + pct + '%</strong> = <strong>' + qtyUsed.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) +
+                '<br>💰 Dívida: ' + fmtUsd(debtUsd) : '';
         };
 
         // ===== PRICES =====
@@ -515,13 +516,13 @@
                     if (borrow) {
                         const bSym = (borrow.cryptoSymbol || '?').toUpperCase();
                         const bTotal = parseFloat(borrow.amount || 0);
-                        const bUsed = parseFloat(p.borrowQtyUsed || 0);
-                        const bPct = bTotal > 0 ? ((bUsed / bTotal) * 100).toFixed(1) : 0;
+                        const bPct = parseFloat(p.borrowPct || 0);
+                        const bUsed = bTotal * (bPct / 100);
                         const bPrice = getPrice(borrow.cryptoId);
                         const debtUsd = bUsed * bPrice;
                         const poolVal = totalVal;
                         const realPnl = poolVal - debtUsd;
-                        borrowInfo = bUsed.toLocaleString('en-US',{maximumFractionDigits:4}) + ' ' + bSym + ' de ' + bTotal.toLocaleString('en-US',{maximumFractionDigits:4}) + ' (' + bPct + '%) — ' + borrow.protocol + ' ' + borrow.chain +
+                        borrowInfo = bPct + '% = ' + bUsed.toLocaleString('en-US',{maximumFractionDigits:4}) + ' ' + bSym + ' de ' + bTotal.toLocaleString('en-US',{maximumFractionDigits:4}) + ' — ' + borrow.protocol + ' ' + borrow.chain +
                             '<br>💰 Dívida: ' + fmtUsd(debtUsd) + ' | Pool: ' + fmtUsd(poolVal) +
                             '<br><span style="font-size:14px;color:' + (realPnl >= 0 ? '#2e7d32' : '#c62828') + ';">Lucro Real: ' + (realPnl >= 0 ? '+' : '') + fmtUsd(realPnl) + '</span>';
                     }
@@ -634,7 +635,7 @@
             document.getElementById('tokenBEntryPrice').value = '';
             document.getElementById('tokenBCurrentAmount').value = '';
             document.getElementById('poolBorrowId').value = '';
-            document.getElementById('poolBorrowQtyUsed').value = '';
+            document.getElementById('poolBorrowPct').value = '';
             document.getElementById('borrowLinkDetails').style.display = 'none';
             document.getElementById('poolRangeMin').value = '';
             document.getElementById('poolRangeMax').value = '';
@@ -748,7 +749,7 @@
                 currentAmountA: parseFloat(document.getElementById('tokenACurrentAmount').value) || 0,
                 currentAmountB: parseFloat(document.getElementById('tokenBCurrentAmount').value) || 0,
                 borrowId: document.getElementById('poolBorrowId').value || '',
-                borrowQtyUsed: parseFloat(document.getElementById('poolBorrowQtyUsed').value) || 0,
+                borrowPct: parseFloat(document.getElementById('poolBorrowPct').value) || 0,
                 rangeMin: parseFloat(document.getElementById('poolRangeMin').value) || 0,
                 rangeMax: parseFloat(document.getElementById('poolRangeMax').value) || 0,
                 chain: document.getElementById('poolChain').value,
@@ -787,7 +788,7 @@
             document.getElementById('tokenBEntryPrice').value = p.entryPriceB || '';
             document.getElementById('tokenBCurrentAmount').value = p.currentAmountB || '';
             document.getElementById('poolBorrowId').value = p.borrowId || '';
-            document.getElementById('poolBorrowQtyUsed').value = p.borrowQtyUsed || '';
+            document.getElementById('poolBorrowPct').value = p.borrowPct || '';
             document.getElementById('poolRangeMin').value = p.rangeMin || '';
             document.getElementById('poolRangeMax').value = p.rangeMax || '';
             document.getElementById('poolChain').value = p.chain || 'Ethereum';
