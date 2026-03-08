@@ -42,6 +42,13 @@
         .alert-danger .alert-item  { color: #b71c1c; }
         .alert-warn .alert-item    { color: #bf360c; }
 
+        /* Filtro blockchain */
+        .chain-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+        .chain-tab { padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
+        .chain-tab.active { background: #00695c; color: white; border-color: #00695c; }
+        .chain-tab .ct-count { background: rgba(255,255,255,0.3); border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 4px; }
+        .chain-tab:not(.active) .ct-count { background: #f0f0f0; color: #888; }
+
         /* Colateral cards */
         .col-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; margin-bottom: 12px; transition: all 0.2s; }
         .col-card:hover { border-color: #00695c; box-shadow: 0 4px 15px rgba(0,105,92,0.15); }
@@ -220,6 +227,9 @@
                 <div id="alertWarnList" class="alert-item"></div>
             </div>
 
+            <!-- Filtro Blockchain -->
+            <div class="chain-tabs" id="chainTabs"></div>
+
             <!-- Lista -->
             <div id="colList">
                 <div class="empty-state">
@@ -320,6 +330,7 @@
 
         let userId = null;
         let colaterais = [];
+        let activeChain = 'Todos';
         let borrows = [];
         let allCryptos = [];
         let selectedCryptoId = null;
@@ -512,14 +523,39 @@
             document.getElementById('alertWarnList').innerHTML  = warns.map(t => '<div>⚠️ ' + t + '</div>').join('');
         }
 
+        function renderChainTabs() {
+            const chains = ['Todos', ...new Set(colaterais.map(c => c.chain || 'Outro'))];
+            const counts = {};
+            colaterais.forEach(c => {
+                const ch = c.chain || 'Outro';
+                counts[ch] = (counts[ch] || 0) + 1;
+            });
+            document.getElementById('chainTabs').innerHTML = chains.map(ch => {
+                const count = ch === 'Todos' ? colaterais.length : (counts[ch] || 0);
+                return '<button class="chain-tab' + (activeChain === ch ? ' active' : '') + '" onclick="setChainFilter('' + ch + '')">' +
+                    ch + '<span class="ct-count">' + count + '</span></button>';
+            }).join('');
+        }
+
+        window.setChainFilter = function(chain) {
+            activeChain = chain;
+            renderList();
+        };
+
         function renderList() {
             updateSummary();
+            renderChainTabs();
             if (colaterais.length === 0) {
                 document.getElementById('colList').innerHTML = '<div class="empty-state"><div class="icon">🛡️</div><h3>Nenhum colateral registrado</h3><p>Clique em "+ Novo Colateral" pra começar</p></div>';
                 return;
             }
 
-            document.getElementById('colList').innerHTML = colaterais.map(col => {
+            const filtered = activeChain === 'Todos' ? colaterais : colaterais.filter(c => (c.chain || 'Outro') === activeChain);
+            if (filtered.length === 0) {
+                document.getElementById('colList').innerHTML = '<div class="empty-state"><div class="icon">🔗</div><h3>Nenhum colateral em ' + activeChain + '</h3></div>';
+                return;
+            }
+            document.getElementById('colList').innerHTML = filtered.map(col => {
                 const info = getInfo(col.cryptoId);
                 const price = getPrice(col.cryptoId);
                 const colUsd = parseFloat(col.amount || 0) * price;
