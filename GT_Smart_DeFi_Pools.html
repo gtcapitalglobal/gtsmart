@@ -228,6 +228,15 @@
         .range-alert-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
         .range-alert-days { background: #c62828; color: white; border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: 700; }
 
+
+        /* Drag & Drop */
+        .pool-card { cursor: default; }
+        .drag-handle { cursor: grab; font-size: 16px; color: #bbb; padding: 4px 6px; border-radius: 6px; user-select: none; transition: color 0.2s; }
+        .drag-handle:hover { color: #1565c0; background: #f0f7ff; }
+        .drag-handle:active { cursor: grabbing; }
+        .pool-card.dragging { opacity: 0.4; border: 2px dashed #1565c0 !important; }
+        .pool-card.drag-over { border: 2px solid #1565c0 !important; background: #f0f7ff; transform: scale(1.01); }
+
         @media (max-width: 600px) {
             .summary-grid { grid-template-columns: repeat(3, 1fr) !important; }
             .header { flex-direction: column; text-align: center; }
@@ -245,6 +254,7 @@
                 <a href="GT_Smart_DeFi_Dashboard.html" class="btn-link">📊 DeFi</a>
                 <a href="GT_Smart_DeFi_Borrows.html" class="btn-link">🏦 Borrows</a>
                 <a href="GT_Smart_Cripto.html" class="btn-link">🪙 Cripto</a>
+                <button class="btn-link" onclick="toggleDarkMode()" id="btnDark">🌙</button>
                 <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
             </div>
         </div>
@@ -603,14 +613,23 @@
                 totalInvest += invA + invB;
             });
 
-            const pnl = tvl - totalInvest + totalFees;
+            const pnl = tvl - totalInvest;
+
+            // Calcular dívida total dos borrows vinculados
+            let totalDividaSum = 0;
+            pools.forEach(p => {
+                if (p.borrowIdA) { const bA = borrows.find(b => b.id === p.borrowIdA); if (bA) totalDividaSum += parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA||0)/100) * getPrice(bA.cryptoId); }
+                if (p.borrowIdB) { const bB = borrows.find(b => b.id === p.borrowIdB); if (bB) totalDividaSum += parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB||0)/100) * getPrice(bB.cryptoId); }
+            });
+
+            // Lucro Real = Pool (TVL) - Dívida + Fees
+            const lucroReal = tvl - totalDividaSum + totalFees;
 
             // Calcular dias desde a primeira pool (para ROI anualizado)
             const poolDates = pools.map(p => new Date(p.poolDate || p.createdAt)).filter(d => !isNaN(d));
             const oldestDate = poolDates.length > 0 ? new Date(Math.min(...poolDates)) : new Date();
             const diasTotal = Math.max(1, Math.floor((new Date() - oldestDate) / (1000 * 60 * 60 * 24)));
 
-            const lucroReal = pnl + totalFees;
             const roi = totalInvest > 0 ? (lucroReal / totalInvest) * 100 : 0;
             const roiAnual = roi * (365 / diasTotal);
 
@@ -627,21 +646,10 @@
             document.getElementById('sumRoi').textContent = (roi >= 0 ? '+' : '') + roi.toFixed(1) + '% | ' + (roiAnual >= 0 ? '+' : '') + roiAnual.toFixed(1) + '%/ano';
             document.getElementById('sumRoi').style.color = roiColor;
 
-            // Dívida total de borrows vinculados às pools
-            let totalDivida = 0;
-            pools.forEach(p => {
-                if (p.borrowIdA) {
-                    const bA = borrows.find(b => b.id === p.borrowIdA);
-                    if (bA) totalDivida += parseFloat(bA.amount || 0) * (parseFloat(p.borrowPctA || 0) / 100) * getPrice(bA.cryptoId);
-                }
-                if (p.borrowIdB) {
-                    const bB = borrows.find(b => b.id === p.borrowIdB);
-                    if (bB) totalDivida += parseFloat(bB.amount || 0) * (parseFloat(p.borrowPctB || 0) / 100) * getPrice(bB.cryptoId);
-                }
-            });
-            const liquido = tvl - totalDivida;
-            document.getElementById('sumDivida').textContent = fmtUsd(totalDivida);
-            document.getElementById('sumDivida').style.color = totalDivida > 0 ? '#6a1b9a' : '#2e7d32';
+            // Dívida total de borrows (já calculada acima como totalDividaSum)
+            const liquido = tvl - totalDividaSum;
+            document.getElementById('sumDivida').textContent = fmtUsd(totalDividaSum);
+            document.getElementById('sumDivida').style.color = totalDividaSum > 0 ? '#6a1b9a' : '#2e7d32';
             document.getElementById('sumLiquido').textContent = 'Líquido: ' + fmtUsd(liquido);
             document.getElementById('sumLiquido').style.color = liquido >= 0 ? '#2e7d32' : '#c62828';
         }
@@ -723,6 +731,10 @@
             filtered.sort((a, b) => {
                 if (a.status === 'closed' && b.status !== 'closed') return 1;
                 if (a.status !== 'closed' && b.status === 'closed') return -1;
+                // Respeitar ordem manual se existir
+                const oA = a.sortOrder !== undefined ? a.sortOrder : 999;
+                const oB = b.sortOrder !== undefined ? b.sortOrder : 999;
+                if (oA !== oB) return oA - oB;
                 return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
             });
 
@@ -732,7 +744,7 @@
             }
 
             if (panoramaOpen) renderPanorama();
-            document.getElementById('poolList').innerHTML = filtered.map(p => {
+            document.getElementById('poolList').innerHTML = filtered.map((p, idx) => {
                 const infoA = getInfo(p.tokenAId);
                 const infoB = getInfo(p.tokenBId);
                 const priceA = getPrice(p.tokenAId);
@@ -820,7 +832,7 @@
                     ilText = ilPct.toFixed(2) + '% (' + (ilUsd >= 0 ? '+' : '') + fmtUsd(ilUsd) + ')';
                 }
 
-                return '<div class="pool-card" style="' + (p.status === 'closed' ? 'opacity:0.6;' : '') + '">' +
+                return '<div class="pool-card" data-id="' + p.id + '" draggable="true" style="' + (p.status === 'closed' ? 'opacity:0.6;' : '') + '">' +
                     '<div class="pool-card-top">' +
                         '<div class="pool-pair">' +
                             '<div class="pool-icons">' +
@@ -1005,8 +1017,72 @@
                     '</div>' +
                 '</div>';
             }).join('');
+            setTimeout(initDragDrop, 0);
         }
 
+
+
+        // ===== DRAG & DROP REORDER =====
+        let dragSrcId = null;
+
+        function initDragDrop() {
+            const list = document.getElementById('poolList');
+            const cards = list.querySelectorAll('.pool-card');
+
+            cards.forEach(card => {
+                // Só o handle inicia o drag
+                const handle = card.querySelector('.drag-handle');
+                if (handle) {
+                    handle.addEventListener('mousedown', () => { card.setAttribute('draggable', 'true'); });
+                    handle.addEventListener('touchstart', () => { card.setAttribute('draggable', 'true'); }, {passive:true});
+                }
+
+                card.addEventListener('dragstart', e => {
+                    dragSrcId = card.dataset.id;
+                    setTimeout(() => card.classList.add('dragging'), 0);
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    list.querySelectorAll('.pool-card').forEach(c => c.classList.remove('drag-over'));
+                });
+
+                card.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    list.querySelectorAll('.pool-card').forEach(c => c.classList.remove('drag-over'));
+                    if (card.dataset.id !== dragSrcId) card.classList.add('drag-over');
+                });
+
+                card.addEventListener('dragleave', () => {
+                    card.classList.remove('drag-over');
+                });
+
+                card.addEventListener('drop', async e => {
+                    e.preventDefault();
+                    card.classList.remove('drag-over');
+                    const targetId = card.dataset.id;
+                    if (!dragSrcId || dragSrcId === targetId) return;
+
+                    // Reordenar array pools
+                    const srcIdx = pools.findIndex(p => p.id === dragSrcId);
+                    const tgtIdx = pools.findIndex(p => p.id === targetId);
+                    if (srcIdx === -1 || tgtIdx === -1) return;
+
+                    // Mover no array
+                    const [moved] = pools.splice(srcIdx, 1);
+                    pools.splice(tgtIdx, 0, moved);
+
+                    // Salvar sortOrder no Firebase para cada pool
+                    pools.forEach((p, i) => { p.sortOrder = i; });
+                    renderPoolList();
+
+                    // Salvar em background (sem await para não travar UI)
+                    Promise.all(pools.map(p => savePoolToFirebase(p))).catch(e => console.error('Erro salvar ordem:', e));
+                });
+            });
+        }
 
         // ===== PANORAMA GERAL =====
         window.togglePanorama = function() {
@@ -1447,6 +1523,23 @@
             const base = parseFloat(p.feesEarned || 0);
             const colTotal = (p.feeCollections || []).reduce((s, c) => s + parseFloat(c.amount || 0), 0);
             return base + colTotal;
+        }
+
+
+        // ===== DARK MODE =====
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            document.getElementById('btnDark').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('defi_dark_mode', isDark ? '1' : '0');
+        }
+
+        // Restaurar preferência
+        if (localStorage.getItem('defi_dark_mode') === '1') {
+            document.body.classList.add('dark-mode');
+            document.addEventListener('DOMContentLoaded', () => {
+                const btn = document.getElementById('btnDark');
+                if (btn) btn.textContent = '☀️';
+            });
         }
 
         // ===== INIT =====
