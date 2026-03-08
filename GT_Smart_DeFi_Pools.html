@@ -515,8 +515,8 @@
             pools.forEach(p => {
                 const priceA = getPrice(p.tokenAId);
                 const priceB = getPrice(p.tokenBId);
-                const curA = p.currentAmountA || p.amountA || 0;
-                const curB = p.currentAmountB || p.amountB || 0;
+                const curA = (p.currentAmountA !== undefined && p.currentAmountA !== '' && p.currentAmountA !== null) ? parseFloat(p.currentAmountA) : parseFloat(p.amountA || 0);
+                const curB = (p.currentAmountB !== undefined && p.currentAmountB !== '' && p.currentAmountB !== null) ? parseFloat(p.currentAmountB) : parseFloat(p.amountB || 0);
                 const valA = curA * priceA;
                 const valB = curB * priceB;
                 if (p.status !== 'closed') tvl += valA + valB;
@@ -611,8 +611,8 @@
                 const infoB = getInfo(p.tokenBId);
                 const priceA = getPrice(p.tokenAId);
                 const priceB = getPrice(p.tokenBId);
-                const curAmtA = p.currentAmountA || p.amountA || 0;
-                const curAmtB = p.currentAmountB || p.amountB || 0;
+                const curAmtA = (p.currentAmountA !== undefined && p.currentAmountA !== '' && p.currentAmountA !== null) ? parseFloat(p.currentAmountA) : parseFloat(p.amountA || 0);
+                const curAmtB = (p.currentAmountB !== undefined && p.currentAmountB !== '' && p.currentAmountB !== null) ? parseFloat(p.currentAmountB) : parseFloat(p.amountB || 0);
                 const valA = curAmtA * priceA;
                 const valB = curAmtB * priceB;
                 const totalVal = valA + valB;
@@ -721,7 +721,7 @@
                     (hasBorrow ?
                         (function() {
                             const lucroTotal = realPnl + poolTotalFees;
-                            const roiTotal = totalDebt > 0 ? (lucroTotal / totalDebt) * 100 : 0;
+                            const roiTotal = totalInvest > 0 ? (lucroTotal / totalInvest) * 100 : 0;
                             const roiAnual = daysInPool > 0 ? roiTotal * (365 / daysInPool) : 0;
                             const roiMes = daysInPool > 0 ? roiTotal / (daysInPool / 30) : 0;
                             const roiDia = daysInPool > 0 ? roiTotal / daysInPool : 0;
@@ -812,7 +812,7 @@
                             '<div class="fee-base">' + colCount + ' coletas | Média: ' + fmtUsd(feAvg) + '/mês' +
                                 (lastCol ? ' | Última: ' + fmtDate(lastCol.date) : '') +
                             '</div>' +
-                            (parseFloat(p.feesEarned || 0) > 0 ? '<div class="fee-base" style="color:#f57f17;">Já resgatado antes: ' + fmtUsd(p.feesEarned) + '</div>' : '') +
+                            (parseFloat(p.feesEarned || 0) > 0 && (p.feeCollections || []).length === 0 ? '<div class="fee-base" style="color:#f57f17;">⚠️ Fees legadas (campo antigo): ' + fmtUsd(p.feesEarned) + '</div>' : '') + (parseFloat(p.feesEarned || 0) > 0 && (p.feeCollections || []).length > 0 ? '<div class="fee-base" style="color:#888;">ℹ️ Campo antigo ignorado (usando coletas)</div>' : '') +
                             (colCount > 0 ?
                                 '<div class="fee-list">' + show3.map((fc, idx) =>
                                     '<div class="fee-item">' +
@@ -1156,9 +1156,14 @@
         };
 
         function getTotalFees(p) {
-            const base = parseFloat(p.feesEarned || 0);
-            const collections = (p.feeCollections || []).reduce((s, c) => s + parseFloat(c.amount || 0), 0);
-            return base + collections;
+            const collections = (p.feeCollections || []);
+            const colTotal = collections.reduce((s, c) => s + parseFloat(c.amount || 0), 0);
+            // Se ja tem coletas registradas no sistema novo, usa so elas (evita dupla contagem com feesEarned)
+            // Se nao tem coletas, usa o campo legado feesEarned
+            if (collections.length > 0) {
+                return colTotal;
+            }
+            return parseFloat(p.feesEarned || 0);
         }
 
         // ===== INIT =====
