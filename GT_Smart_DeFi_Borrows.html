@@ -279,7 +279,7 @@
         // ===== LOAD CRYPTO PRICES =====
         async function loadPrices() {
             try {
-                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false');
+                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
                 if (r.ok) allCryptos = await r.json();
             } catch(e) { console.error('Erro preços:', e); }
         }
@@ -476,9 +476,16 @@
             document.getElementById('borrowModal').classList.remove('show');
         };
 
-        window.filterBorrowCrypto = function() {
+        window.filterBorrowCrypto = async function() {
             const search = (document.getElementById('borrowCryptoSearch').value || '').toLowerCase().trim();
             const container = document.getElementById('borrowCryptoList');
+
+            // Se allCryptos vazio (API falhou), tenta recarregar
+            if (allCryptos.length === 0) {
+                container.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:12px;">Carregando moedas... ⏳</div>';
+                await loadPrices();
+                loadSpecialTokens();
+            }
 
             let filtered = allCryptos;
             if (search) filtered = allCryptos.filter(c => c.name.toLowerCase().includes(search) || c.symbol.toLowerCase().includes(search));

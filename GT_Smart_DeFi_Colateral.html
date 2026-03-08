@@ -357,7 +357,7 @@
 
         async function loadPrices() {
             try {
-                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false');
+                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
                 if (r.ok) allCryptos = await r.json();
             } catch(e) { console.error('Erro preços:', e); }
             loadSpecialTokens();
@@ -369,13 +369,18 @@
                 if (!res.ok) return;
                 const data = await res.json();
                 const ids = (data.coins || []).slice(0, 5).map(c => c.id).join(',');
-                if (!ids) return;
+                if (!ids) {
+                    document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Nenhuma cripto encontrada</div>';
+                    return;
+                }
                 const res2 = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids + '&sparkline=false');
                 if (!res2.ok) return;
                 const coins = await res2.json();
                 coins.forEach(c => { if (!allCryptos.find(x => x.id === c.id)) allCryptos.push(c); });
                 filterColList();
-            } catch(e) {}
+            } catch(e) {
+                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#e53935;font-size:12px;">⚠️ Erro ao buscar. Tente novamente.</div>';
+            }
         }
 
         function loadSpecialTokens() {
