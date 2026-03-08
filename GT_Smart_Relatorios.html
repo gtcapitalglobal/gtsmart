@@ -64,6 +64,7 @@
                 <button class="tab-report active" onclick="showReportTab('emprestimos', this)">💼 Empréstimos</button>
                 <button class="tab-report" onclick="showReportTab('dividas', this)">💳 Dívidas</button>
                 <button class="tab-report" onclick="showReportTab('combinado', this)">📊 Visão Geral</button>
+                <button class="tab-report" onclick="showReportTab('defi', this)">🏊 DeFi</button>
             </div>
 
             <!-- ABA EMPRÉSTIMOS -->
@@ -134,6 +135,26 @@
                 </div>
             </div>
 
+            <!-- ABA DEFI -->
+            <div id="tabDefi" style="display:none;">
+                <div class="report-section" style="border-left:4px solid #1565c0;">
+                    <div class="section-title" style="border-bottom-color:#1565c0;">🏊 Resumo Geral DeFi</div>
+                    <div class="stats-grid" id="defiSummary"></div>
+                </div>
+                <div class="report-section" style="border-left:4px solid #2e7d32;">
+                    <div class="section-title" style="border-bottom-color:#2e7d32;">💰 Fees por Pool</div>
+                    <div id="defiFeesDetail"></div>
+                </div>
+                <div class="report-section" style="border-left:4px solid #e65100;">
+                    <div class="section-title" style="border-bottom-color:#e65100;">📋 Pools Ativas</div>
+                    <div id="defiPoolsDetail"></div>
+                </div>
+                <div class="report-section" style="border-left:4px solid #4a2c8a;">
+                    <div class="section-title" style="border-bottom-color:#4a2c8a;">🏦 Borrows em Aberto</div>
+                    <div id="defiBorrowsDetail"></div>
+                </div>
+            </div>
+
             <!-- Botões de Backup -->
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
                 <button class="export-btn" onclick="exportarRelatorio()">📄 Exportar Relatório</button>
@@ -152,15 +173,17 @@
             document.body.classList.add('dark-mode');
         }
 
-        import { auth, onAuthStateChanged, getLoans, getDebts, getCards, exportFullBackup, importFullBackup } from './firebase-config.js';
+        import { auth, onAuthStateChanged, getLoans, getDebts, getCards, getDefiPools, getDefiBorrows, exportFullBackup, importFullBackup } from './firebase-config.js';
 
         let loans = [];
         let debts = [];
         let cards = [];
+        let defiPools = [];
+        let defiBorrows = [];
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-            [loans, debts, cards] = await Promise.all([getLoans(), getDebts(), getCards()]);
+            [loans, debts, cards, defiPools, defiBorrows] = await Promise.all([getLoans(), getDebts(), getCards(), getDefiPools(), getDefiBorrows()]);
             document.getElementById('loadingOverlay').style.display = 'none';
             generateAll();
         });
@@ -179,6 +202,7 @@
             document.getElementById('tabEmprestimos').style.display = tab === 'emprestimos' ? '' : 'none';
             document.getElementById('tabDividas').style.display = tab === 'dividas' ? '' : 'none';
             document.getElementById('tabCombinado').style.display = tab === 'combinado' ? '' : 'none';
+            document.getElementById('tabDefi').style.display = tab === 'defi' ? '' : 'none';
         };
 
         function generateAll() {
@@ -188,6 +212,7 @@
             generateDebtReport();
             generateCombinedReport();
             generateCardsReport();
+            generateDefiReport();
         }
 
         function generateCharts() {
@@ -525,6 +550,121 @@
             };
             reader.readAsText(file);
         };
+        function generateDefiReport() {
+            const fmtUsd = v => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', minimumFractionDigits:0, maximumFractionDigits:0 }).format(v);
+            const fmtUsd2 = v => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', minimumFractionDigits:2, maximumFractionDigits:2 }).format(v);
+
+            const activePools = defiPools.filter(p => p.status !== 'closed');
+            const closedPools = defiPools.filter(p => p.status === 'closed');
+
+            // Totais
+            let totalInvested = 0, totalFees = 0, totalBorrows = 0, totalPoolsValue = 0;
+
+            defiPools.forEach(p => {
+                const invA = p.investmentA || ((p.amountA || 0) * (p.entryPriceA || 0));
+                const invB = p.investmentB || ((p.amountB || 0) * (p.entryPriceB || 0));
+                totalInvested += invA + invB;
+                const feeBase = parseFloat(p.feesEarned || 0);
+                const feeCol = (p.feeCollections || []).reduce((s,c) => s + parseFloat(c.amount || 0), 0);
+                totalFees += feeBase + feeCol;
+            });
+
+            defiBorrows.forEach(b => {
+                totalBorrows += parseFloat(b.valueUSD || 0);
+            });
+
+            const pnlEstimado = totalFees; // fees são o lucro realizável sem preços em tempo real
+
+            // Resumo
+            document.getElementById('defiSummary').innerHTML = `
+                <div class="stat-item" style="border-left-color:#1565c0;"><div class="stat-label">🏊 Pools Ativas</div><div class="stat-value" style="color:#1565c0;">${activePools.length}</div></div>
+                <div class="stat-item" style="border-left-color:#888;"><div class="stat-label">⏹️ Pools Encerradas</div><div class="stat-value" style="color:#888;">${closedPools.length}</div></div>
+                <div class="stat-item" style="border-left-color:#e65100;"><div class="stat-label">💵 Total Investido</div><div class="stat-value" style="color:#e65100;">${fmtUsd(totalInvested)}</div></div>
+                <div class="stat-item" style="border-left-color:#2e7d32;"><div class="stat-label">💰 Total Fees Coletados</div><div class="stat-value" style="color:#2e7d32;">${fmtUsd2(totalFees)}</div></div>
+                <div class="stat-item" style="border-left-color:#4a2c8a;"><div class="stat-label">🏦 Total Emprestado (Borrows)</div><div class="stat-value" style="color:#4a2c8a;">${fmtUsd(totalBorrows)}</div></div>
+                <div class="stat-item" style="border-left-color:#1976d2;"><div class="stat-label">🏦 Borrows em Aberto</div><div class="stat-value" style="color:#1976d2;">${defiBorrows.filter(b => b.status !== 'paid').length}</div></div>
+            `;
+
+            // Fees por pool
+            const poolsComFees = defiPools
+                .map(p => {
+                    const feeBase = parseFloat(p.feesEarned || 0);
+                    const feeCol = (p.feeCollections || []).reduce((s,c) => s + parseFloat(c.amount || 0), 0);
+                    const totalFeePool = feeBase + feeCol;
+                    const invA = p.investmentA || ((p.amountA || 0) * (p.entryPriceA || 0));
+                    const invB = p.investmentB || ((p.amountB || 0) * (p.entryPriceB || 0));
+                    const investTotal = invA + invB;
+                    const roi = investTotal > 0 ? (totalFeePool / investTotal * 100) : 0;
+                    return { p, totalFeePool, investTotal, roi };
+                })
+                .filter(x => x.totalFeePool > 0)
+                .sort((a, b) => b.totalFeePool - a.totalFeePool);
+
+            if (poolsComFees.length === 0) {
+                document.getElementById('defiFeesDetail').innerHTML = '<p style="color:#aaa;font-size:13px;padding:10px;">Nenhuma fee registrada ainda.</p>';
+            } else {
+                document.getElementById('defiFeesDetail').innerHTML =
+                    '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+                    '<tr style="background:#f0f0f0;"><th style="padding:8px;text-align:left;">Pool</th><th style="padding:8px;">DEX</th><th style="padding:8px;">Investido</th><th style="padding:8px;color:#2e7d32;">Fees</th><th style="padding:8px;">ROI Fees</th><th style="padding:8px;">Status</th></tr>' +
+                    poolsComFees.map(({p, totalFeePool, investTotal, roi}) => {
+                        const nome = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '-' + (p.tokenBSymbol||'?').toUpperCase());
+                        const statusLabel = p.status === 'closed' ? '⏹️ Encerrada' : '✅ Ativa';
+                        return `<tr style="border-bottom:1px solid #f0f0f0;">
+                            <td style="padding:8px;font-weight:700;">${nome}</td>
+                            <td style="padding:8px;text-align:center;">${p.dex || '—'}</td>
+                            <td style="padding:8px;text-align:right;">${fmtUsd(investTotal)}</td>
+                            <td style="padding:8px;text-align:right;color:#2e7d32;font-weight:700;">${fmtUsd2(totalFeePool)}</td>
+                            <td style="padding:8px;text-align:center;font-weight:700;color:${roi > 0 ? '#2e7d32' : '#888'};">${roi.toFixed(2)}%</td>
+                            <td style="padding:8px;text-align:center;">${statusLabel}</td>
+                        </tr>`;
+                    }).join('') +
+                    '</table>';
+            }
+
+            // Pools ativas
+            if (activePools.length === 0) {
+                document.getElementById('defiPoolsDetail').innerHTML = '<p style="color:#aaa;font-size:13px;padding:10px;">Nenhuma pool ativa.</p>';
+            } else {
+                document.getElementById('defiPoolsDetail').innerHTML =
+                    '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+                    '<tr style="background:#f0f0f0;"><th style="padding:8px;text-align:left;">Pool</th><th style="padding:8px;">DEX</th><th style="padding:8px;">Chain</th><th style="padding:8px;">Investido</th><th style="padding:8px;">Fee Tier</th><th style="padding:8px;">Direcional</th></tr>' +
+                    activePools.map(p => {
+                        const nome = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '-' + (p.tokenBSymbol||'?').toUpperCase());
+                        const invA = p.investmentA || ((p.amountA||0)*(p.entryPriceA||0));
+                        const invB = p.investmentB || ((p.amountB||0)*(p.entryPriceB||0));
+                        return `<tr style="border-bottom:1px solid #f0f0f0;">
+                            <td style="padding:8px;font-weight:700;">${nome}</td>
+                            <td style="padding:8px;text-align:center;">${p.dex||'—'}</td>
+                            <td style="padding:8px;text-align:center;">${p.chain||'—'}</td>
+                            <td style="padding:8px;text-align:right;">${fmtUsd(invA+invB)}</td>
+                            <td style="padding:8px;text-align:center;">${p.feeTier||'—'}</td>
+                            <td style="padding:8px;text-align:center;color:#e65100;font-weight:600;">${p.notes || '—'}</td>
+                        </tr>`;
+                    }).join('') +
+                    '</table>';
+            }
+
+            // Borrows
+            const borrowsAbertos = defiBorrows.filter(b => b.status !== 'paid');
+            if (borrowsAbertos.length === 0) {
+                document.getElementById('defiBorrowsDetail').innerHTML = '<p style="color:#aaa;font-size:13px;padding:10px;">Nenhum borrow em aberto.</p>';
+            } else {
+                document.getElementById('defiBorrowsDetail').innerHTML =
+                    '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+                    '<tr style="background:#f0f0f0;"><th style="padding:8px;text-align:left;">Token</th><th style="padding:8px;">Plataforma</th><th style="padding:8px;">Quantidade</th><th style="padding:8px;">Valor USD</th><th style="padding:8px;">APY</th></tr>' +
+                    borrowsAbertos.map(b => {
+                        return `<tr style="border-bottom:1px solid #f0f0f0;">
+                            <td style="padding:8px;font-weight:700;">${(b.cryptoSymbol||'?').toUpperCase()}</td>
+                            <td style="padding:8px;text-align:center;">${b.platform||'—'}</td>
+                            <td style="padding:8px;text-align:right;">${parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4})}</td>
+                            <td style="padding:8px;text-align:right;color:#4a2c8a;font-weight:700;">${fmtUsd(b.valueUSD||0)}</td>
+                            <td style="padding:8px;text-align:center;color:#c62828;">${b.apy ? b.apy+'%' : '—'}</td>
+                        </tr>`;
+                    }).join('') +
+                    '</table>';
+            }
+        }
+
     </script>
 </body>
 </html>

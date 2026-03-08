@@ -360,8 +360,8 @@
                     <option value="closed">⏹️ Encerrada</option>
                 </select>
 
-                <div class="modal-label">Observações (opcional)</div>
-                <input type="text" class="modal-input" id="poolNotes" placeholder="Ex: Estratégia concentrated liquidity">
+                <div class="modal-label">🧭 Direcional <span style="font-weight:400;color:#aaa;font-size:11px;">(opcional — aparece como badge)</span></div>
+                <input type="text" class="modal-input" id="poolNotes" placeholder="Ex: Alta, Neutro, Conservador...">
 
                 <div class="modal-preview" id="poolPreview"></div>
 
@@ -707,7 +707,7 @@
                                     '<span class="chain-badge ' + chainCls + '">' + (p.chain || 'Outro') + '</span>' +
                                     '<span class="dex-badge ' + dexCls + '">' + (p.dex || 'DEX') + '</span>' +
                                     '<span class="status-badge ' + statusCls + '">' + (p.status === 'closed' ? '⏹️ Encerrada' : '✅ Ativa') + '</span>' +
-                                    (p.notes ? '<span class="chain-badge chain-default" style="font-style:italic;">' + p.notes + '</span>' : '') +
+                                    ( p.notes ? '<span class="chain-badge" style="background:#fff3e0;color:#e65100;font-weight:700;">🧭 ' + p.notes + '</span>' : '') +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
