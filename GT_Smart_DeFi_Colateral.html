@@ -7,102 +7,95 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #004d40 0%, #00251a 100%); min-height: 100vh; padding: 15px; }
-        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .container { max-width: 1100px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
         .header { background: linear-gradient(135deg, #00695c, #004d40); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .header h2 { font-size: 18px; }
         .header-right { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn-link { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 12px; text-decoration: none; }
+        .btn-link { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 12px; text-decoration: none; cursor: pointer; }
         .btn-add { background: white; color: #00695c; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
         .content { padding: 15px 20px; }
-
-        /* Summary */
-        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
         .summary-card { border-radius: 10px; padding: 12px 8px; text-align: center; }
         .summary-card .label { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
         .summary-card .value { font-size: 18px; font-weight: 800; margin-top: 3px; }
         .summary-card .sub { font-size: 10px; font-weight: 600; margin-top: 2px; opacity: 0.75; }
-        .sc-total  { background: #e0f2f1; color: #00695c; }
-        .sc-hf     { background: #e8f5e9; color: #1b5e20; }
-        .sc-ltv    { background: #fff8e1; color: #f57f17; }
-        .sc-debt   { background: #fce4ec; color: #880e4f; }
-
-        /* HF color */
-        .hf-safe   { color: #2e7d32 !important; }
-        .hf-warn   { color: #f57f17 !important; }
+        .sc-total { background: #e0f2f1; color: #00695c; }
+        .sc-hf { background: #e8f5e9; color: #1b5e20; }
+        .sc-ltv { background: #fff8e1; color: #f57f17; }
+        .sc-debt { background: #fce4ec; color: #880e4f; }
+        .hf-safe { color: #2e7d32 !important; }
+        .hf-warn { color: #f57f17 !important; }
         .hf-danger { color: #c62828 !important; }
-
-        /* Alerts */
         .alert-box { border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; display: none; }
         .alert-danger { background: #fdecea; border-left: 4px solid #c62828; }
-        .alert-warn   { background: #fff8e1; border-left: 4px solid #ffa000; }
-        .alert-title  { font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+        .alert-warn { background: #fff8e1; border-left: 4px solid #ffa000; }
+        .alert-title { font-weight: 800; font-size: 13px; margin-bottom: 4px; }
         .alert-danger .alert-title { color: #c62828; }
-        .alert-warn .alert-title   { color: #e65100; }
-        .alert-item   { font-size: 12px; padding: 2px 0; }
-        .alert-danger .alert-item  { color: #b71c1c; }
-        .alert-warn .alert-item    { color: #bf360c; }
+        .alert-warn .alert-title { color: #e65100; }
+        .alert-item { font-size: 12px; padding: 2px 0; }
 
-        /* Filtro blockchain */
-        .chain-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-        .chain-tab { padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
-        .chain-tab.active { background: #00695c; color: white; border-color: #00695c; }
-        .chain-tab .ct-count { background: rgba(255,255,255,0.3); border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 4px; }
-        .chain-tab:not(.active) .ct-count { background: #f0f0f0; color: #888; }
-
-        /* Colateral cards */
-        .col-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; margin-bottom: 12px; transition: all 0.2s; }
-        .col-card:hover { border-color: #00695c; box-shadow: 0 4px 15px rgba(0,105,92,0.15); }
-        .col-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .col-crypto { display: flex; align-items: center; gap: 10px; }
-        .col-icon { width: 38px; height: 38px; border-radius: 50%; }
-        .col-name { font-size: 17px; font-weight: 800; color: #333; }
-        .col-sym  { font-size: 12px; color: #999; }
-        .col-actions { display: flex; gap: 6px; }
-        .col-btn { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; padding: 4px; }
-        .col-btn:hover { opacity: 1; }
-
-        .col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-        .col-stat { background: #f8f9fa; padding: 10px; border-radius: 8px; }
-        .col-stat .cs-label { font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; }
-        .col-stat .cs-value { font-size: 14px; font-weight: 800; color: #333; margin-top: 2px; }
-
-        /* Health factor bar */
-        .hf-bar-wrap { margin: 10px 0 6px 0; }
-        .hf-bar-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
-        .hf-bar-bg { background: #f0f0f0; border-radius: 8px; height: 10px; overflow: hidden; }
+        /* SEÇÃO POR BLOCKCHAIN */
+        .chain-section { border: 2px solid #e0e0e0; border-radius: 14px; margin-bottom: 16px; overflow: hidden; }
+        .chain-header { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 16px; cursor: pointer; user-select: none; }
+        .chain-ethereum .chain-header { background: linear-gradient(135deg, #e8eaf6, #ede7f6); }
+        .chain-arbitrum .chain-header { background: linear-gradient(135deg, #e3f2fd, #e8eef8); }
+        .chain-polygon .chain-header { background: linear-gradient(135deg, #f3e5f5, #ede7f6); }
+        .chain-optimism .chain-header { background: linear-gradient(135deg, #fdecea, #fce4ec); }
+        .chain-base .chain-header { background: linear-gradient(135deg, #e3f2fd, #e8f4fd); }
+        .chain-bsc .chain-header { background: linear-gradient(135deg, #fff8e1, #fffde7); }
+        .chain-outro .chain-header { background: #f5f5f5; }
+        .chain-name { font-size: 16px; font-weight: 800; }
+        .chain-ethereum .chain-name { color: #3f51b5; }
+        .chain-arbitrum .chain-name { color: #1565c0; }
+        .chain-polygon .chain-name { color: #7b1fa2; }
+        .chain-optimism .chain-name { color: #c62828; }
+        .chain-base .chain-name { color: #0d47a1; }
+        .chain-bsc .chain-name { color: #f57f17; }
+        .chain-outro .chain-name { color: #555; }
+        .chain-hf-badge { padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; }
+        .hf-badge-safe { background: #e8f5e9; color: #2e7d32; }
+        .hf-badge-warn { background: #fff8e1; color: #e65100; }
+        .hf-badge-danger { background: #fdecea; color: #c62828; }
+        .hf-badge-none { background: #f5f5f5; color: #999; }
+        .chain-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+        .chain-stat-item .csi-label { font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; }
+        .chain-stat-item .csi-value { font-size: 14px; font-weight: 800; color: #333; }
+        .chain-toggle { margin-left: auto; font-size: 18px; color: #999; transition: transform 0.2s; }
+        .chain-section.collapsed .chain-toggle { transform: rotate(-90deg); }
+        .chain-hf-bar { padding: 6px 16px 10px 16px; background: rgba(0,0,0,0.03); border-bottom: 1px solid #e0e0e0; }
+        .hf-bar-bg { background: #e0e0e0; border-radius: 8px; height: 8px; overflow: hidden; }
         .hf-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s; }
-        .hf-safe-bar   { background: linear-gradient(90deg, #43a047, #2e7d32); }
-        .hf-warn-bar   { background: linear-gradient(90deg, #ffa000, #ff6f00); }
+        .hf-safe-bar { background: linear-gradient(90deg, #43a047, #2e7d32); }
+        .hf-warn-bar { background: linear-gradient(90deg, #ffa000, #ff6f00); }
         .hf-danger-bar { background: linear-gradient(90deg, #e53935, #b71c1c); }
         .hf-markers { display: flex; justify-content: space-between; font-size: 9px; color: #bbb; margin-top: 2px; }
+        .chain-body { display: grid; grid-template-columns: 1fr 1fr; }
+        .chain-section.collapsed .chain-hf-bar, .chain-section.collapsed .chain-body { display: none; }
+        .chain-col { padding: 12px 14px; }
+        .chain-col-left { border-right: 1px solid #f0f0f0; }
+        .col-col-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .add-btn { font-size: 11px; background: #00695c; color: white; border: none; padding: 3px 10px; border-radius: 12px; cursor: pointer; font-weight: 700; text-decoration: none; }
+        .add-btn-purple { background: #4a2c8a !important; }
 
-        /* LTV bar */
-        .ltv-bar-wrap { margin-bottom: 10px; }
-        .ltv-bar-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
-        .ltv-bar-bg { background: #f0f0f0; border-radius: 8px; height: 10px; position: relative; overflow: visible; }
-        .ltv-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s; position: absolute; top: 0; left: 0; }
-        .ltv-max-line { position: absolute; top: -4px; height: 18px; width: 2px; background: #ff6f00; border-radius: 2px; }
-        .ltv-liq-line { position: absolute; top: -4px; height: 18px; width: 2px; background: #c62828; border-radius: 2px; }
-
-        /* Borrows vinculados */
-        .borrows-linked { background: #f3e5f5; border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
-        .bl-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6a1b9a; margin-bottom: 8px; }
-        .bl-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #e1bee7; font-size: 12px; }
-        .bl-item:last-child { border-bottom: none; }
-        .bl-sym { font-weight: 800; color: #4a2c8a; }
-        .bl-val { font-weight: 700; color: #6a1b9a; }
-        .bl-empty { font-size: 11px; color: #aaa; text-align: center; padding: 4px 0; }
-
-        /* Badges */
-        .proto-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; background: #e8f4fd; color: #1a73e8; }
-        .chain-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; }
-        .chain-ethereum { background: #ede7f6; color: #627eea; }
-        .chain-polygon  { background: #f3e5f5; color: #8247e5; }
-        .chain-arbitrum { background: #e3f2fd; color: #28a0f0; }
-        .chain-optimism { background: #fdecea; color: #ff0420; }
-        .chain-base     { background: #e3f2fd; color: #0052ff; }
-        .chain-bsc      { background: #fff8e1; color: #f0b90b; }
-        .chain-default  { background: #f5f5f5; color: #666; }
+        /* Linhas de colateral */
+        .col-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f5f5f5; }
+        .col-row:last-child { border-bottom: none; }
+        .row-icon { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+        .row-icon-fallback { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+        .row-info { flex: 1; min-width: 0; }
+        .row-name { font-size: 13px; font-weight: 800; color: #333; }
+        .row-detail { font-size: 10px; color: #999; }
+        .row-right { text-align: right; flex-shrink: 0; }
+        .row-usd-green { font-size: 13px; font-weight: 800; color: #00695c; }
+        .row-usd-purple { font-size: 13px; font-weight: 800; color: #4a2c8a; }
+        .row-pct { font-size: 10px; color: #888; }
+        .row-actions { display: flex; gap: 3px; flex-shrink: 0; }
+        .row-btn { background: none; border: none; font-size: 14px; cursor: pointer; opacity: 0.4; padding: 2px 4px; }
+        .row-btn:hover { opacity: 1; }
+        .pnl-pos { font-size: 10px; color: #2e7d32; font-weight: 600; }
+        .pnl-neg { font-size: 10px; color: #c62828; font-weight: 600; }
+        .pool-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+        .col-empty { text-align: center; padding: 20px 10px; color: #ccc; font-size: 12px; }
 
         /* Modal */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: flex-start; padding-top: 20px; overflow-y: auto; }
@@ -124,54 +117,23 @@
         .modal-coin-item .mci-symbol { font-size: 10px; color: #999; }
         .modal-coin-item .mci-price { font-size: 11px; font-weight: 700; color: #00695c; margin-left: auto; }
         .modal-selected-coin { font-size: 12px; font-weight: 700; color: #00695c; padding: 5px 10px; background: #e0f2f1; border-radius: 8px; text-align: center; margin-bottom: 6px; }
-        .modal-preview { background: #e0f2f1; padding: 10px 12px; border-radius: 8px; margin-top: 10px; font-size: 12px; color: #00695c; font-weight: 700; }
+        .modal-preview { background: #e0f2f1; padding: 10px 12px; border-radius: 8px; margin-top: 10px; font-size: 12px; color: #00695c; font-weight: 700; display: none; }
         .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
         .modal-btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; }
         .modal-btn-cancel { background: #f0f0f0; color: #666; }
         .modal-btn-save { background: #00695c; color: white; }
         .modal-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .modal-sep { text-align: center; font-size: 11px; font-weight: 700; color: #aaa; margin: 14px 0 0 0; padding-top: 12px; border-top: 1px solid #eee; letter-spacing: 1px; }
-
-        /* Borrows selector no modal */
-        .borrow-check-list { max-height: 140px; overflow-y: auto; border: 2px solid #e0e0e0; border-radius: 8px; }
-        .borrow-check-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
-        .borrow-check-item:last-child { border-bottom: none; }
-        .borrow-check-item:hover { background: #f0faf9; }
-        .borrow-check-item input { width: 16px; height: 16px; cursor: pointer; accent-color: #00695c; }
-        .borrow-check-item .bci-name { font-size: 12px; font-weight: 700; color: #333; }
-        .borrow-check-item .bci-val { font-size: 11px; color: #888; margin-left: auto; }
-
-        /* Empty state */
         .empty-state { text-align: center; padding: 50px 20px; color: #bbb; }
         .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
         .empty-state h3 { font-size: 16px; font-weight: 700; color: #999; margin-bottom: 6px; }
-        .empty-state p { font-size: 13px; }
 
-        /* Dark mode */
-        body.dark-mode { background: linear-gradient(135deg, #0a1a18 0%, #001a14 100%); }
-        body.dark-mode .container { background: #0f1f1c; color: #e0e0e0; }
-        body.dark-mode .col-card { border-color: #333; background: #162320; }
-        body.dark-mode .col-card:hover { border-color: #00695c; }
-        body.dark-mode .col-name { color: #e0e0e0; }
-        body.dark-mode .col-stat { background: #1a2e2a; }
-        body.dark-mode .col-stat .cs-value { color: #e0e0e0; }
-        body.dark-mode .hf-bar-bg, body.dark-mode .ltv-bar-bg { background: #333; }
-        body.dark-mode .borrows-linked { background: #1e1030; }
-        body.dark-mode .bl-item { border-color: #333; }
-        body.dark-mode .modal-box { background: #0f1f1c; }
-        body.dark-mode .modal-title { color: #e0e0e0; }
-        body.dark-mode .modal-input, body.dark-mode .modal-select, body.dark-mode .modal-search { background: #162320; color: #e0e0e0; border-color: #333; }
-        body.dark-mode .modal-coin-list, body.dark-mode .borrow-check-list { border-color: #333; }
-        body.dark-mode .modal-coin-item, body.dark-mode .borrow-check-item { border-color: #333; }
-        body.dark-mode .modal-coin-item:hover, body.dark-mode .borrow-check-item:hover { background: #1a2e2a; }
-        body.dark-mode .modal-coin-item .mci-name, body.dark-mode .borrow-check-item .bci-name { color: #e0e0e0; }
-        body.dark-mode .modal-btn-cancel { background: #333; color: #aaa; }
-        body.dark-mode .modal-preview { background: #162320; }
-
-        @media (max-width: 600px) {
+        @media (max-width: 650px) {
             .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
-            .col-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .chain-body { grid-template-columns: 1fr !important; }
+            .chain-col-left { border-right: none; border-bottom: 1px solid #f0f0f0; }
             .header { flex-direction: column; text-align: center; }
+            .chain-stats { gap: 10px; }
             .modal-row2 { grid-template-columns: 1fr; }
         }
     </style>
@@ -179,19 +141,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>🛡️ DeFi Colateral <span style="font-size:10px;opacity:0.7;">v1.0</span></h2>
+            <h2>🛡️ DeFi — Colateral &amp; Borrows</h2>
             <div class="header-right">
-                <button class="btn-add" onclick="openModal()">+ Novo Colateral</button>
-                <a href="GT_Smart_DeFi_Borrows.html" class="btn-link">🏦 Borrows</a>
+                <button class="btn-add" onclick="openModal()">+ Colateral</button>
+                <a href="GT_Smart_DeFi_Borrows.html" class="btn-link">+ Borrow</a>
                 <a href="GT_Smart_DeFi_Pools.html" class="btn-link">🌊 Pools</a>
-                <button class="btn-link" onclick="toggleDark()" id="btnDark">🌙</button>
                 <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
             </div>
         </div>
-
         <div class="content">
-
-            <!-- Summary -->
             <div class="summary-grid">
                 <div class="summary-card sc-total">
                     <div class="label">🛡️ Total Colateral</div>
@@ -199,57 +157,46 @@
                     <div class="sub" id="sumPositions">—</div>
                 </div>
                 <div class="summary-card sc-hf">
-                    <div class="label">❤️ Health Factor</div>
+                    <div class="label">❤️ Pior HF</div>
                     <div class="value" id="sumHF">—</div>
                     <div class="sub" id="sumHFStatus">—</div>
                 </div>
                 <div class="summary-card sc-ltv">
-                    <div class="label">📊 LTV Atual</div>
+                    <div class="label">📊 LTV Geral</div>
                     <div class="value" id="sumLTV">—</div>
-                    <div class="sub" id="sumLTVMax">—</div>
+                    <div class="sub" id="sumLTVSub">—</div>
                 </div>
                 <div class="summary-card sc-debt">
-                    <div class="label">💸 Dívida Total</div>
+                    <div class="label">💸 Total Dívida</div>
                     <div class="value" id="sumDebt">—</div>
                     <div class="sub" id="sumMargin">—</div>
                 </div>
             </div>
-
-            <!-- Alerta de perigo (HF < 1.2) -->
             <div class="alert-box alert-danger" id="alertDanger">
                 <div class="alert-title">🚨 PERIGO — Health Factor Crítico!</div>
                 <div id="alertDangerList" class="alert-item"></div>
             </div>
-
-            <!-- Alerta de atenção (HF entre 1.2 e 1.5) -->
             <div class="alert-box alert-warn" id="alertWarn">
                 <div class="alert-title">⚠️ Atenção — Health Factor Baixo</div>
                 <div id="alertWarnList" class="alert-item"></div>
             </div>
-
-            <!-- Filtro Blockchain -->
-            <div class="chain-tabs" id="chainTabs"></div>
-
-            <!-- Lista -->
-            <div id="colList">
+            <div id="chainSections">
                 <div class="empty-state">
                     <div class="icon">🛡️</div>
-                    <h3>Nenhum colateral registrado</h3>
-                    <p>Clique em "+ Novo Colateral" pra começar</p>
+                    <h3>Nenhum registro ainda</h3>
+                    <p>Clique em "+ Colateral" ou "+ Borrow" para começar</p>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Novo/Editar Colateral -->
+        <!-- Modal Colateral -->
         <div class="modal-overlay" id="colModal">
             <div class="modal-box">
                 <div class="modal-title" id="modalTitle">🛡️ Novo Colateral</div>
-
                 <div class="modal-label">🔍 Buscar Token</div>
                 <input type="text" class="modal-search" id="colSearch" placeholder="Ex: Bitcoin, LINK, USDC..." oninput="filterColList()">
                 <div class="modal-selected-coin" id="colSelected">Nenhum selecionado</div>
                 <div class="modal-coin-list" id="colCoinList"></div>
-
                 <div class="modal-row2">
                     <div>
                         <div class="modal-label">Quantidade depositada</div>
@@ -260,7 +207,6 @@
                         <input type="number" class="modal-input" id="colEntryPrice" placeholder="Auto" step="any" oninput="updatePreview()">
                     </div>
                 </div>
-
                 <div class="modal-row2">
                     <div>
                         <div class="modal-label">Protocolo</div>
@@ -274,8 +220,8 @@
                         <div class="modal-label">Blockchain</div>
                         <select class="modal-select" id="colChain">
                             <option value="Ethereum">Ethereum</option>
-                            <option value="Polygon">Polygon</option>
                             <option value="Arbitrum">Arbitrum</option>
+                            <option value="Polygon">Polygon</option>
                             <option value="Optimism">Optimism</option>
                             <option value="Base">Base</option>
                             <option value="BSC">BSC</option>
@@ -283,26 +229,18 @@
                         </select>
                     </div>
                 </div>
-
-                <div class="modal-sep">PARÂMETROS DO AAVE</div>
-
+                <div class="modal-sep">— PARÂMETROS AAVE —</div>
                 <div class="modal-row2">
                     <div>
-                        <div class="modal-label">LTV Máximo (%)</div>
-                        <input type="number" class="modal-input" id="colLtvMax" placeholder="Ex: 70" step="any" min="0" max="100" oninput="updatePreview()">
+                        <div class="modal-label">LTV Máx (%)</div>
+                        <input type="number" class="modal-input" id="colLtvMax" placeholder="Ex: 75" step="any" oninput="updatePreview()">
                     </div>
                     <div>
-                        <div class="modal-label">Limiar de Liquidação (%)</div>
-                        <input type="number" class="modal-input" id="colLiqThreshold" placeholder="Ex: 82.5" step="any" min="0" max="100" oninput="updatePreview()">
+                        <div class="modal-label">Limiar Liquidação (%)</div>
+                        <input type="number" class="modal-input" id="colLiqThreshold" placeholder="Ex: 80" step="any" oninput="updatePreview()">
                     </div>
                 </div>
-
-                <div class="modal-sep">BORROWS VINCULADOS</div>
-                <div style="font-size:11px;color:#888;margin-bottom:6px;margin-top:4px;">Selecione quais borrows este colateral garante:</div>
-                <div class="borrow-check-list" id="borrowCheckList"></div>
-
-                <div class="modal-preview" id="colPreview" style="display:none;"></div>
-
+                <div class="modal-preview" id="colPreview"></div>
                 <div class="modal-btns">
                     <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
                     <button class="modal-btn modal-btn-save" id="colSaveBtn" onclick="saveColateral()">Salvar</button>
@@ -310,7 +248,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 08/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.4;padding:10px;">Basic 2.0 | 08/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#00695c;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -319,556 +257,383 @@
         import { auth, onAuthStateChanged, db } from './firebase-config.js';
         import { doc, setDoc, collection, getDocs, deleteDoc, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Dark mode
-        if (localStorage.getItem('defi_dark_col') === '1') document.body.classList.add('dark-mode');
-        window.toggleDark = function() {
-            const d = document.body.classList.toggle('dark-mode');
-            document.getElementById('btnDark').textContent = d ? '☀️' : '🌙';
-            localStorage.setItem('defi_dark_col', d ? '1' : '0');
-        };
-        if (localStorage.getItem('defi_dark_col') === '1') document.getElementById('btnDark').textContent = '☀️';
+        let allCryptos = [], colaterais = [], borrows = [], pools = [];
+        let userId = null, selectedCryptoId = null, editingId = null;
 
-        let userId = null;
-        let colaterais = [];
-        let activeChain = 'Todos';
-        let borrows = [];
-        let allCryptos = [];
-        let selectedCryptoId = null;
-        let editingId = null;
-        let selectedBorrowIds = [];
+        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+        const fmt2 = v => '$' + parseFloat(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-        const fmtQty = v => parseFloat(v||0).toLocaleString('en-US', {maximumFractionDigits:6});
-
-        // ===== FIREBASE =====
         async function loadColaterais() {
-            try {
-                const snap = await getDocs(collection(db, 'users', userId, 'defi_colateral'));
-                colaterais = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-            } catch(e) { console.error(e); colaterais = []; }
+            try { const s = await getDocs(collection(db,'users',userId,'defi_colateral')); colaterais = s.docs.map(d=>({...d.data(),id:d.id})); } catch(e) { colaterais=[]; }
         }
-
         async function loadBorrows() {
+            try { const s = await getDocs(collection(db,'users',userId,'defi_borrows')); borrows = s.docs.map(d=>({...d.data(),id:d.id})); } catch(e) { borrows=[]; }
+        }
+        async function loadPools() {
+            try { const s = await getDocs(collection(db,'users',userId,'defi_pools')); pools = s.docs.map(d=>({...d.data(),id:d.id})); } catch(e) { pools=[]; }
+        }
+        async function saveToFirebase(col) {
             try {
-                const snap = await getDocs(collection(db, 'users', userId, 'defi_borrows'));
-                borrows = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-            } catch(e) { borrows = []; }
+                if (col.id) { await setDoc(doc(db,'users',userId,'defi_colateral',col.id),col); }
+                else { const r = await addDoc(collection(db,'users',userId,'defi_colateral'),col); col.id=r.id; }
+                return true;
+            } catch(e) { return false; }
+        }
+        async function deleteFromFirebase(id) {
+            try { await deleteDoc(doc(db,'users',userId,'defi_colateral',id)); return true; } catch(e) { return false; }
         }
 
         async function loadPrices() {
             try {
                 const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
                 if (r.ok) allCryptos = await r.json();
-            } catch(e) { console.error('Erro preços:', e); }
+            } catch(e) {}
             loadSpecialTokens();
         }
 
         async function searchCryptoByName(query) {
             try {
-                const res = await fetch('https://api.coingecko.com/api/v3/search?query=' + encodeURIComponent(query));
+                const res = await fetch('https://api.coingecko.com/api/v3/search?query='+encodeURIComponent(query));
                 if (!res.ok) return;
                 const data = await res.json();
-                const ids = (data.coins || []).slice(0, 5).map(c => c.id).join(',');
-                if (!ids) {
-                    document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Nenhuma cripto encontrada</div>';
-                    return;
-                }
-                const res2 = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids + '&sparkline=false');
+                const ids = (data.coins||[]).slice(0,5).map(c=>c.id).join(',');
+                if (!ids) { document.getElementById('colCoinList').innerHTML='<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Nenhuma cripto encontrada</div>'; return; }
+                const res2 = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids+'&sparkline=false');
                 if (!res2.ok) return;
                 const coins = await res2.json();
-                coins.forEach(c => { if (!allCryptos.find(x => x.id === c.id)) allCryptos.push(c); });
+                coins.forEach(c => { if (!allCryptos.find(x=>x.id===c.id)) allCryptos.push(c); });
                 filterColList();
-            } catch(e) {
-                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#e53935;font-size:12px;">⚠️ Erro ao buscar. Tente novamente.</div>';
-            }
+            } catch(e) { document.getElementById('colCoinList').innerHTML='<div style="padding:10px;text-align:center;color:#e53935;font-size:12px;">⚠️ Erro ao buscar. Tente novamente.</div>'; }
         }
 
         function loadSpecialTokens() {
-            const eth = allCryptos.find(x => x.id === 'ethereum');
+            const eth = allCryptos.find(x=>x.id==='ethereum');
             if (!eth) return;
             const RETH_RATIO = 1.1615;
-            const rethPrice = eth.current_price * RETH_RATIO;
-            const pct = ((RETH_RATIO - 1) * 100).toFixed(2);
-            const existing = allCryptos.findIndex(x => x.id === 'rocket-pool-eth');
-            const rethObj = {
-                id: 'rocket-pool-eth',
-                symbol: 'reth',
-                name: 'rETH — ETH ×' + RETH_RATIO + ' (+' + pct + '%)',
-                image: 'https://assets.coingecko.com/coins/images/20764/small/reth.png',
-                current_price: rethPrice
-            };
-            if (existing >= 0) allCryptos[existing] = rethObj;
-            else allCryptos.push(rethObj);
+            const rethObj = { id:'rocket-pool-eth', symbol:'reth', name:'rETH — ETH ×'+RETH_RATIO+' (+'+(((RETH_RATIO-1)*100).toFixed(2))+'%)', image:'https://assets.coingecko.com/coins/images/20764/small/reth.png', current_price: eth.current_price * RETH_RATIO };
+            const idx = allCryptos.findIndex(x=>x.id==='rocket-pool-eth');
+            if (idx>=0) allCryptos[idx]=rethObj; else allCryptos.push(rethObj);
         }
 
-        function getPrice(id) { const c = allCryptos.find(x => x.id === id); return c ? c.current_price : 0; }
-        function getInfo(id)  { return allCryptos.find(x => x.id === id) || null; }
+        function getPrice(id) { const c=allCryptos.find(x=>x.id===id); return c?c.current_price:0; }
+        function getInfo(id) { return allCryptos.find(x=>x.id===id)||null; }
 
-        async function saveToFirebase(col) {
-            try {
-                if (col.id) {
-                    await setDoc(doc(db, 'users', userId, 'defi_colateral', col.id), col);
-                } else {
-                    const ref = await addDoc(collection(db, 'users', userId, 'defi_colateral'), col);
-                    col.id = ref.id;
-                }
-                return true;
-            } catch(e) { console.error(e); return false; }
-        }
-
-        async function deleteFromFirebase(id) {
-            try { await deleteDoc(doc(db, 'users', userId, 'defi_colateral', id)); return true; }
-            catch(e) { return false; }
-        }
-
-        // ===== CÁLCULOS GLOBAIS (igual ao Aave) =====
-
-        // Dívida total filtrada por blockchain (igual ao Aave — cada rede é separada)
         function getTotalDebt(chain) {
-            return borrows
-                .filter(b => !chain || (b.chain || 'Ethereum') === chain)
-                .reduce((sum, b) => sum + parseFloat(b.amount || 0) * getPrice(b.cryptoId), 0);
+            return borrows.filter(b=>(b.chain||'Ethereum')===chain).reduce((s,b)=>s+parseFloat(b.amount||0)*getPrice(b.cryptoId),0);
         }
 
-        // HF por blockchain = Σ(col_i × liqThresh_i%) / dívida_total_da_mesma_rede
-        function calcGlobalHF(lista) {
-            // Detecta a blockchain da lista (pode ser mista se "Todos")
-            // Agrupa por chain e calcula HF separado para cada
-            const chains = [...new Set(lista.map(c => c.chain || 'Ethereum'))];
-            if (chains.length === 1) {
-                // Uma só rede — simples
-                const chain = chains[0];
-                const totalDebt = getTotalDebt(chain);
-                if (totalDebt <= 0) return null;
-                const numerador = lista.reduce((sum, col) => {
-                    const price = getPrice(col.cryptoId);
-                    const colUsd = parseFloat(col.amount || 0) * price;
-                    const liq = parseFloat(col.liqThreshold || 80) / 100;
-                    return sum + colUsd * liq;
-                }, 0);
-                return numerador / totalDebt;
-            } else {
-                // Múltiplas redes — HF ponderado pela dívida de cada rede
-                let totalNum = 0, totalDebtAll = 0;
-                chains.forEach(chain => {
-                    const colsChain = lista.filter(c => (c.chain || 'Ethereum') === chain);
-                    const debt = getTotalDebt(chain);
-                    totalDebtAll += debt;
-                    colsChain.forEach(col => {
-                        const price = getPrice(col.cryptoId);
-                        const colUsd = parseFloat(col.amount || 0) * price;
-                        const liq = parseFloat(col.liqThreshold || 80) / 100;
-                        totalNum += colUsd * liq;
-                    });
-                });
-                if (totalDebtAll <= 0) return null;
-                return totalNum / totalDebtAll;
-            }
+        function calcHF(colsChain, chain) {
+            const debt = getTotalDebt(chain);
+            if (debt<=0) return null;
+            const num = colsChain.reduce((s,col)=>s+parseFloat(col.amount||0)*getPrice(col.cryptoId)*(parseFloat(col.liqThreshold||80)/100),0);
+            return num/debt;
         }
 
-        // Contribuição de cada colateral para o numerador do HF
-        function colContribuicao(col) {
-            const price = getPrice(col.cryptoId);
-            const colUsd = parseFloat(col.amount || 0) * price;
-            const liq = parseFloat(col.liqThreshold || 80) / 100;
-            return colUsd * liq;
-        }
+        function hfClass(hf) { if(hf===null)return'hf-safe'; if(hf<1.2)return'hf-danger'; if(hf<1.5)return'hf-warn'; return'hf-safe'; }
+        function hfBadgeClass(hf) { if(hf===null)return'hf-badge-none'; if(hf<1.2)return'hf-badge-danger'; if(hf<1.5)return'hf-badge-warn'; return'hf-badge-safe'; }
+        function hfBarClass(hf) { if(hf===null)return'hf-safe-bar'; if(hf<1.2)return'hf-danger-bar'; if(hf<1.5)return'hf-warn-bar'; return'hf-safe-bar'; }
 
-        function hfClass(hf) {
-            if (hf === null) return 'hf-safe';
-            if (hf < 1.2) return 'hf-danger';
-            if (hf < 1.5) return 'hf-warn';
-            return 'hf-safe';
-        }
-
-        function hfBarClass(hf) {
-            if (hf === null) return 'hf-safe-bar';
-            if (hf < 1.2) return 'hf-danger-bar';
-            if (hf < 1.5) return 'hf-warn-bar';
-            return 'hf-safe-bar';
-        }
-
-        function hfBarPct(hf) {
-            if (hf === null) return 100;
-            return Math.min(100, (hf / 3) * 100);
-        }
-
-        // ===== RENDER =====
-        function updateSummary() {
-            // Resumo reflete o filtro ativo
-            const listaResumo = activeChain === 'Todos' ? colaterais : colaterais.filter(c => (c.chain || 'Outro') === activeChain);
-
-            const totalColUsd = listaResumo.reduce((s, col) => s + parseFloat(col.amount||0) * getPrice(col.cryptoId), 0);
-            // Dívida: se filtrado por chain, usa só dívidas dessa chain
-            const totalDebtUsd = activeChain === 'Todos'
-                ? [...new Set(colaterais.map(c => c.chain || 'Ethereum'))].reduce((s, ch) => s + getTotalDebt(ch), 0)
-                : getTotalDebt(activeChain);
-            const globalHF = calcGlobalHF(listaResumo);
-            const globalLTV = totalColUsd > 0 ? (totalDebtUsd / totalColUsd) * 100 : 0;
-            const margem = totalColUsd - totalDebtUsd;
-
-            // HF geral
-            const hfEl = document.getElementById('sumHF');
-            const hfSt = document.getElementById('sumHFStatus');
-            if (globalHF === null) {
-                hfEl.textContent = '∞';
-                hfEl.className = 'value hf-safe';
-                hfSt.textContent = 'Sem dívidas';
-            } else {
-                hfEl.textContent = globalHF.toFixed(2);
-                hfEl.className = 'value ' + hfClass(globalHF);
-                hfSt.textContent = globalHF < 1.2 ? '🚨 CRÍTICO' : globalHF < 1.5 ? '⚠️ Atenção' : '✅ Seguro';
-            }
-
-            document.getElementById('sumTotal').textContent = fmt(totalColUsd);
-            document.getElementById('sumPositions').textContent = listaResumo.length + ' posição(ões)' + (activeChain !== 'Todos' ? ' (' + activeChain + ')' : '');
-            document.getElementById('sumLTV').textContent = globalLTV.toFixed(1) + '%';
-            document.getElementById('sumLTVMax').textContent = 'Col: ' + fmt(totalColUsd);
-            document.getElementById('sumDebt').textContent = fmt(totalDebtUsd);
-            document.getElementById('sumMargin').textContent = 'Margem: ' + fmt(margem);
-
-            // Alertas — só um alerta global
-            const dangers = [], warns = [];
-            if (globalHF !== null) {
-                const txt = 'HF Global: ' + globalHF.toFixed(2) + ' | LTV: ' + globalLTV.toFixed(1) + '%';
-                if (globalHF < 1.2) dangers.push(txt);
-                else if (globalHF < 1.5) warns.push(txt);
-            }
-            const dEl = document.getElementById('alertDanger');
-            const wEl = document.getElementById('alertWarn');
-            dEl.style.display = dangers.length ? 'block' : 'none';
-            wEl.style.display = warns.length ? 'block' : 'none';
-            document.getElementById('alertDangerList').innerHTML = dangers.map(t => '<div>🚨 ' + t + '</div>').join('');
-            document.getElementById('alertWarnList').innerHTML  = warns.map(t => '<div>⚠️ ' + t + '</div>').join('');
-        }
-
-        function renderChainTabs() {
-            const chains = ['Todos', ...new Set(colaterais.map(c => c.chain || 'Outro'))];
-            const counts = {};
-            colaterais.forEach(c => {
-                const ch = c.chain || 'Outro';
-                counts[ch] = (counts[ch] || 0) + 1;
+        function getPoolAllocs(borrowId) {
+            const allocs=[];
+            pools.forEach(p=>{
+                if(p.borrowIdA===borrowId&&p.borrowPctA>0) allocs.push({pct:p.borrowPctA});
+                if(p.borrowIdB===borrowId&&p.borrowPctB>0) allocs.push({pct:p.borrowPctB});
             });
-            document.getElementById('chainTabs').innerHTML = chains.map(ch => {
-                const count = ch === 'Todos' ? colaterais.length : (counts[ch] || 0);
-                return '<button class="chain-tab' + (activeChain === ch ? ' active' : '') + '" onclick="setChainFilter(\'' + ch + '\')">' +
-                    ch + '<span class="ct-count">' + count + '</span></button>';
-            }).join('');
+            return allocs;
         }
 
-        window.setChainFilter = function(chain) {
-            activeChain = chain;
-            renderList();
-        };
-
-        function renderList() {
+        function renderAll() {
             updateSummary();
-            renderChainTabs();
-            if (colaterais.length === 0) {
-                document.getElementById('colList').innerHTML = '<div class="empty-state"><div class="icon">🛡️</div><h3>Nenhum colateral registrado</h3><p>Clique em "+ Novo Colateral" pra começar</p></div>';
+            renderChainSections();
+        }
+
+        function updateSummary() {
+            const allChains = [...new Set([...colaterais.map(c=>c.chain||'Ethereum'),...borrows.map(b=>b.chain||'Ethereum')])];
+            const totalCol = colaterais.reduce((s,c)=>s+parseFloat(c.amount||0)*getPrice(c.cryptoId),0);
+            const totalDebt = allChains.reduce((s,ch)=>s+getTotalDebt(ch),0);
+            const ltv = totalCol>0?(totalDebt/totalCol*100):0;
+
+            let worstHF = null;
+            allChains.forEach(ch=>{
+                const colsChain = colaterais.filter(c=>(c.chain||'Ethereum')===ch);
+                if(colsChain.length===0) return;
+                const hf = calcHF(colsChain,ch);
+                if(hf!==null&&(worstHF===null||hf<worstHF)) worstHF=hf;
+            });
+
+            document.getElementById('sumTotal').textContent = fmt(totalCol);
+            document.getElementById('sumPositions').textContent = colaterais.length+' posições | '+allChains.length+' redes';
+            document.getElementById('sumDebt').textContent = fmt(totalDebt);
+            document.getElementById('sumMargin').textContent = 'Margem: '+fmt(totalCol-totalDebt);
+            document.getElementById('sumLTV').textContent = ltv.toFixed(1)+'%';
+            document.getElementById('sumLTVSub').textContent = fmt(totalCol)+' colateral';
+
+            const hfEl=document.getElementById('sumHF'), hfSt=document.getElementById('sumHFStatus');
+            if(worstHF===null){hfEl.textContent='∞';hfEl.className='value hf-safe';hfSt.textContent='Sem dívidas';}
+            else{hfEl.textContent=worstHF.toFixed(2);hfEl.className='value '+hfClass(worstHF);hfSt.textContent=worstHF<1.2?'🚨 CRÍTICO':worstHF<1.5?'⚠️ Atenção':'✅ Seguro';}
+
+            const dangers=[],warns=[];
+            allChains.forEach(ch=>{
+                const colsChain=colaterais.filter(c=>(c.chain||'Ethereum')===ch);
+                if(colsChain.length===0) return;
+                const hf=calcHF(colsChain,ch);
+                if(hf!==null&&hf<1.2) dangers.push(ch+': HF '+hf.toFixed(2));
+                else if(hf!==null&&hf<1.5) warns.push(ch+': HF '+hf.toFixed(2));
+            });
+            document.getElementById('alertDanger').style.display=dangers.length?'block':'none';
+            document.getElementById('alertWarn').style.display=warns.length?'block':'none';
+            document.getElementById('alertDangerList').innerHTML=dangers.map(t=>'<div>🚨 '+t+'</div>').join('');
+            document.getElementById('alertWarnList').innerHTML=warns.map(t=>'<div>⚠️ '+t+'</div>').join('');
+        }
+
+        function renderChainSections() {
+            const allChains = [...new Set([...colaterais.map(c=>c.chain||'Ethereum'),...borrows.map(b=>b.chain||'Ethereum')])].sort();
+            if(allChains.length===0){
+                document.getElementById('chainSections').innerHTML='<div class="empty-state"><div class="icon">🛡️</div><h3>Nenhum registro ainda</h3><p>Clique em "+ Colateral" ou "+ Borrow" para começar</p></div>';
                 return;
             }
+            const chainEmoji={Ethereum:'⟠',Arbitrum:'🔵',Polygon:'🟣',Optimism:'🔴',Base:'🔷',BSC:'🟡'};
 
-            const filtered = activeChain === 'Todos' ? colaterais : colaterais.filter(c => (c.chain || 'Outro') === activeChain);
-            if (filtered.length === 0) {
-                document.getElementById('colList').innerHTML = '<div class="empty-state"><div class="icon">🔗</div><h3>Nenhum colateral em ' + activeChain + '</h3></div>';
-                return;
-            }
-            // Cálculos globais para contexto dos cards (agrupados por chain)
-            const globalHFtotal = calcGlobalHF(filtered);
-            const totalColUsdFiltered = filtered.reduce((s, c) => s + parseFloat(c.amount||0) * getPrice(c.cryptoId), 0);
+            document.getElementById('chainSections').innerHTML = allChains.map(chain=>{
+                const chainKey='chain-'+chain.toLowerCase();
+                const emoji=chainEmoji[chain]||'⛓️';
+                const colsChain=colaterais.filter(c=>(c.chain||'Ethereum')===chain);
+                const borrowsChain=borrows.filter(b=>(b.chain||'Ethereum')===chain);
+                const totalCol=colsChain.reduce((s,c)=>s+parseFloat(c.amount||0)*getPrice(c.cryptoId),0);
+                const totalDebt=getTotalDebt(chain);
+                const hf=calcHF(colsChain,chain);
+                const ltv=totalCol>0?(totalDebt/totalCol*100):0;
+                const hfPct=hf!==null?Math.min(100,(hf/3)*100):100;
+                const hfTxt=hf===null?'∞ Sem dívidas':hf.toFixed(2)+(hf<1.2?' 🚨':hf<1.5?' ⚠️':' ✅');
 
-            document.getElementById('colList').innerHTML = filtered.map(col => {
-                const info = getInfo(col.cryptoId);
-                const price = getPrice(col.cryptoId);
-                const colUsd = parseFloat(col.amount || 0) * price;
-                const entryUsd = parseFloat(col.amount || 0) * parseFloat(col.entryPrice || 0);
-                const pnl = colUsd - entryUsd;
-                const pnlPct = entryUsd > 0 ? (pnl / entryUsd * 100) : 0;
-                const ltvMax = parseFloat(col.ltvMax || 70);
-                const liqThresh = parseFloat(col.liqThreshold || 80);
-                const chainCls = 'chain-' + (col.chain || 'default').toLowerCase();
+                const colsHtml = colsChain.length===0
+                    ? '<div class="col-empty">Sem colaterais nesta rede<br><button class="add-btn" style="margin-top:8px;" onclick="openModalWithChain(\''+chain+'\')">+ Adicionar</button></div>'
+                    : colsChain.map(col=>{
+                        const price=getPrice(col.cryptoId);
+                        const colUsd=parseFloat(col.amount||0)*price;
+                        const entryUsd=parseFloat(col.amount||0)*parseFloat(col.entryPrice||price);
+                        const pnl=colUsd-entryUsd;
+                        const pnlPct=entryUsd>0?(pnl/entryUsd*100):0;
+                        const pnlSign=pnl>=0?'+':'';
+                        const pct=totalCol>0?(colUsd/totalCol*100).toFixed(0):'0';
+                        const info=getInfo(col.cryptoId);
+                        const imgSrc=info?info.image:'';
+                        return '<div class="col-row">'+
+                            (imgSrc?'<img class="row-icon" src="'+imgSrc+'" onerror="this.style.display=\'none\'">':'<div class="row-icon-fallback" style="background:#e0f2f1;color:#00695c;">'+((col.cryptoSymbol||'?').toUpperCase().slice(0,3))+'</div>')+
+                            '<div class="row-info">'+
+                                '<div class="row-name">'+(col.cryptoSymbol||'?').toUpperCase()+'</div>'+
+                                '<div class="row-detail">'+parseFloat(col.amount||0).toLocaleString('en-US',{maximumFractionDigits:4})+' · '+fmt2(price)+'</div>'+
+                                (col.entryPrice?'<div class="'+(pnl>=0?'pnl-pos':'pnl-neg')+'">'+pnlSign+fmt(pnl)+' ('+pnlSign+pnlPct.toFixed(1)+'%)</div>':'')+
+                            '</div>'+
+                            '<div class="row-right">'+
+                                '<div class="row-usd-green">'+fmt(colUsd)+'</div>'+
+                                '<div class="row-pct">'+pct+'% do col.</div>'+
+                            '</div>'+
+                            '<div class="row-actions">'+
+                                '<button class="row-btn" onclick="editColateral(\''+col.id+'\')">✏️</button>'+
+                                '<button class="row-btn" onclick="deleteColateral(\''+col.id+'\')">🗑️</button>'+
+                            '</div>'+
+                        '</div>';
+                    }).join('');
 
-                // Cálculos por chain deste colateral
-                const colChain = col.chain || 'Ethereum';
-                const borrowsChain = borrows.filter(b => (b.chain || 'Ethereum') === colChain);
-                const totalDebtChain = getTotalDebt(colChain);
-                const colsChain = filtered.filter(c => (c.chain || 'Ethereum') === colChain);
-                const totalColChain = colsChain.reduce((s, c) => s + parseFloat(c.amount||0) * getPrice(c.cryptoId), 0);
+                const borrowsHtml = borrowsChain.length===0
+                    ? '<div class="col-empty">Sem borrows nesta rede<br><a href="GT_Smart_DeFi_Borrows.html" class="add-btn add-btn-purple" style="display:inline-block;margin-top:8px;text-decoration:none;">+ Adicionar</a></div>'
+                    : borrowsChain.map(b=>{
+                        const price=getPrice(b.cryptoId);
+                        const bUsd=parseFloat(b.amount||0)*price;
+                        const pct=totalDebt>0?(bUsd/totalDebt*100).toFixed(0):'0';
+                        const info=getInfo(b.cryptoId);
+                        const imgSrc=info?info.image:'';
+                        const allocs=getPoolAllocs(b.id);
+                        const totalAllocPct=allocs.reduce((s,a)=>s+parseFloat(a.pct),0);
+                        const poolTag=totalAllocPct>0?'<span class="pool-tag">🌊 '+totalAllocPct.toFixed(0)+'% pools</span>':'';
+                        return '<div class="col-row">'+
+                            (imgSrc?'<img class="row-icon" src="'+imgSrc+'" onerror="this.style.display=\'none\'">':'<div class="row-icon-fallback" style="background:#ede7f6;color:#4a2c8a;">'+((b.cryptoSymbol||'?').toUpperCase().slice(0,3))+'</div>')+
+                            '<div class="row-info">'+
+                                '<div class="row-name">'+(b.cryptoSymbol||'?').toUpperCase()+'</div>'+
+                                '<div class="row-detail">'+parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4})+(b.rate?' · '+b.rate+'% APY':'')+' · '+(b.protocol||'Aave')+'</div>'+
+                                poolTag+
+                            '</div>'+
+                            '<div class="row-right">'+
+                                '<div class="row-usd-purple">'+fmt(bUsd)+'</div>'+
+                                '<div class="row-pct">'+pct+'% da dív.</div>'+
+                            '</div>'+
+                            '<div class="row-actions">'+
+                                '<a href="GT_Smart_DeFi_Borrows.html" class="row-btn" title="Editar">✏️</a>'+
+                            '</div>'+
+                        '</div>';
+                    }).join('');
 
-                const contrib = colContribuicao(col);
-                const contribPct = totalColChain > 0 ? (colUsd / totalColChain * 100).toFixed(1) : '0';
-
-                // LTV proporcional dentro da mesma chain
-                const debtProporcional = totalColChain > 0 ? totalDebtChain * (colUsd / totalColChain) : 0;
-                const ltvProporcional = colUsd > 0 ? (debtProporcional / colUsd * 100) : 0;
-                const ltvBarColor = ltvProporcional > liqThresh ? '#c62828' : ltvProporcional > ltvMax ? '#ff6f00' : '#00695c';
-                
-                // HF desta chain específica
-                const hfChain = calcGlobalHF(colsChain);
-
-                return '<div class="col-card">' +
-                    '<div class="col-top">' +
-                        '<div class="col-crypto">' +
-                            (info ? '<img class="col-icon" src="' + info.image + '" onerror="this.style.display=\'none\'">' : '') +
-                            '<div>' +
-                                '<div class="col-name">' + (col.cryptoName || col.cryptoSymbol || '?') + '</div>' +
-                                '<div class="col-sym">' + (col.cryptoSymbol || '').toUpperCase() +
-                                    ' &nbsp;<span class="proto-badge">' + (col.protocol || 'Aave') + '</span>' +
-                                    ' &nbsp;<span class="chain-badge ' + chainCls + '">' + (col.chain || 'Ethereum') + '</span>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="col-actions">' +
-                            '<button class="col-btn" onclick="editColateral(\'' + col.id + '\')" title="Editar">✏️</button>' +
-                            '<button class="col-btn" onclick="deleteColateral(\'' + col.id + '\')" title="Deletar">🗑️</button>' +
-                        '</div>' +
-                    '</div>' +
-
-                    // Stats
-                    '<div class="col-grid">' +
-                        '<div class="col-stat"><div class="cs-label">Quantidade</div><div class="cs-value">' + fmtQty(col.amount) + ' ' + (col.cryptoSymbol||'').toUpperCase() + '</div></div>' +
-                        '<div class="col-stat"><div class="cs-label">Valor Atual</div><div class="cs-value">' + fmt(colUsd) + '</div></div>' +
-                        '<div class="col-stat"><div class="cs-label">PnL Colateral</div><div class="cs-value" style="color:' + (pnl>=0?'#2e7d32':'#c62828') + ';">' + (pnl>=0?'+':'') + fmt(pnl) + ' (' + (pnlPct>=0?'+':'') + pnlPct.toFixed(1) + '%)</div></div>' +
-                        '<div class="col-stat"><div class="cs-label">Preço Atual</div><div class="cs-value">' + fmt(price) + '</div></div>' +
-                        '<div class="col-stat"><div class="cs-label">Peso no Colateral</div><div class="cs-value">' + contribPct + '% do total</div></div>' +
-                        '<div class="col-stat"><div class="cs-label">Contribuição HF</div><div class="cs-value" style="color:#00695c;">' + fmt(contrib) + '</div></div>' +
-                    '</div>' +
-
-                    // HF da mesma blockchain (igual ao Aave por rede)
-                    '<div class="hf-bar-wrap">' +
-                        '<div class="hf-bar-label">' +
-                            '<span>❤️ HF ' + colChain + ' (Aave)</span>' +
-                            '<span class="' + hfClass(hfChain) + '">' + (hfChain === null ? '∞ — Sem dívidas' : hfChain.toFixed(3) + (hfChain < 1.2 ? ' 🚨 CRÍTICO' : hfChain < 1.5 ? ' ⚠️ Atenção' : ' ✅ Seguro')) + '</span>' +
-                        '</div>' +
-                        '<div class="hf-bar-bg"><div class="hf-bar-fill ' + hfBarClass(hfChain) + '" style="width:' + hfBarPct(hfChain) + '%;"></div></div>' +
-                        '<div class="hf-markers"><span>0</span><span style="color:#c62828;">1.0 Liq</span><span style="color:#f57f17;">1.5</span><span>3.0+</span></div>' +
-                    '</div>' +
-
-                    // LTV proporcional
-                    '<div class="ltv-bar-wrap">' +
-                        '<div class="ltv-bar-row">' +
-                            '<span>📊 LTV Proporcional: <strong style="color:' + ltvBarColor + ';">' + ltvProporcional.toFixed(1) + '%</strong></span>' +
-                            '<span style="font-size:10px;color:#888;">Máx: ' + ltvMax + '% | Liq: ' + liqThresh + '%</span>' +
-                        '</div>' +
-                        '<div class="ltv-bar-bg" style="height:10px;border-radius:8px;overflow:hidden;position:relative;">' +
-                            '<div class="ltv-bar-fill" style="width:' + Math.min(ltvProporcional,100) + '%;background:' + ltvBarColor + ';height:100%;border-radius:8px;"></div>' +
-                        '</div>' +
-                        '<div style="display:flex;justify-content:space-between;font-size:9px;color:#bbb;margin-top:2px;"><span>0%</span><span style="color:#ff6f00;">LTV Max ' + ltvMax + '%</span><span style="color:#c62828;">Liq ' + liqThresh + '%</span><span>100%</span></div>' +
-                    '</div>' +
-
-                    // Borrows da mesma chain
-                    '<div class="borrows-linked">' +
-                        '<div class="bl-title">🏦 Dívidas ' + colChain + ' (' + borrowsChain.length + ') — Dívida proporcional: ' + fmt(debtProporcional) + '</div>' +
-                        (borrowsChain.length === 0 ?
-                            '<div class="bl-empty">Nenhum borrow em ' + colChain + '</div>' :
-                            borrowsChain.map(b => {
-                                const bPrice = getPrice(b.cryptoId);
-                                const bUsd = parseFloat(b.amount||0) * bPrice;
-                                const bProporcional = totalColChain > 0 ? bUsd * (colUsd / totalColChain) : 0;
-                                return '<div class="bl-item">' +
-                                    '<span><span class="bl-sym">' + (b.cryptoSymbol||'?').toUpperCase() + '</span> &nbsp;<span style="font-size:10px;color:#aaa;">' + parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4}) + '</span></span>' +
-                                    '<span><span class="bl-val">' + fmt(bUsd) + '</span> <span style="font-size:10px;color:#888;">(prop: ' + fmt(bProporcional) + ')</span></span>' +
-                                '</div>';
-                            }).join('')
-                        ) +
-                    '</div>' +
+                return '<div class="chain-section '+chainKey+'" id="sec_'+chain+'">'+
+                    '<div class="chain-header" onclick="toggleSection(\''+chain+'\')">'+
+                        '<span style="font-size:20px;">'+emoji+'</span>'+
+                        '<span class="chain-name">'+chain+'</span>'+
+                        '<span class="chain-hf-badge '+hfBadgeClass(hf)+'">HF '+hfTxt+'</span>'+
+                        '<div class="chain-stats">'+
+                            '<div class="chain-stat-item"><div class="csi-label">Colateral</div><div class="csi-value">'+fmt(totalCol)+'</div></div>'+
+                            '<div class="chain-stat-item"><div class="csi-label">Dívida</div><div class="csi-value">'+fmt(totalDebt)+'</div></div>'+
+                            '<div class="chain-stat-item"><div class="csi-label">LTV</div><div class="csi-value">'+ltv.toFixed(1)+'%</div></div>'+
+                        '</div>'+
+                        '<span class="chain-toggle">▾</span>'+
+                    '</div>'+
+                    '<div class="chain-hf-bar">'+
+                        '<div class="hf-bar-bg"><div class="hf-bar-fill '+hfBarClass(hf)+'" style="width:'+hfPct+'%;"></div></div>'+
+                        '<div class="hf-markers"><span>0</span><span style="color:#c62828;">1.0 Liq</span><span style="color:#f57f17;">1.5</span><span>3.0+</span></div>'+
+                    '</div>'+
+                    '<div class="chain-body">'+
+                        '<div class="chain-col chain-col-left">'+
+                            '<div class="col-col-title">🛡️ Colaterais ('+colsChain.length+')'+
+                                '<button class="add-btn" onclick="openModalWithChain(\''+chain+'\')">+ Add</button>'+
+                            '</div>'+
+                            colsHtml+
+                        '</div>'+
+                        '<div class="chain-col">'+
+                            '<div class="col-col-title">🏦 Borrows ('+borrowsChain.length+')'+
+                                '<a href="GT_Smart_DeFi_Borrows.html" class="add-btn add-btn-purple" style="text-decoration:none;">+ Add</a>'+
+                            '</div>'+
+                            borrowsHtml+
+                        '</div>'+
+                    '</div>'+
                 '</div>';
             }).join('');
         }
 
-        // ===== MODAL =====
+        window.toggleSection = function(chain) {
+            const sec=document.getElementById('sec_'+chain);
+            if(sec) sec.classList.toggle('collapsed');
+        };
+
         window.openModal = function() {
-            editingId = null; selectedCryptoId = null; selectedBorrowIds = [];
-            document.getElementById('modalTitle').textContent = '🛡️ Novo Colateral';
-            document.getElementById('colSearch').value = '';
-            document.getElementById('colSelected').textContent = 'Nenhum selecionado';
-            document.getElementById('colAmount').value = '';
-            document.getElementById('colEntryPrice').value = '';
-            document.getElementById('colProtocol').value = 'Aave';
-            document.getElementById('colChain').value = 'Ethereum';
-            document.getElementById('colLtvMax').value = '';
-            document.getElementById('colLiqThreshold').value = '';
-            document.getElementById('colPreview').style.display = 'none';
-            document.getElementById('colSaveBtn').textContent = 'Salvar';
+            editingId=null; selectedCryptoId=null;
+            document.getElementById('modalTitle').textContent='🛡️ Novo Colateral';
+            document.getElementById('colSelected').textContent='Nenhum selecionado';
+            document.getElementById('colAmount').value='';
+            document.getElementById('colEntryPrice').value='';
+            document.getElementById('colProtocol').value='Aave';
+            document.getElementById('colChain').value='Ethereum';
+            document.getElementById('colLtvMax').value='';
+            document.getElementById('colLiqThreshold').value='';
+            document.getElementById('colSaveBtn').textContent='Salvar';
+            document.getElementById('colPreview').style.display='none';
             filterColList();
-            populateBorrowChecks();
             document.getElementById('colModal').classList.add('show');
         };
 
-        window.closeModal = function() { document.getElementById('colModal').classList.remove('show'); };
+        window.openModalWithChain = function(chain) {
+            openModal();
+            document.getElementById('colChain').value=chain;
+        };
+
+        window.closeModal = function() {
+            document.getElementById('colModal').classList.remove('show');
+            editingId=null; selectedCryptoId=null;
+        };
 
         window.filterColList = async function() {
-            // Se allCryptos vazio (API falhou no load), tenta recarregar
-            if (allCryptos.length === 0) {
-                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Carregando moedas... ⏳</div>';
+            if(allCryptos.length===0){
+                document.getElementById('colCoinList').innerHTML='<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Carregando... ⏳</div>';
                 await loadPrices();
             }
-            const q = document.getElementById('colSearch').value.toLowerCase().trim();
-            let list = q ? allCryptos.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)) : allCryptos.slice(0, 20);
-            if (list.length === 0 && q.length >= 2) {
-                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Buscando na API... ⏳</div>';
-                searchCryptoByName(q);
-                return;
+            const q=document.getElementById('colSearch').value.toLowerCase().trim();
+            let list=q?allCryptos.filter(c=>c.name.toLowerCase().includes(q)||c.symbol.toLowerCase().includes(q)):allCryptos.slice(0,20);
+            if(list.length===0&&q.length>=2){
+                document.getElementById('colCoinList').innerHTML='<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Buscando na API... ⏳</div>';
+                searchCryptoByName(q); return;
             }
-            if (list.length === 0) {
-                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Nenhuma cripto encontrada</div>';
-                return;
-            }
-            document.getElementById('colCoinList').innerHTML = list.map(c =>
-                '<div class="modal-coin-item' + (selectedCryptoId === c.id ? ' selected' : '') + '" onclick="selectCrypto(\'' + c.id + '\')">' +
-                '<img src="' + c.image + '" onerror="this.style.display=\'none\'">' +
-                '<div><div class="mci-name">' + c.name + '</div><div class="mci-symbol">' + c.symbol.toUpperCase() + '</div></div>' +
-                '<div class="mci-price">' + fmt(c.current_price) + '</div>' +
+            if(list.length===0){document.getElementById('colCoinList').innerHTML='<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Nenhuma cripto encontrada</div>';return;}
+            document.getElementById('colCoinList').innerHTML=list.map(c=>
+                '<div class="modal-coin-item'+(selectedCryptoId===c.id?' selected':'')+'" onclick="selectCrypto(\''+c.id+'\')">'+
+                '<img src="'+c.image+'" onerror="this.style.display=\'none\'">'+
+                '<div><div class="mci-name">'+c.name+'</div><div class="mci-symbol">'+c.symbol.toUpperCase()+'</div></div>'+
+                '<div class="mci-price">'+fmt2(c.current_price)+'</div>'+
                 '</div>'
             ).join('');
         };
 
         window.selectCrypto = function(id) {
-            selectedCryptoId = id;
-            const info = getInfo(id);
-            if (info) {
-                document.getElementById('colSelected').textContent = '✅ ' + info.name + ' (' + info.symbol.toUpperCase() + ')';
-                if (!document.getElementById('colEntryPrice').value) {
-                    document.getElementById('colEntryPrice').value = info.current_price;
+            selectedCryptoId=id;
+            const info=getInfo(id);
+            if(info){
+                document.getElementById('colSelected').textContent='✅ '+info.name+' ('+info.symbol.toUpperCase()+')';
+                if(!document.getElementById('colEntryPrice').value) document.getElementById('colEntryPrice').value=info.current_price;
+                const aaveDefaults={'bitcoin':{ltv:70,liq:80},'wrapped-bitcoin':{ltv:70,liq:80},'tbtc':{ltv:73,liq:78},'ethereum':{ltv:80,liq:82.5},'rocket-pool-eth':{ltv:68,liq:75},'chainlink':{ltv:70,liq:77.5},'usd-coin':{ltv:77,liq:80},'tether':{ltv:75,liq:78},'dai':{ltv:77,liq:80},'polygon-ecosystem-token':{ltv:65,liq:70}};
+                const def=aaveDefaults[id];
+                if(def){
+                    if(!document.getElementById('colLtvMax').value) document.getElementById('colLtvMax').value=def.ltv;
+                    if(!document.getElementById('colLiqThreshold').value) document.getElementById('colLiqThreshold').value=def.liq;
                 }
-                // Sugerir parâmetros Aave para tokens conhecidos
-                const aaveDefaults = {
-                    'bitcoin': {ltv: 70, liq: 80}, 'ethereum': {ltv: 80, liq: 82.5},
-                    'chainlink': {ltv: 70, liq: 77.5}, 'usd-coin': {ltv: 77, liq: 80},
-                    'tether': {ltv: 75, liq: 78}, 'dai': {ltv: 77, liq: 80},
-                    'wrapped-bitcoin': {ltv: 70, liq: 80}
-                };
-                const def = aaveDefaults[id];
-                if (def && !document.getElementById('colLtvMax').value) {
-                    document.getElementById('colLtvMax').value = def.ltv;
-                    document.getElementById('colLiqThreshold').value = def.liq;
-                }
+                filterColList(); updatePreview();
             }
-            filterColList();
-            updatePreview();
-        };
-
-        function populateBorrowChecks() {
-            const list = document.getElementById('borrowCheckList');
-            if (borrows.length === 0) {
-                list.innerHTML = '<div style="padding:12px;text-align:center;color:#aaa;font-size:12px;">Nenhum borrow cadastrado</div>';
-                return;
-            }
-            list.innerHTML = borrows.map(b => {
-                const bPrice = getPrice(b.cryptoId);
-                const bUsd = parseFloat(b.amount||0) * bPrice;
-                const checked = selectedBorrowIds.includes(b.id) ? 'checked' : '';
-                return '<div class="borrow-check-item" onclick="toggleBorrow(\'' + b.id + '\')">' +
-                    '<input type="checkbox" id="bc_' + b.id + '" ' + checked + ' onclick="event.stopPropagation();toggleBorrow(\'' + b.id + '\')">' +
-                    '<div><div class="bci-name">' + (b.cryptoSymbol||'?').toUpperCase() + ' — ' + parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4}) + '</div><div style="font-size:10px;color:#888;">' + (b.protocol||'Aave') + ' · ' + (b.chain||'') + '</div></div>' +
-                    '<div class="bci-val">' + fmt(bUsd) + '</div>' +
-                '</div>';
-            }).join('');
-        }
-
-        window.toggleBorrow = function(id) {
-            const idx = selectedBorrowIds.indexOf(id);
-            if (idx === -1) selectedBorrowIds.push(id);
-            else selectedBorrowIds.splice(idx, 1);
-            const cb = document.getElementById('bc_' + id);
-            if (cb) cb.checked = selectedBorrowIds.includes(id);
-            updatePreview();
         };
 
         window.updatePreview = function() {
-            const amt = parseFloat(document.getElementById('colAmount').value) || 0;
-            const entry = parseFloat(document.getElementById('colEntryPrice').value) || 0;
-            const ltvMax = parseFloat(document.getElementById('colLtvMax').value) || 0;
-            const liqThresh = parseFloat(document.getElementById('colLiqThreshold').value) || 0;
-            const price = selectedCryptoId ? getPrice(selectedCryptoId) : 0;
-            const colUsd = amt * price;
-            const entryUsd = amt * entry;
-            const debtUsd = selectedBorrowIds.reduce((s, bid) => {
-                const b = borrows.find(x => x.id === bid);
-                return s + (b ? parseFloat(b.amount||0) * getPrice(b.cryptoId) : 0);
-            }, 0);
-            const hf = (colUsd > 0 && debtUsd > 0 && liqThresh > 0) ? (colUsd * liqThresh/100) / debtUsd : null;
-            const ltv = colUsd > 0 ? (debtUsd / colUsd * 100) : 0;
-            const prev = document.getElementById('colPreview');
-            if (colUsd > 0 || debtUsd > 0) {
-                prev.style.display = 'block';
-                prev.innerHTML =
-                    '💰 Colateral: ' + fmt(colUsd) + (entry > 0 ? ' (Entrada: ' + fmt(entryUsd) + ')' : '') + '<br>' +
-                    (debtUsd > 0 ? '💸 Dívida vinculada: ' + fmt(debtUsd) + '<br>' : '') +
-                    (hf !== null ? '❤️ Health Factor: <strong>' + hf.toFixed(2) + '</strong><br>' : '') +
-                    (ltv > 0 ? '📊 LTV atual: ' + ltv.toFixed(1) + '%' + (ltvMax > 0 ? ' / Máx ' + ltvMax + '%' : '') : '');
-            } else {
-                prev.style.display = 'none';
-            }
+            const amt=parseFloat(document.getElementById('colAmount').value)||0;
+            const entry=parseFloat(document.getElementById('colEntryPrice').value)||0;
+            const price=selectedCryptoId?getPrice(selectedCryptoId):0;
+            const colUsd=amt*price;
+            const entryUsd=amt*entry;
+            const prev=document.getElementById('colPreview');
+            if(colUsd>0){
+                prev.style.display='block';
+                const pnl=colUsd-entryUsd;
+                const pnlSign=pnl>=0?'+':'';
+                prev.innerHTML='💰 '+fmt(colUsd)+(entry>0?' | Entrada: '+fmt(entryUsd)+' ('+pnlSign+fmt(pnl)+')':'');
+            } else { prev.style.display='none'; }
         };
 
         window.saveColateral = async function() {
-            if (!selectedCryptoId) { alert('Selecione um token!'); return; }
-            const amt = parseFloat(document.getElementById('colAmount').value);
-            if (!amt || amt <= 0) { alert('Digite a quantidade!'); return; }
-            const info = getInfo(selectedCryptoId);
-            const col = {
-                cryptoId: selectedCryptoId,
-                cryptoName: info ? info.name : '',
-                cryptoSymbol: info ? info.symbol : '',
-                amount: amt,
-                entryPrice: parseFloat(document.getElementById('colEntryPrice').value) || getPrice(selectedCryptoId),
-                protocol: document.getElementById('colProtocol').value,
-                chain: document.getElementById('colChain').value,
-                ltvMax: parseFloat(document.getElementById('colLtvMax').value) || 70,
-                liqThreshold: parseFloat(document.getElementById('colLiqThreshold').value) || 80,
-                linkedBorrowIds: [...selectedBorrowIds],
-                createdAt: editingId ? (colaterais.find(c => c.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+            if(!selectedCryptoId){alert('Selecione um token!');return;}
+            const amt=parseFloat(document.getElementById('colAmount').value);
+            if(!amt||amt<=0){alert('Digite a quantidade!');return;}
+            const info=getInfo(selectedCryptoId);
+            const col={
+                cryptoId:selectedCryptoId, cryptoName:info?info.name:'', cryptoSymbol:info?info.symbol:'',
+                amount:amt, entryPrice:parseFloat(document.getElementById('colEntryPrice').value)||getPrice(selectedCryptoId),
+                protocol:document.getElementById('colProtocol').value, chain:document.getElementById('colChain').value,
+                ltvMax:parseFloat(document.getElementById('colLtvMax').value)||70,
+                liqThreshold:parseFloat(document.getElementById('colLiqThreshold').value)||80,
+                createdAt:editingId?(colaterais.find(c=>c.id===editingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
+                updatedAt:new Date().toISOString()
             };
-            if (editingId) col.id = editingId;
-            const ok = await saveToFirebase(col);
-            if (ok) { closeModal(); await loadColaterais(); renderList(); }
+            if(editingId) col.id=editingId;
+            const ok=await saveToFirebase(col);
+            if(ok){closeModal();await loadColaterais();renderAll();}
             else alert('Erro ao salvar!');
         };
 
         window.editColateral = function(id) {
-            const col = colaterais.find(c => c.id === id);
-            if (!col) return;
-            editingId = id;
-            selectedCryptoId = col.cryptoId;
-            selectedBorrowIds = [...(col.linkedBorrowIds || [])];
-            const info = getInfo(col.cryptoId);
-            document.getElementById('modalTitle').textContent = '✏️ Editar Colateral';
-            document.getElementById('colSelected').textContent = info ? '✅ ' + info.name + ' (' + info.symbol.toUpperCase() + ')' : col.cryptoSymbol;
-            document.getElementById('colAmount').value = col.amount || '';
-            document.getElementById('colEntryPrice').value = col.entryPrice || '';
-            document.getElementById('colProtocol').value = col.protocol || 'Aave';
-            document.getElementById('colChain').value = col.chain || 'Ethereum';
-            document.getElementById('colLtvMax').value = col.ltvMax || '';
-            document.getElementById('colLiqThreshold').value = col.liqThreshold || '';
-            document.getElementById('colSaveBtn').textContent = 'Atualizar';
-            filterColList();
-            populateBorrowChecks();
-            updatePreview();
+            const col=colaterais.find(c=>c.id===id);
+            if(!col) return;
+            editingId=id; selectedCryptoId=col.cryptoId;
+            const info=getInfo(col.cryptoId);
+            document.getElementById('modalTitle').textContent='✏️ Editar Colateral';
+            document.getElementById('colSelected').textContent=info?'✅ '+info.name+' ('+info.symbol.toUpperCase()+')':col.cryptoSymbol;
+            document.getElementById('colAmount').value=col.amount||'';
+            document.getElementById('colEntryPrice').value=col.entryPrice||'';
+            document.getElementById('colProtocol').value=col.protocol||'Aave';
+            document.getElementById('colChain').value=col.chain||'Ethereum';
+            document.getElementById('colLtvMax').value=col.ltvMax||'';
+            document.getElementById('colLiqThreshold').value=col.liqThreshold||'';
+            document.getElementById('colSaveBtn').textContent='Atualizar';
+            filterColList(); updatePreview();
             document.getElementById('colModal').classList.add('show');
         };
 
         window.deleteColateral = async function(id) {
-            const col = colaterais.find(c => c.id === id);
-            const name = col ? (col.cryptoName || col.cryptoSymbol) : id;
-            if (!confirm('Deletar colateral ' + name + '?')) return;
-            const ok = await deleteFromFirebase(id);
-            if (ok) { await loadColaterais(); renderList(); }
+            const col=colaterais.find(c=>c.id===id);
+            if(!confirm('Deletar colateral '+(col?col.cryptoName:id)+'?')) return;
+            const ok=await deleteFromFirebase(id);
+            if(ok){await loadColaterais();renderAll();}
             else alert('Erro ao deletar!');
         };
 
-        // ===== INIT =====
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-            userId = user.uid;
-            await loadPrices();
-            await loadBorrows();
-            await loadColaterais();
-            renderList();
+            if(!user){window.location.href='GT_Smart_Login.html';return;}
+            userId=user.uid;
+            await Promise.all([loadPrices(),loadColaterais(),loadBorrows(),loadPools()]);
+            renderAll();
             filterColList();
-            setInterval(async () => { await loadPrices(); renderList(); }, 60000);
+            setInterval(async()=>{await loadPrices();renderAll();},60000);
         });
     </script>
 </body>
