@@ -279,18 +279,8 @@
         // ===== LOAD CRYPTO PRICES =====
         async function loadPrices() {
             try {
-                // Buscar top 500 moedas em 2 páginas para incluir tokens como rETH, stETH, etc.
-                const [r1, r2, r3] = await Promise.all([
-                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false'),
-                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=2&sparkline=false'),
-                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=3&sparkline=false')
-                ]);
-                const [d1, d2, d3] = await Promise.all([
-                    r1.ok ? r1.json() : [],
-                    r2.ok ? r2.json() : [],
-                    r3.ok ? r3.json() : []
-                ]);
-                allCryptos = [...d1, ...d2, ...d3];
+                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false');
+                if (r.ok) allCryptos = await r.json();
             } catch(e) { console.error('Erro preços:', e); }
         }
 

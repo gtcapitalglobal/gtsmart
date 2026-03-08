@@ -346,19 +346,25 @@
 
         async function loadPrices() {
             try {
-                const [r1, r2, r3] = await Promise.all([
-                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false'),
-                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=2&sparkline=false'),
-                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=3&sparkline=false')
-                ]);
-                const [d1, d2, d3] = await Promise.all([
-                    r1.ok ? r1.json() : [],
-                    r2.ok ? r2.json() : [],
-                    r3.ok ? r3.json() : []
-                ]);
-                allCryptos = [...d1, ...d2, ...d3];
+                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false');
+                if (r.ok) allCryptos = await r.json();
             } catch(e) { console.error('Erro preços:', e); }
             loadSpecialTokens();
+        }
+
+        async function searchCryptoByName(query) {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/search?query=' + encodeURIComponent(query));
+                if (!res.ok) return;
+                const data = await res.json();
+                const ids = (data.coins || []).slice(0, 5).map(c => c.id).join(',');
+                if (!ids) return;
+                const res2 = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids + '&sparkline=false');
+                if (!res2.ok) return;
+                const coins = await res2.json();
+                coins.forEach(c => { if (!allCryptos.find(x => x.id === c.id)) allCryptos.push(c); });
+                filterColList();
+            } catch(e) {}
         }
 
         function loadSpecialTokens() {
@@ -633,7 +639,16 @@
 
         window.filterColList = function() {
             const q = document.getElementById('colSearch').value.toLowerCase().trim();
-            const list = q ? allCryptos.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)) : allCryptos.slice(0, 20);
+            let list = q ? allCryptos.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)) : allCryptos.slice(0, 20);
+            if (list.length === 0 && q.length >= 2) {
+                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Buscando... ⏳</div>';
+                searchCryptoByName(q);
+                return;
+            }
+            if (list.length === 0) {
+                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Nenhuma cripto encontrada</div>';
+                return;
+            }
             document.getElementById('colCoinList').innerHTML = list.map(c =>
                 '<div class="modal-coin-item' + (selectedCryptoId === c.id ? ' selected' : '') + '" onclick="selectCrypto(\'' + c.id + '\')">' +
                 '<img src="' + c.image + '" onerror="this.style.display=\'none\'">' +
