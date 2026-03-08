@@ -207,7 +207,7 @@
             try {
                 const result = await exportFullBackup();
                 if (result) {
-                    alert(`✅ Backup exportado!\n\n📊 ${result.loans} empréstimos, ${result.debts} dívidas, ${result.contracts} contratos`);
+                    alert(`✅ Backup COMPLETO exportado!\n\n📊 Empréstimos: ${result.loans}\n📊 Dívidas: ${result.debts}\n📊 Contratos: ${result.contracts}\n💳 Cartões: ${result.cards}\n🏢 Empresas: ${result.empresas}\n🏊 DeFi Pools: ${result.defiPools}\n💰 DeFi Borrows: ${result.defiBorrows}`);
                 } else {
                     alert('❌ Erro ao exportar backup!');
                 }
