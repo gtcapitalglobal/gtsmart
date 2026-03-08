@@ -346,9 +346,37 @@
 
         async function loadPrices() {
             try {
-                const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&sparkline=false');
-                if (res.ok) allCryptos = await res.json();
-            } catch(e) {}
+                const [r1, r2, r3] = await Promise.all([
+                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false'),
+                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=2&sparkline=false'),
+                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=3&sparkline=false')
+                ]);
+                const [d1, d2, d3] = await Promise.all([
+                    r1.ok ? r1.json() : [],
+                    r2.ok ? r2.json() : [],
+                    r3.ok ? r3.json() : []
+                ]);
+                allCryptos = [...d1, ...d2, ...d3];
+            } catch(e) { console.error('Erro preços:', e); }
+            loadSpecialTokens();
+        }
+
+        function loadSpecialTokens() {
+            const eth = allCryptos.find(x => x.id === 'ethereum');
+            if (!eth) return;
+            const RETH_RATIO = 1.1615;
+            const rethPrice = eth.current_price * RETH_RATIO;
+            const pct = ((RETH_RATIO - 1) * 100).toFixed(2);
+            const existing = allCryptos.findIndex(x => x.id === 'rocket-pool-eth');
+            const rethObj = {
+                id: 'rocket-pool-eth',
+                symbol: 'reth',
+                name: 'rETH — ETH ×' + RETH_RATIO + ' (+' + pct + '%)',
+                image: 'https://assets.coingecko.com/coins/images/20764/small/reth.png',
+                current_price: rethPrice
+            };
+            if (existing >= 0) allCryptos[existing] = rethObj;
+            else allCryptos.push(rethObj);
         }
 
         function getPrice(id) { const c = allCryptos.find(x => x.id === id); return c ? c.current_price : 0; }
