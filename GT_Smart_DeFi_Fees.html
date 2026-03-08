@@ -3,76 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GT Smart - DeFi Fees Report</title>
+    <title>GT Smart - DeFi Fees</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); min-height: 100vh; padding: 15px; }
         .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
         .header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .header h2 { font-size: 18px; }
-        .header-right { display: flex; gap: 8px; flex-wrap: wrap; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .btn-link { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 12px; text-decoration: none; }
+        .btn-add { background: white; color: #1b5e20; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
         .content { padding: 15px 20px; }
 
         /* Hero */
-        .hero { text-align: center; padding: 20px; border-radius: 12px; margin-bottom: 15px; background: #e8f5e9; }
-        .hero-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #2e7d32; margin-bottom: 4px; }
-        .hero-value { font-size: 32px; font-weight: 900; color: #1b5e20; }
-        .hero-sub { font-size: 12px; color: #2e7d32; margin-top: 6px; }
+        .hero { text-align: center; padding: 18px; border-radius: 12px; margin-bottom: 14px; background: #e8f5e9; }
+        .hero-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #2e7d32; margin-bottom: 4px; }
+        .hero-value { font-size: 34px; font-weight: 900; color: #1b5e20; }
+        .hero-sub { font-size: 12px; color: #388e3c; margin-top: 6px; }
 
-        /* Summary cards */
-        .cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        /* Cards */
+        .cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
         .dash-card { border-radius: 10px; padding: 12px; text-align: center; }
         .dash-card .dc-label { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.8; }
-        .dash-card .dc-value { font-size: 18px; font-weight: 800; margin-top: 4px; }
+        .dash-card .dc-value { font-size: 17px; font-weight: 800; margin-top: 4px; }
         .dash-card .dc-sub { font-size: 10px; margin-top: 2px; opacity: 0.7; }
 
-        /* View tabs */
-        .view-tabs { display: flex; gap: 6px; margin-bottom: 15px; }
-        .view-tab { flex: 1; text-align: center; padding: 10px; border-radius: 10px; border: 2px solid #ddd; background: white; font-size: 13px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
+        /* Tabs */
+        .view-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+        .view-tab { flex: 1; text-align: center; padding: 9px; border-radius: 10px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
         .view-tab.active { background: #2e7d32; color: white; border-color: #2e7d32; }
 
-        /* Sections */
-        .section { margin-bottom: 15px; }
-        .section-title { font-size: 14px; font-weight: 800; color: #333; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #e0e0e0; }
-
-        /* Period rows */
+        /* Period card */
         .period-card { border: 1px solid #e8e8e8; border-radius: 10px; padding: 12px; margin-bottom: 8px; }
-        .period-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .period-header { display: flex; justify-content: space-between; align-items: center; }
         .period-label { font-size: 14px; font-weight: 800; color: #333; }
+        .period-pools { font-size: 11px; color: #888; margin-top: 3px; }
         .period-value { font-size: 18px; font-weight: 900; color: #1b5e20; }
-        .period-pools { font-size: 11px; color: #888; margin-bottom: 6px; }
-        .period-details { display: none; }
+        .period-toggle { background: none; border: 1px solid #ddd; border-radius: 12px; padding: 3px 10px; font-size: 10px; font-weight: 600; color: #888; cursor: pointer; margin-left: 8px; }
+        .period-details { display: none; margin-top: 10px; }
         .period-details.show { display: block; }
-        .period-toggle { background: none; border: 1px solid #ddd; border-radius: 12px; padding: 3px 10px; font-size: 10px; font-weight: 600; color: #888; cursor: pointer; }
 
         /* Fee row */
-        .fee-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+        .fee-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 12px; }
         .fee-row:last-child { border-bottom: none; }
-        .fee-row-date { color: #888; }
-        .fee-row-pool { color: #1565c0; font-weight: 600; font-size: 11px; }
-        .fee-row-value { font-weight: 700; color: #1b5e20; }
+        .fee-row-left { display: flex; flex-direction: column; gap: 2px; }
+        .fee-row-pool { font-weight: 700; color: #1b5e20; }
+        .fee-row-date { color: #aaa; font-size: 11px; }
+        .fee-row-right { display: flex; align-items: center; gap: 8px; }
+        .fee-row-value { font-weight: 800; color: #1b5e20; }
+        .btn-del { background: none; border: none; cursor: pointer; color: #e53935; font-size: 14px; padding: 2px 4px; opacity: 0.6; }
+        .btn-del:hover { opacity: 1; }
+        .source-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; background: #e8f5e9; color: #2e7d32; }
+        .source-pool { background: #e3f2fd; color: #1565c0; }
 
         /* Pool breakdown */
-        .pool-fee-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border: 1px solid #e8e8e8; border-radius: 8px; margin-bottom: 6px; }
+        .pool-fee-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border: 1px solid #e8e8e8; border-radius: 8px; margin-bottom: 6px; }
         .pool-fee-name { font-size: 13px; font-weight: 700; color: #333; }
-        .pool-fee-sub { font-size: 11px; color: #888; }
-        .pool-fee-val { text-align: right; }
+        .pool-fee-sub { font-size: 11px; color: #888; margin-top: 2px; }
         .pool-fee-total { font-size: 16px; font-weight: 800; color: #1b5e20; }
-        .pool-fee-count { font-size: 10px; color: #888; }
 
-        body.dark-mode { background: linear-gradient(135deg, #0a0a1e 0%, #16213e 100%); }
-        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
-        body.dark-mode .hero { background: #152e15; }
-        body.dark-mode .hero-value { color: #66bb6a; }
-        body.dark-mode .hero-label, body.dark-mode .hero-sub { color: #66bb6a; }
-        body.dark-mode .view-tab { background: #16213e; border-color: #333; color: #aaa; }
-        body.dark-mode .period-card { border-color: #333; }
-        body.dark-mode .period-label { color: #e0e0e0; }
-        body.dark-mode .fee-row { border-color: #333; }
-        body.dark-mode .pool-fee-row { border-color: #333; }
-        body.dark-mode .pool-fee-name { color: #e0e0e0; }
-        body.dark-mode .section-title { color: #e0e0e0; border-color: #333; }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 14px; padding: 22px; width: 100%; max-width: 420px; }
+        .modal-title { font-size: 16px; font-weight: 800; color: #1b5e20; margin-bottom: 16px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; border: 2px solid #e0e0e0; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: 'Segoe UI', sans-serif; transition: border 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #2e7d32; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+        .btn-save { flex:1; background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+        .btn-cancel { flex:1; background: #f0f0f0; color: #555; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
 
         @media (max-width: 600px) {
             .cards-row { grid-template-columns: repeat(3, 1fr); }
@@ -83,233 +84,248 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>💵 Fees Report <span style="font-size:10px;opacity:0.7;">v1.0</span></h2>
+            <h2>💵 Fees Report</h2>
             <div class="header-right">
+                <button class="btn-add" onclick="abrirModal()">+ Registrar</button>
                 <a href="GT_Smart_DeFi_Pools.html" class="btn-link">🌊 Pools</a>
                 <a href="GT_Smart_DeFi_Dashboard.html" class="btn-link">📊 DeFi</a>
                 <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
             </div>
         </div>
         <div class="content">
-            <div id="heroArea"></div>
+            <div id="heroArea"><div class="hero"><div class="hero-label">Carregando...</div></div></div>
             <div class="cards-row" id="summaryCards"></div>
-
             <div class="view-tabs">
-                <div class="view-tab active" onclick="setView('month', this)">📅 Por Mês</div>
-                <div class="view-tab" onclick="setView('year', this)">📆 Por Ano</div>
-                <div class="view-tab" onclick="setView('pool', this)">🌊 Por Pool</div>
+                <div class="view-tab active" onclick="setView('month',this)">📅 Por Mês</div>
+                <div class="view-tab" onclick="setView('year',this)">📆 Por Ano</div>
+                <div class="view-tab" onclick="setView('pool',this)">🌊 Por Pool</div>
             </div>
-
             <div id="reportContent">Carregando...</div>
         </div>
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 07/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.4;padding:10px;">Basic 2.0 | 08/03/2026</p>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-title">💵 Registrar Coleta de Fee</div>
+            <div class="form-group">
+                <label>Pool / Origem</label>
+                <input type="text" id="fPoolName" placeholder="Ex: LINK/ETH, WBTC/USDC..." list="poolSuggestions">
+                <datalist id="poolSuggestions"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Data da Coleta</label>
+                <input type="date" id="fDate">
+            </div>
+            <div class="form-group">
+                <label>Valor Coletado (USD)</label>
+                <input type="number" id="fAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>Observação (opcional)</label>
+                <input type="text" id="fNotes" placeholder="Ex: rebalanceamento, pool encerrada...">
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-save" onclick="salvarFee()">💾 Salvar</button>
+            </div>
+        </div>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
     <script type="module">
         import { auth, onAuthStateChanged, db } from './firebase-config.js';
-        import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { collection, getDocs, addDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') document.body.classList.add('dark-mode');
+        let pools=[], feeRecords=[], userId=null, currentView='month';
+        const fmt2 = v => '$'+parseFloat(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+        const monthNames=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        const fmtDate = d => { const p=d.split('-'); return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d; };
 
-        let pools = [], userId = null, currentView = 'month';
-        const fmtUsd = (v) => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-        const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-        const fmtDate = (d) => { const p = d.split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : d; };
-
-        async function loadPools() {
-            try {
-                const snap = await getDocs(collection(db, 'users', userId, 'defi_pools'));
-                pools = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-            } catch(e) { pools = []; }
+        async function loadAll() {
+            try { const s=await getDocs(collection(db,'users',userId,'defi_pools')); pools=s.docs.map(d=>({...d.data(),id:d.id})); } catch(e){pools=[];}
+            try { const s=await getDocs(collection(db,'users',userId,'defi_fee_records')); feeRecords=s.docs.map(d=>({...d.data(),id:d.id})); } catch(e){feeRecords=[];}
         }
 
+        // Junta fees manuais + fees das pools (feeCollections)
         function getAllFees() {
-            const fees = [];
-            pools.forEach(p => {
-                const poolName = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '/' + (p.tokenBSymbol||'?').toUpperCase());
-                const base = parseFloat(p.feesEarned || 0);
-                if (base > 0) {
-                    fees.push({ date: p.poolDate || p.createdAt?.split('T')[0] || '2024-01-01', amount: base, pool: poolName, poolId: p.id, type: 'base' });
-                }
-                (p.feeCollections || []).forEach(fc => {
-                    fees.push({ date: fc.date, amount: parseFloat(fc.amount || 0), pool: poolName, poolId: p.id, type: 'coleta' });
-                });
+            const fees=[];
+            // Registros manuais (nova coleção)
+            feeRecords.forEach(r=>{
+                fees.push({ date:r.date, amount:parseFloat(r.amount||0), pool:r.poolName||'Manual', notes:r.notes||'', source:'manual', id:r.id });
             });
-            fees.sort((a, b) => new Date(b.date) - new Date(a.date));
-            return fees;
+            // Fees dentro das pools (feeCollections) — pools ativas/encerradas
+            pools.forEach(p=>{
+                const poolName=p.poolName||((p.tokenASymbol||'?').toUpperCase()+'/'+(p.tokenBSymbol||'?').toUpperCase());
+                (p.feeCollections||[]).forEach(fc=>{
+                    fees.push({ date:fc.date, amount:parseFloat(fc.amount||0), pool:poolName, notes:'', source:'pool', id:null });
+                });
+                // feesEarned já resgatado sem data específica
+                if((p.feesEarned||0)>0 && !(p.feeCollections||[]).length){
+                    fees.push({ date:p.poolDate||'2024-01-01', amount:parseFloat(p.feesEarned||0), pool:poolName, notes:'registrado na pool', source:'pool', id:null });
+                }
+            });
+            return fees.filter(f=>f.amount>0);
         }
-
-        window.setView = function(view, el) {
-            currentView = view;
-            document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            render();
-        };
-
-        window.togglePeriod = function(id) {
-            const el = document.getElementById(id);
-            el.classList.toggle('show');
-        };
 
         function render() {
-            const fees = getAllFees();
-            const totalFees = fees.reduce((s, f) => s + f.amount, 0);
-            const baseFees = fees.filter(f => f.type === 'base').reduce((s, f) => s + f.amount, 0);
-            const coletas = fees.filter(f => f.type === 'coleta');
-            const coletasTotal = coletas.reduce((s, f) => s + f.amount, 0);
+            const fees=getAllFees();
+            const total=fees.reduce((s,f)=>s+f.amount,0);
 
-            // Monthly average
-            const months = new Set();
-            coletas.forEach(f => { const d = new Date(f.date); months.add(d.getFullYear() + '-' + d.getMonth()); });
-            const avgMonth = months.size > 0 ? coletasTotal / months.size : 0;
+            // Médias
+            const meses=new Set(fees.map(f=>{ const d=new Date(f.date); return d.getFullYear()+'-'+d.getMonth(); }));
+            const media=meses.size>0?total/meses.size:0;
 
-            // Hero
-            document.getElementById('heroArea').innerHTML =
-                '<div class="hero">' +
-                    '<div class="hero-label">💵 Total de Fees Coletados</div>' +
-                    '<div class="hero-value">' + fmtUsd(totalFees) + '</div>' +
-                    '<div class="hero-sub">' + pools.length + ' pools | ' + coletas.length + ' coletas registradas</div>' +
+            // Melhor mês
+            const byMonth={};
+            fees.forEach(f=>{ const d=new Date(f.date); const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); byMonth[k]=(byMonth[k]||0)+f.amount; });
+            const melhor=Object.values(byMonth).length>0?Math.max(...Object.values(byMonth)):0;
+
+            document.getElementById('heroArea').innerHTML=
+                '<div class="hero">'+
+                    '<div class="hero-label">💵 Total de Fees Coletados</div>'+
+                    '<div class="hero-value">'+fmt2(total)+'</div>'+
+                    '<div class="hero-sub">'+fees.length+' registros em '+meses.size+' meses</div>'+
                 '</div>';
 
-            // Summary
-            document.getElementById('summaryCards').innerHTML =
-                '<div class="dash-card" style="background:#e8f5e9;color:#1b5e20;"><div class="dc-label">📋 Coletas</div><div class="dc-value">' + fmtUsd(coletasTotal) + '</div><div class="dc-sub">' + coletas.length + ' registros</div></div>' +
-                '<div class="dash-card" style="background:#fff8e1;color:#f57f17;"><div class="dc-label">📦 Já Resgatado</div><div class="dc-value">' + fmtUsd(baseFees) + '</div><div class="dc-sub">Antes do registro</div></div>' +
-                '<div class="dash-card" style="background:#e3f2fd;color:#1565c0;"><div class="dc-label">📊 Média/Mês</div><div class="dc-value">' + fmtUsd(avgMonth) + '</div><div class="dc-sub">' + months.size + ' meses</div></div>';
+            document.getElementById('summaryCards').innerHTML=
+                '<div class="dash-card" style="background:#e8f5e9;color:#1b5e20;"><div class="dc-label">📅 Média/Mês</div><div class="dc-value">'+fmt2(media)+'</div><div class="dc-sub">'+meses.size+' meses</div></div>'+
+                '<div class="dash-card" style="background:#e3f2fd;color:#1565c0;"><div class="dc-label">🏆 Melhor Mês</div><div class="dc-value">'+fmt2(melhor)+'</div></div>'+
+                '<div class="dash-card" style="background:#fff8e1;color:#f57f17;"><div class="dc-label">📝 Registros</div><div class="dc-value">'+fees.length+'</div><div class="dc-sub">'+feeRecords.length+' manuais</div></div>';
 
-            // Content by view
-            if (currentView === 'month') renderByMonth(fees);
-            else if (currentView === 'year') renderByYear(fees);
+            // Sugestões de nomes no datalist
+            const names=[...new Set([...feeRecords.map(r=>r.poolName),...pools.map(p=>p.poolName||(p.tokenASymbol||'?').toUpperCase()+'/'+(p.tokenBSymbol||'?').toUpperCase())])];
+            document.getElementById('poolSuggestions').innerHTML=names.map(n=>'<option value="'+n+'">').join('');
+
+            if(currentView==='month') renderByMonth(fees);
+            else if(currentView==='year') renderByYear(fees);
             else renderByPool(fees);
         }
 
         function renderByMonth(fees) {
-            const grouped = {};
-            fees.forEach(f => {
-                const d = new Date(f.date);
-                const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-                const label = monthNames[d.getMonth()] + ' ' + d.getFullYear();
-                if (!grouped[key]) grouped[key] = { label: label, fees: [], total: 0 };
+            const grouped={};
+            fees.forEach(f=>{
+                const d=new Date(f.date);
+                const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+                const label=monthNames[d.getMonth()]+' '+d.getFullYear();
+                if(!grouped[key]) grouped[key]={label,fees:[],total:0};
                 grouped[key].fees.push(f);
-                grouped[key].total += f.amount;
+                grouped[key].total+=f.amount;
             });
-
-            const sorted = Object.entries(grouped).sort((a, b) => b[0].localeCompare(a[0]));
-
-            if (sorted.length === 0) {
-                document.getElementById('reportContent').innerHTML = '<div style="text-align:center;color:#999;padding:30px;">Nenhuma coleta registrada</div>';
-                return;
-            }
-
-            document.getElementById('reportContent').innerHTML = sorted.map(([key, g], idx) => {
-                const id = 'month-' + idx;
-                const poolSummary = {};
-                g.fees.forEach(f => { poolSummary[f.pool] = (poolSummary[f.pool] || 0) + f.amount; });
-                const poolText = Object.entries(poolSummary).map(([name, val]) => name + ': ' + fmtUsd(val)).join(' | ');
-
-                return '<div class="period-card">' +
-                    '<div class="period-header">' +
-                        '<div><div class="period-label">📅 ' + g.label + '</div><div class="period-pools">' + poolText + '</div></div>' +
-                        '<div style="display:flex;align-items:center;gap:8px;"><span class="period-value">' + fmtUsd(g.total) + '</span><button class="period-toggle" onclick="togglePeriod(\'' + id + '\')">▼</button></div>' +
-                    '</div>' +
-                    '<div class="period-details" id="' + id + '">' +
-                        g.fees.map(f =>
-                            '<div class="fee-row">' +
-                                '<div><span class="fee-row-date">📅 ' + fmtDate(f.date) + '</span> <span class="fee-row-pool">' + f.pool + '</span>' + (f.type === 'base' ? ' <span style="font-size:9px;color:#f57f17;">(já resgatado)</span>' : '') + '</div>' +
-                                '<span class="fee-row-value">' + fmtUsd(f.amount) + '</span>' +
-                            '</div>'
-                        ).join('') +
-                    '</div>' +
+            const sorted=Object.entries(grouped).sort((a,b)=>b[0].localeCompare(a[0]));
+            if(sorted.length===0){ document.getElementById('reportContent').innerHTML='<div style="text-align:center;color:#999;padding:30px;font-size:13px;">Nenhuma coleta registrada.<br><br><button onclick="abrirModal()" style="background:#2e7d32;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;">+ Registrar primeira coleta</button></div>'; return; }
+            document.getElementById('reportContent').innerHTML=sorted.map(([key,g],idx)=>{
+                const id='m'+idx;
+                const poolSummary={};
+                g.fees.forEach(f=>{ poolSummary[f.pool]=(poolSummary[f.pool]||0)+f.amount; });
+                const poolText=Object.entries(poolSummary).map(([n,v])=>n+': '+fmt2(v)).join(' · ');
+                return '<div class="period-card">'+
+                    '<div class="period-header">'+
+                        '<div><div class="period-label">📅 '+g.label+'</div><div class="period-pools">'+poolText+'</div></div>'+
+                        '<div style="display:flex;align-items:center;"><span class="period-value">'+fmt2(g.total)+'</span><button class="period-toggle" onclick="toggle(\''+id+'\')">▼</button></div>'+
+                    '</div>'+
+                    '<div class="period-details" id="'+id+'">'+
+                        g.fees.map(f=>feeRowHtml(f)).join('')+
+                    '</div>'+
                 '</div>';
             }).join('');
         }
 
         function renderByYear(fees) {
-            const grouped = {};
-            fees.forEach(f => {
-                const year = new Date(f.date).getFullYear().toString();
-                if (!grouped[year]) grouped[year] = { fees: [], total: 0 };
-                grouped[year].fees.push(f);
-                grouped[year].total += f.amount;
-            });
-
-            const sorted = Object.entries(grouped).sort((a, b) => b[0].localeCompare(a[0]));
-
-            if (sorted.length === 0) {
-                document.getElementById('reportContent').innerHTML = '<div style="text-align:center;color:#999;padding:30px;">Nenhuma coleta registrada</div>';
-                return;
-            }
-
-            document.getElementById('reportContent').innerHTML = sorted.map(([year, g], idx) => {
-                const id = 'year-' + idx;
-                // Monthly breakdown for this year
-                const monthlyTotals = {};
-                g.fees.forEach(f => {
-                    const m = new Date(f.date).getMonth();
-                    const mKey = monthNames[m];
-                    monthlyTotals[mKey] = (monthlyTotals[mKey] || 0) + f.amount;
-                });
-
-                return '<div class="period-card">' +
-                    '<div class="period-header">' +
-                        '<div><div class="period-label">📆 ' + year + '</div><div class="period-pools">' + g.fees.length + ' coletas | ' + Object.keys(monthlyTotals).length + ' meses</div></div>' +
-                        '<div style="display:flex;align-items:center;gap:8px;"><span class="period-value">' + fmtUsd(g.total) + '</span><button class="period-toggle" onclick="togglePeriod(\'' + id + '\')">▼</button></div>' +
-                    '</div>' +
-                    '<div class="period-details" id="' + id + '">' +
-                        Object.entries(monthlyTotals).map(([month, val]) =>
-                            '<div class="fee-row"><span class="fee-row-date">' + month + '</span><span class="fee-row-value">' + fmtUsd(val) + '</span></div>'
-                        ).join('') +
-                    '</div>' +
+            const grouped={};
+            fees.forEach(f=>{ const y=new Date(f.date).getFullYear().toString(); if(!grouped[y]) grouped[y]={fees:[],total:0}; grouped[y].fees.push(f); grouped[y].total+=f.amount; });
+            const sorted=Object.entries(grouped).sort((a,b)=>b[0].localeCompare(a[0]));
+            if(sorted.length===0){ document.getElementById('reportContent').innerHTML='<div style="text-align:center;color:#999;padding:30px;">Nenhuma coleta registrada</div>'; return; }
+            document.getElementById('reportContent').innerHTML=sorted.map(([year,g],idx)=>{
+                const id='y'+idx;
+                const byM={};
+                g.fees.forEach(f=>{ const m=monthNames[new Date(f.date).getMonth()]; byM[m]=(byM[m]||0)+f.amount; });
+                return '<div class="period-card">'+
+                    '<div class="period-header">'+
+                        '<div><div class="period-label">📆 '+year+'</div><div class="period-pools">'+g.fees.length+' coletas em '+Object.keys(byM).length+' meses</div></div>'+
+                        '<div style="display:flex;align-items:center;"><span class="period-value">'+fmt2(g.total)+'</span><button class="period-toggle" onclick="toggle(\''+id+'\')">▼</button></div>'+
+                    '</div>'+
+                    '<div class="period-details" id="'+id+'">'+
+                        Object.entries(byM).map(([m,v])=>'<div class="fee-row"><div class="fee-row-pool">'+m+'</div><div class="fee-row-value">'+fmt2(v)+'</div></div>').join('')+
+                    '</div>'+
                 '</div>';
             }).join('');
         }
 
         function renderByPool(fees) {
-            const grouped = {};
-            fees.forEach(f => {
-                if (!grouped[f.pool]) grouped[f.pool] = { fees: [], total: 0, poolId: f.poolId };
-                grouped[f.pool].fees.push(f);
-                grouped[f.pool].total += f.amount;
-            });
-
-            const sorted = Object.entries(grouped).sort((a, b) => b[1].total - a[1].total);
-
-            if (sorted.length === 0) {
-                document.getElementById('reportContent').innerHTML = '<div style="text-align:center;color:#999;padding:30px;">Nenhuma coleta registrada</div>';
-                return;
-            }
-
-            document.getElementById('reportContent').innerHTML = sorted.map(([name, g], idx) => {
-                const id = 'pool-' + idx;
-                const coletas = g.fees.filter(f => f.type === 'coleta');
-                const base = g.fees.filter(f => f.type === 'base').reduce((s, f) => s + f.amount, 0);
-                const months = new Set();
-                coletas.forEach(f => { const d = new Date(f.date); months.add(d.getFullYear() + '-' + d.getMonth()); });
-                const avg = months.size > 0 ? coletas.reduce((s, f) => s + f.amount, 0) / months.size : 0;
-
-                return '<div class="period-card">' +
-                    '<div class="period-header">' +
-                        '<div><div class="period-label">🌊 ' + name + '</div><div class="period-pools">' + coletas.length + ' coletas | Média: ' + fmtUsd(avg) + '/mês' + (base > 0 ? ' | Já resgatado: ' + fmtUsd(base) : '') + '</div></div>' +
-                        '<div style="display:flex;align-items:center;gap:8px;"><span class="period-value">' + fmtUsd(g.total) + '</span><button class="period-toggle" onclick="togglePeriod(\'' + id + '\')">▼</button></div>' +
-                    '</div>' +
-                    '<div class="period-details" id="' + id + '">' +
-                        g.fees.map(f =>
-                            '<div class="fee-row">' +
-                                '<div><span class="fee-row-date">📅 ' + fmtDate(f.date) + '</span>' + (f.type === 'base' ? ' <span style="font-size:9px;color:#f57f17;">(já resgatado)</span>' : '') + '</div>' +
-                                '<span class="fee-row-value">' + fmtUsd(f.amount) + '</span>' +
-                            '</div>'
-                        ).join('') +
-                    '</div>' +
+            const grouped={};
+            fees.forEach(f=>{ if(!grouped[f.pool]) grouped[f.pool]={fees:[],total:0}; grouped[f.pool].fees.push(f); grouped[f.pool].total+=f.amount; });
+            const sorted=Object.entries(grouped).sort((a,b)=>b[1].total-a[1].total);
+            if(sorted.length===0){ document.getElementById('reportContent').innerHTML='<div style="text-align:center;color:#999;padding:30px;">Nenhuma coleta registrada</div>'; return; }
+            document.getElementById('reportContent').innerHTML=sorted.map(([name,g],idx)=>{
+                const id='p'+idx;
+                const meses2=new Set(g.fees.map(f=>{ const d=new Date(f.date); return d.getFullYear()+'-'+d.getMonth(); }));
+                const media2=meses2.size>0?g.total/meses2.size:0;
+                return '<div class="period-card">'+
+                    '<div class="period-header">'+
+                        '<div><div class="period-label">🌊 '+name+'</div><div class="period-pools">'+g.fees.length+' coletas · Média '+fmt2(media2)+'/mês</div></div>'+
+                        '<div style="display:flex;align-items:center;"><span class="period-value">'+fmt2(g.total)+'</span><button class="period-toggle" onclick="toggle(\''+id+'\')">▼</button></div>'+
+                    '</div>'+
+                    '<div class="period-details" id="'+id+'">'+
+                        g.fees.map(f=>feeRowHtml(f)).join('')+
+                    '</div>'+
                 '</div>';
             }).join('');
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-            userId = user.uid;
-            await loadPools();
+        function feeRowHtml(f){
+            const delBtn=f.source==='manual'&&f.id?'<button class="btn-del" onclick="deletarFee(\''+f.id+'\',event)" title="Excluir">🗑️</button>':'';
+            const badge=f.source==='manual'?'<span class="source-badge">manual</span>':'<span class="source-badge source-pool">pool</span>';
+            return '<div class="fee-row">'+
+                '<div class="fee-row-left"><div class="fee-row-pool">'+f.pool+' '+badge+'</div>'+
+                '<div class="fee-row-date">📅 '+fmtDate(f.date)+(f.notes?' · '+f.notes:'')+'</div></div>'+
+                '<div class="fee-row-right"><span class="fee-row-value">'+fmt2(f.amount)+'</span>'+delBtn+'</div>'+
+            '</div>';
+        }
+
+        window.toggle = id => { const el=document.getElementById(id); el.classList.toggle('show'); };
+        window.setView = (v,btn) => { currentView=v; document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active'); render(); };
+
+        window.abrirModal = () => {
+            document.getElementById('fPoolName').value='';
+            document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+            document.getElementById('fAmount').value='';
+            document.getElementById('fNotes').value='';
+            document.getElementById('modalOverlay').classList.add('show');
+        };
+        window.fecharModal = () => document.getElementById('modalOverlay').classList.remove('show');
+
+        window.salvarFee = async () => {
+            const poolName=document.getElementById('fPoolName').value.trim();
+            const date=document.getElementById('fDate').value;
+            const amount=parseFloat(document.getElementById('fAmount').value);
+            const notes=document.getElementById('fNotes').value.trim();
+            if(!poolName){ alert('Informe o nome da pool'); return; }
+            if(!date){ alert('Informe a data'); return; }
+            if(!amount||amount<=0){ alert('Informe um valor maior que zero'); return; }
+            try {
+                await addDoc(collection(db,'users',userId,'defi_fee_records'),{poolName,date,amount,notes,createdAt:new Date().toISOString()});
+                fecharModal();
+                await loadAll();
+                render();
+            } catch(e){ alert('Erro ao salvar: '+e.message); }
+        };
+
+        window.deletarFee = async (id, e) => {
+            e.stopPropagation();
+            if(!confirm('Excluir esta coleta?')) return;
+            try {
+                await deleteDoc(doc(db,'users',userId,'defi_fee_records',id));
+                await loadAll(); render();
+            } catch(e){ alert('Erro: '+e.message); }
+        };
+
+        onAuthStateChanged(auth, async(user)=>{
+            if(!user){window.location.href='GT_Smart_Login.html';return;}
+            userId=user.uid;
+            await loadAll();
             render();
         });
     </script>
