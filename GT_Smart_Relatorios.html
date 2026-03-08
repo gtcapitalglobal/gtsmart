@@ -658,7 +658,7 @@
                             <td style="padding:8px;text-align:center;">${b.platform||'—'}</td>
                             <td style="padding:8px;text-align:right;">${parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4})}</td>
                             <td style="padding:8px;text-align:right;color:#4a2c8a;font-weight:700;">${fmtUsd(b.valueUSD||0)}</td>
-                            <td style="padding:8px;text-align:center;color:#c62828;">${b.apy ? b.apy+'%' : '—'}</td>
+                            <td style="padding:8px;text-align:center;color:#c62828;">${b.rate ? b.rate+'%' : '—'}</td>
                         </tr>`;
                     }).join('') +
                     '</table>';
