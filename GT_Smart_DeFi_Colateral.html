@@ -532,7 +532,7 @@
             });
             document.getElementById('chainTabs').innerHTML = chains.map(ch => {
                 const count = ch === 'Todos' ? colaterais.length : (counts[ch] || 0);
-                return '<button class="chain-tab' + (activeChain === ch ? ' active' : '') + '" onclick="setChainFilter('' + ch + '')">' +
+                return '<button class="chain-tab' + (activeChain === ch ? ' active' : '') + '" onclick="setChainFilter(\'' + ch + '\')">' +
                     ch + '<span class="ct-count">' + count + '</span></button>';
             }).join('');
         }
