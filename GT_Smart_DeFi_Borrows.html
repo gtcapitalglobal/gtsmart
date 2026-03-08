@@ -279,9 +279,36 @@
         // ===== LOAD CRYPTO PRICES =====
         async function loadPrices() {
             try {
-                const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
-                if (res.ok) allCryptos = await res.json();
+                // Buscar top 500 moedas em 2 páginas para incluir tokens como rETH, stETH, etc.
+                const [r1, r2, r3] = await Promise.all([
+                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false'),
+                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=2&sparkline=false'),
+                    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=3&sparkline=false')
+                ]);
+                const [d1, d2, d3] = await Promise.all([
+                    r1.ok ? r1.json() : [],
+                    r2.ok ? r2.json() : [],
+                    r3.ok ? r3.json() : []
+                ]);
+                allCryptos = [...d1, ...d2, ...d3];
             } catch(e) { console.error('Erro preços:', e); }
+        }
+
+        // Busca extra por nome (para tokens fora do top 750)
+        async function searchCryptoByName(query) {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/search?query=' + encodeURIComponent(query));
+                if (!res.ok) return;
+                const data = await res.json();
+                const ids = (data.coins || []).slice(0, 5).map(c => c.id).join(',');
+                if (!ids) return;
+                const res2 = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids + '&sparkline=false');
+                if (!res2.ok) return;
+                const coins = await res2.json();
+                // Adicionar ao allCryptos sem duplicar
+                coins.forEach(c => { if (!allCryptos.find(x => x.id === c.id)) allCryptos.push(c); });
+                filterCryptoList();
+            } catch(e) {}
         }
 
         async function loadPools() {
@@ -454,8 +481,14 @@
                 '</div>';
             }).join('');
 
-            if (filtered.length === 0) container.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:12px;">Nenhuma cripto encontrada</div>';
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:12px;">Buscando na API... <span id="searchSpinner">⏳</span></div>';
+                if (search.length >= 2) searchCryptoByName(search);
+            }
         };
+
+        // Alias para compatibilidade
+        function filterCryptoList() { filterBorrowCrypto(); }
 
         window.selectBorrowCrypto = function(cryptoId) {
             selectedCryptoId = cryptoId;
