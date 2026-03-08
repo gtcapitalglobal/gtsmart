@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - DeFi Colateral</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #004d40 0%, #00251a 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #00695c, #004d40); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-link { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 12px; text-decoration: none; }
+        .btn-add { background: white; color: #00695c; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .content { padding: 15px 20px; }
+
+        /* Summary */
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .summary-card { border-radius: 10px; padding: 12px 8px; text-align: center; }
+        .summary-card .label { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
+        .summary-card .value { font-size: 18px; font-weight: 800; margin-top: 3px; }
+        .summary-card .sub { font-size: 10px; font-weight: 600; margin-top: 2px; opacity: 0.75; }
+        .sc-total  { background: #e0f2f1; color: #00695c; }
+        .sc-hf     { background: #e8f5e9; color: #1b5e20; }
+        .sc-ltv    { background: #fff8e1; color: #f57f17; }
+        .sc-debt   { background: #fce4ec; color: #880e4f; }
+
+        /* HF color */
+        .hf-safe   { color: #2e7d32 !important; }
+        .hf-warn   { color: #f57f17 !important; }
+        .hf-danger { color: #c62828 !important; }
+
+        /* Alerts */
+        .alert-box { border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; display: none; }
+        .alert-danger { background: #fdecea; border-left: 4px solid #c62828; }
+        .alert-warn   { background: #fff8e1; border-left: 4px solid #ffa000; }
+        .alert-title  { font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+        .alert-danger .alert-title { color: #c62828; }
+        .alert-warn .alert-title   { color: #e65100; }
+        .alert-item   { font-size: 12px; padding: 2px 0; }
+        .alert-danger .alert-item  { color: #b71c1c; }
+        .alert-warn .alert-item    { color: #bf360c; }
+
+        /* Colateral cards */
+        .col-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; margin-bottom: 12px; transition: all 0.2s; }
+        .col-card:hover { border-color: #00695c; box-shadow: 0 4px 15px rgba(0,105,92,0.15); }
+        .col-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .col-crypto { display: flex; align-items: center; gap: 10px; }
+        .col-icon { width: 38px; height: 38px; border-radius: 50%; }
+        .col-name { font-size: 17px; font-weight: 800; color: #333; }
+        .col-sym  { font-size: 12px; color: #999; }
+        .col-actions { display: flex; gap: 6px; }
+        .col-btn { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; padding: 4px; }
+        .col-btn:hover { opacity: 1; }
+
+        .col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .col-stat { background: #f8f9fa; padding: 10px; border-radius: 8px; }
+        .col-stat .cs-label { font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; }
+        .col-stat .cs-value { font-size: 14px; font-weight: 800; color: #333; margin-top: 2px; }
+
+        /* Health factor bar */
+        .hf-bar-wrap { margin: 10px 0 6px 0; }
+        .hf-bar-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .hf-bar-bg { background: #f0f0f0; border-radius: 8px; height: 10px; overflow: hidden; }
+        .hf-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s; }
+        .hf-safe-bar   { background: linear-gradient(90deg, #43a047, #2e7d32); }
+        .hf-warn-bar   { background: linear-gradient(90deg, #ffa000, #ff6f00); }
+        .hf-danger-bar { background: linear-gradient(90deg, #e53935, #b71c1c); }
+        .hf-markers { display: flex; justify-content: space-between; font-size: 9px; color: #bbb; margin-top: 2px; }
+
+        /* LTV bar */
+        .ltv-bar-wrap { margin-bottom: 10px; }
+        .ltv-bar-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .ltv-bar-bg { background: #f0f0f0; border-radius: 8px; height: 10px; position: relative; overflow: visible; }
+        .ltv-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s; position: absolute; top: 0; left: 0; }
+        .ltv-max-line { position: absolute; top: -4px; height: 18px; width: 2px; background: #ff6f00; border-radius: 2px; }
+        .ltv-liq-line { position: absolute; top: -4px; height: 18px; width: 2px; background: #c62828; border-radius: 2px; }
+
+        /* Borrows vinculados */
+        .borrows-linked { background: #f3e5f5; border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+        .bl-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6a1b9a; margin-bottom: 8px; }
+        .bl-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #e1bee7; font-size: 12px; }
+        .bl-item:last-child { border-bottom: none; }
+        .bl-sym { font-weight: 800; color: #4a2c8a; }
+        .bl-val { font-weight: 700; color: #6a1b9a; }
+        .bl-empty { font-size: 11px; color: #aaa; text-align: center; padding: 4px 0; }
+
+        /* Badges */
+        .proto-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; background: #e8f4fd; color: #1a73e8; }
+        .chain-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+        .chain-ethereum { background: #ede7f6; color: #627eea; }
+        .chain-polygon  { background: #f3e5f5; color: #8247e5; }
+        .chain-arbitrum { background: #e3f2fd; color: #28a0f0; }
+        .chain-optimism { background: #fdecea; color: #ff0420; }
+        .chain-base     { background: #e3f2fd; color: #0052ff; }
+        .chain-bsc      { background: #fff8e1; color: #f0b90b; }
+        .chain-default  { background: #f5f5f5; color: #666; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: flex-start; padding-top: 20px; overflow-y: auto; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: white; border-radius: 14px; padding: 20px; width: 90%; max-width: 460px; margin-bottom: 30px; }
+        .modal-title { font-size: 16px; font-weight: 800; color: #333; margin-bottom: 15px; text-align: center; }
+        .modal-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 5px; margin-top: 12px; }
+        .modal-input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; }
+        .modal-input:focus { border-color: #00695c; }
+        .modal-select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; background: white; }
+        .modal-search { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 6px; }
+        .modal-search:focus { border-color: #00695c; }
+        .modal-coin-list { max-height: 130px; overflow-y: auto; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 6px; }
+        .modal-coin-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .modal-coin-item:hover { background: #f0faf9; }
+        .modal-coin-item.selected { background: #e0f2f1; border-left: 3px solid #00695c; }
+        .modal-coin-item img { width: 22px; height: 22px; border-radius: 50%; }
+        .modal-coin-item .mci-name { font-size: 12px; font-weight: 700; color: #333; }
+        .modal-coin-item .mci-symbol { font-size: 10px; color: #999; }
+        .modal-coin-item .mci-price { font-size: 11px; font-weight: 700; color: #00695c; margin-left: auto; }
+        .modal-selected-coin { font-size: 12px; font-weight: 700; color: #00695c; padding: 5px 10px; background: #e0f2f1; border-radius: 8px; text-align: center; margin-bottom: 6px; }
+        .modal-preview { background: #e0f2f1; padding: 10px 12px; border-radius: 8px; margin-top: 10px; font-size: 12px; color: #00695c; font-weight: 700; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; }
+        .modal-btn-cancel { background: #f0f0f0; color: #666; }
+        .modal-btn-save { background: #00695c; color: white; }
+        .modal-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .modal-sep { text-align: center; font-size: 11px; font-weight: 700; color: #aaa; margin: 14px 0 0 0; padding-top: 12px; border-top: 1px solid #eee; letter-spacing: 1px; }
+
+        /* Borrows selector no modal */
+        .borrow-check-list { max-height: 140px; overflow-y: auto; border: 2px solid #e0e0e0; border-radius: 8px; }
+        .borrow-check-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .borrow-check-item:last-child { border-bottom: none; }
+        .borrow-check-item:hover { background: #f0faf9; }
+        .borrow-check-item input { width: 16px; height: 16px; cursor: pointer; accent-color: #00695c; }
+        .borrow-check-item .bci-name { font-size: 12px; font-weight: 700; color: #333; }
+        .borrow-check-item .bci-val { font-size: 11px; color: #888; margin-left: auto; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 50px 20px; color: #bbb; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state h3 { font-size: 16px; font-weight: 700; color: #999; margin-bottom: 6px; }
+        .empty-state p { font-size: 13px; }
+
+        /* Dark mode */
+        body.dark-mode { background: linear-gradient(135deg, #0a1a18 0%, #001a14 100%); }
+        body.dark-mode .container { background: #0f1f1c; color: #e0e0e0; }
+        body.dark-mode .col-card { border-color: #333; background: #162320; }
+        body.dark-mode .col-card:hover { border-color: #00695c; }
+        body.dark-mode .col-name { color: #e0e0e0; }
+        body.dark-mode .col-stat { background: #1a2e2a; }
+        body.dark-mode .col-stat .cs-value { color: #e0e0e0; }
+        body.dark-mode .hf-bar-bg, body.dark-mode .ltv-bar-bg { background: #333; }
+        body.dark-mode .borrows-linked { background: #1e1030; }
+        body.dark-mode .bl-item { border-color: #333; }
+        body.dark-mode .modal-box { background: #0f1f1c; }
+        body.dark-mode .modal-title { color: #e0e0e0; }
+        body.dark-mode .modal-input, body.dark-mode .modal-select, body.dark-mode .modal-search { background: #162320; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .modal-coin-list, body.dark-mode .borrow-check-list { border-color: #333; }
+        body.dark-mode .modal-coin-item, body.dark-mode .borrow-check-item { border-color: #333; }
+        body.dark-mode .modal-coin-item:hover, body.dark-mode .borrow-check-item:hover { background: #1a2e2a; }
+        body.dark-mode .modal-coin-item .mci-name, body.dark-mode .borrow-check-item .bci-name { color: #e0e0e0; }
+        body.dark-mode .modal-btn-cancel { background: #333; color: #aaa; }
+        body.dark-mode .modal-preview { background: #162320; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .col-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .header { flex-direction: column; text-align: center; }
+            .modal-row2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🛡️ DeFi Colateral <span style="font-size:10px;opacity:0.7;">v1.0</span></h2>
+            <div class="header-right">
+                <button class="btn-add" onclick="openModal()">+ Novo Colateral</button>
+                <a href="GT_Smart_DeFi_Borrows.html" class="btn-link">🏦 Borrows</a>
+                <a href="GT_Smart_DeFi_Pools.html" class="btn-link">🌊 Pools</a>
+                <button class="btn-link" onclick="toggleDark()" id="btnDark">🌙</button>
+                <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- Summary -->
+            <div class="summary-grid">
+                <div class="summary-card sc-total">
+                    <div class="label">🛡️ Total Colateral</div>
+                    <div class="value" id="sumTotal">—</div>
+                    <div class="sub" id="sumPositions">—</div>
+                </div>
+                <div class="summary-card sc-hf">
+                    <div class="label">❤️ Health Factor</div>
+                    <div class="value" id="sumHF">—</div>
+                    <div class="sub" id="sumHFStatus">—</div>
+                </div>
+                <div class="summary-card sc-ltv">
+                    <div class="label">📊 LTV Atual</div>
+                    <div class="value" id="sumLTV">—</div>
+                    <div class="sub" id="sumLTVMax">—</div>
+                </div>
+                <div class="summary-card sc-debt">
+                    <div class="label">💸 Dívida Total</div>
+                    <div class="value" id="sumDebt">—</div>
+                    <div class="sub" id="sumMargin">—</div>
+                </div>
+            </div>
+
+            <!-- Alerta de perigo (HF < 1.2) -->
+            <div class="alert-box alert-danger" id="alertDanger">
+                <div class="alert-title">🚨 PERIGO — Health Factor Crítico!</div>
+                <div id="alertDangerList" class="alert-item"></div>
+            </div>
+
+            <!-- Alerta de atenção (HF entre 1.2 e 1.5) -->
+            <div class="alert-box alert-warn" id="alertWarn">
+                <div class="alert-title">⚠️ Atenção — Health Factor Baixo</div>
+                <div id="alertWarnList" class="alert-item"></div>
+            </div>
+
+            <!-- Lista -->
+            <div id="colList">
+                <div class="empty-state">
+                    <div class="icon">🛡️</div>
+                    <h3>Nenhum colateral registrado</h3>
+                    <p>Clique em "+ Novo Colateral" pra começar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Novo/Editar Colateral -->
+        <div class="modal-overlay" id="colModal">
+            <div class="modal-box">
+                <div class="modal-title" id="modalTitle">🛡️ Novo Colateral</div>
+
+                <div class="modal-label">🔍 Buscar Token</div>
+                <input type="text" class="modal-search" id="colSearch" placeholder="Ex: Bitcoin, LINK, USDC..." oninput="filterColList()">
+                <div class="modal-selected-coin" id="colSelected">Nenhum selecionado</div>
+                <div class="modal-coin-list" id="colCoinList"></div>
+
+                <div class="modal-row2">
+                    <div>
+                        <div class="modal-label">Quantidade depositada</div>
+                        <input type="number" class="modal-input" id="colAmount" placeholder="Ex: 1000" step="any" oninput="updatePreview()">
+                    </div>
+                    <div>
+                        <div class="modal-label">Preço na entrada (USD)</div>
+                        <input type="number" class="modal-input" id="colEntryPrice" placeholder="Auto" step="any" oninput="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="modal-row2">
+                    <div>
+                        <div class="modal-label">Protocolo</div>
+                        <select class="modal-select" id="colProtocol">
+                            <option value="Aave">Aave</option>
+                            <option value="Compound">Compound</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="modal-label">Blockchain</div>
+                        <select class="modal-select" id="colChain">
+                            <option value="Ethereum">Ethereum</option>
+                            <option value="Polygon">Polygon</option>
+                            <option value="Arbitrum">Arbitrum</option>
+                            <option value="Optimism">Optimism</option>
+                            <option value="Base">Base</option>
+                            <option value="BSC">BSC</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-sep">PARÂMETROS DO AAVE</div>
+
+                <div class="modal-row2">
+                    <div>
+                        <div class="modal-label">LTV Máximo (%)</div>
+                        <input type="number" class="modal-input" id="colLtvMax" placeholder="Ex: 70" step="any" min="0" max="100" oninput="updatePreview()">
+                    </div>
+                    <div>
+                        <div class="modal-label">Limiar de Liquidação (%)</div>
+                        <input type="number" class="modal-input" id="colLiqThreshold" placeholder="Ex: 82.5" step="any" min="0" max="100" oninput="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="modal-sep">BORROWS VINCULADOS</div>
+                <div style="font-size:11px;color:#888;margin-bottom:6px;margin-top:4px;">Selecione quais borrows este colateral garante:</div>
+                <div class="borrow-check-list" id="borrowCheckList"></div>
+
+                <div class="modal-preview" id="colPreview" style="display:none;"></div>
+
+                <div class="modal-btns">
+                    <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+                    <button class="modal-btn modal-btn-save" id="colSaveBtn" onclick="saveColateral()">Salvar</button>
+                </div>
+            </div>
+        </div>
+
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 08/03/2026</p>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#00695c;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, db } from './firebase-config.js';
+        import { doc, setDoc, collection, getDocs, deleteDoc, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Dark mode
+        if (localStorage.getItem('defi_dark_col') === '1') document.body.classList.add('dark-mode');
+        window.toggleDark = function() {
+            const d = document.body.classList.toggle('dark-mode');
+            document.getElementById('btnDark').textContent = d ? '☀️' : '🌙';
+            localStorage.setItem('defi_dark_col', d ? '1' : '0');
+        };
+        if (localStorage.getItem('defi_dark_col') === '1') document.getElementById('btnDark').textContent = '☀️';
+
+        let userId = null;
+        let colaterais = [];
+        let borrows = [];
+        let allCryptos = [];
+        let selectedCryptoId = null;
+        let editingId = null;
+        let selectedBorrowIds = [];
+
+        const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        const fmtQty = v => parseFloat(v||0).toLocaleString('en-US', {maximumFractionDigits:6});
+
+        // ===== FIREBASE =====
+        async function loadColaterais() {
+            try {
+                const snap = await getDocs(collection(db, 'users', userId, 'defi_colateral'));
+                colaterais = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+            } catch(e) { console.error(e); colaterais = []; }
+        }
+
+        async function loadBorrows() {
+            try {
+                const snap = await getDocs(collection(db, 'users', userId, 'defi_borrows'));
+                borrows = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+            } catch(e) { borrows = []; }
+        }
+
+        async function loadPrices() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&sparkline=false');
+                if (res.ok) allCryptos = await res.json();
+            } catch(e) {}
+        }
+
+        function getPrice(id) { const c = allCryptos.find(x => x.id === id); return c ? c.current_price : 0; }
+        function getInfo(id)  { return allCryptos.find(x => x.id === id) || null; }
+
+        async function saveToFirebase(col) {
+            try {
+                if (col.id) {
+                    await setDoc(doc(db, 'users', userId, 'defi_colateral', col.id), col);
+                } else {
+                    const ref = await addDoc(collection(db, 'users', userId, 'defi_colateral'), col);
+                    col.id = ref.id;
+                }
+                return true;
+            } catch(e) { console.error(e); return false; }
+        }
+
+        async function deleteFromFirebase(id) {
+            try { await deleteDoc(doc(db, 'users', userId, 'defi_colateral', id)); return true; }
+            catch(e) { return false; }
+        }
+
+        // ===== CÁLCULOS =====
+        function calcHF(col) {
+            // Health Factor = (Colateral USD × Limiar Liquidação%) / Dívida Borrows USD
+            const colPrice = getPrice(col.cryptoId);
+            const colUsd = parseFloat(col.amount || 0) * colPrice;
+            const liqThresh = parseFloat(col.liqThreshold || 80) / 100;
+            const debtUsd = getLinkedDebt(col);
+            if (debtUsd <= 0) return null; // sem dívida = sem risco
+            return (colUsd * liqThresh) / debtUsd;
+        }
+
+        function calcLTV(col) {
+            // LTV = Dívida / Colateral × 100
+            const colPrice = getPrice(col.cryptoId);
+            const colUsd = parseFloat(col.amount || 0) * colPrice;
+            const debtUsd = getLinkedDebt(col);
+            if (colUsd <= 0) return 0;
+            return (debtUsd / colUsd) * 100;
+        }
+
+        function getLinkedDebt(col) {
+            return (col.linkedBorrowIds || []).reduce((sum, bid) => {
+                const b = borrows.find(x => x.id === bid);
+                if (!b) return sum;
+                return sum + parseFloat(b.amount || 0) * getPrice(b.cryptoId);
+            }, 0);
+        }
+
+        function hfClass(hf) {
+            if (hf === null) return 'hf-safe';
+            if (hf < 1.2) return 'hf-danger';
+            if (hf < 1.5) return 'hf-warn';
+            return 'hf-safe';
+        }
+
+        function hfBarClass(hf) {
+            if (hf === null) return 'hf-safe-bar';
+            if (hf < 1.2) return 'hf-danger-bar';
+            if (hf < 1.5) return 'hf-warn-bar';
+            return 'hf-safe-bar';
+        }
+
+        function hfBarPct(hf) {
+            if (hf === null) return 100;
+            return Math.min(100, (hf / 3) * 100); // escala 0–3
+        }
+
+        // ===== RENDER =====
+        function updateSummary() {
+            let totalColUsd = 0, totalDebtUsd = 0;
+            let weightedHF = 0, hfDenom = 0;
+
+            colaterais.forEach(col => {
+                const price = getPrice(col.cryptoId);
+                const colUsd = parseFloat(col.amount || 0) * price;
+                const debtUsd = getLinkedDebt(col);
+                totalColUsd += colUsd;
+                totalDebtUsd += debtUsd;
+                const hf = calcHF(col);
+                if (hf !== null && debtUsd > 0) {
+                    weightedHF += hf * debtUsd;
+                    hfDenom += debtUsd;
+                }
+            });
+
+            const globalHF = hfDenom > 0 ? weightedHF / hfDenom : null;
+            const globalLTV = totalColUsd > 0 ? (totalDebtUsd / totalColUsd) * 100 : 0;
+            const margem = totalColUsd - totalDebtUsd;
+
+            // HF geral
+            const hfEl = document.getElementById('sumHF');
+            const hfSt = document.getElementById('sumHFStatus');
+            if (globalHF === null) {
+                hfEl.textContent = '∞';
+                hfEl.className = 'value hf-safe';
+                hfSt.textContent = 'Sem dívidas';
+            } else {
+                hfEl.textContent = globalHF.toFixed(2);
+                hfEl.className = 'value ' + hfClass(globalHF);
+                hfSt.textContent = globalHF < 1.2 ? '🚨 CRÍTICO' : globalHF < 1.5 ? '⚠️ Atenção' : '✅ Seguro';
+            }
+
+            document.getElementById('sumTotal').textContent = fmt(totalColUsd);
+            document.getElementById('sumPositions').textContent = colaterais.length + ' posição(ões)';
+            document.getElementById('sumLTV').textContent = globalLTV.toFixed(1) + '%';
+            document.getElementById('sumLTVMax').textContent = 'Col: ' + fmt(totalColUsd);
+            document.getElementById('sumDebt').textContent = fmt(totalDebtUsd);
+            document.getElementById('sumMargin').textContent = 'Margem: ' + fmt(margem);
+
+            // Alertas HF
+            const dangers = [], warns = [];
+            colaterais.forEach(col => {
+                const hf = calcHF(col);
+                if (hf === null) return;
+                const name = col.cryptoName || col.cryptoSymbol || '?';
+                const txt = name + ' — HF: ' + hf.toFixed(2) + ' | LTV: ' + calcLTV(col).toFixed(1) + '%';
+                if (hf < 1.2) dangers.push(txt);
+                else if (hf < 1.5) warns.push(txt);
+            });
+            const dEl = document.getElementById('alertDanger');
+            const wEl = document.getElementById('alertWarn');
+            dEl.style.display = dangers.length ? 'block' : 'none';
+            wEl.style.display = warns.length ? 'block' : 'none';
+            document.getElementById('alertDangerList').innerHTML = dangers.map(t => '<div>🚨 ' + t + '</div>').join('');
+            document.getElementById('alertWarnList').innerHTML  = warns.map(t => '<div>⚠️ ' + t + '</div>').join('');
+        }
+
+        function renderList() {
+            updateSummary();
+            if (colaterais.length === 0) {
+                document.getElementById('colList').innerHTML = '<div class="empty-state"><div class="icon">🛡️</div><h3>Nenhum colateral registrado</h3><p>Clique em "+ Novo Colateral" pra começar</p></div>';
+                return;
+            }
+
+            document.getElementById('colList').innerHTML = colaterais.map(col => {
+                const info = getInfo(col.cryptoId);
+                const price = getPrice(col.cryptoId);
+                const colUsd = parseFloat(col.amount || 0) * price;
+                const entryUsd = parseFloat(col.amount || 0) * parseFloat(col.entryPrice || 0);
+                const pnl = colUsd - entryUsd;
+                const pnlPct = entryUsd > 0 ? (pnl / entryUsd * 100) : 0;
+                const debtUsd = getLinkedDebt(col);
+                const hf = calcHF(col);
+                const ltv = calcLTV(col);
+                const ltvMax = parseFloat(col.ltvMax || 70);
+                const liqThresh = parseFloat(col.liqThreshold || 80);
+                const chainCls = 'chain-' + (col.chain || 'default').toLowerCase();
+
+                // HF bar — escala 0 a 3
+                const hfPct = hfBarPct(hf);
+                const hfBar = hfBarClass(hf);
+
+                // LTV bar
+                const ltvPct = Math.min(100, ltv);
+                const ltvMaxPct = Math.min(100, ltvMax);
+                const liqPct = Math.min(100, liqThresh);
+                const ltvBarColor = ltv > liqThresh ? '#c62828' : ltv > ltvMax ? '#ff6f00' : '#00695c';
+
+                // Borrows vinculados
+                const linkedBorrows = (col.linkedBorrowIds || []).map(bid => borrows.find(b => b.id === bid)).filter(Boolean);
+
+                return '<div class="col-card">' +
+                    '<div class="col-top">' +
+                        '<div class="col-crypto">' +
+                            (info ? '<img class="col-icon" src="' + info.image + '" onerror="this.style.display=\'none\'">' : '') +
+                            '<div>' +
+                                '<div class="col-name">' + (col.cryptoName || col.cryptoSymbol || '?') + '</div>' +
+                                '<div class="col-sym">' + (col.cryptoSymbol || '').toUpperCase() +
+                                    ' &nbsp;<span class="proto-badge">' + (col.protocol || 'Aave') + '</span>' +
+                                    ' &nbsp;<span class="chain-badge ' + chainCls + '">' + (col.chain || 'Ethereum') + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="col-actions">' +
+                            '<button class="col-btn" onclick="editColateral(\'' + col.id + '\')" title="Editar">✏️</button>' +
+                            '<button class="col-btn" onclick="deleteColateral(\'' + col.id + '\')" title="Deletar">🗑️</button>' +
+                        '</div>' +
+                    '</div>' +
+
+                    // Stats
+                    '<div class="col-grid">' +
+                        '<div class="col-stat"><div class="cs-label">Quantidade</div><div class="cs-value">' + fmtQty(col.amount) + ' ' + (col.cryptoSymbol||'').toUpperCase() + '</div></div>' +
+                        '<div class="col-stat"><div class="cs-label">Valor Atual</div><div class="cs-value">' + fmt(colUsd) + '</div></div>' +
+                        '<div class="col-stat"><div class="cs-label">PnL Colateral</div><div class="cs-value" style="color:' + (pnl>=0?'#2e7d32':'#c62828') + ';">' + (pnl>=0?'+':'') + fmt(pnl) + ' (' + (pnlPct>=0?'+':'') + pnlPct.toFixed(1) + '%)</div></div>' +
+                        '<div class="col-stat"><div class="cs-label">Preço Atual</div><div class="cs-value">' + fmt(price) + '</div></div>' +
+                        '<div class="col-stat"><div class="cs-label">Preço Entrada</div><div class="cs-value">' + (col.entryPrice ? fmt(col.entryPrice) : '—') + '</div></div>' +
+                        '<div class="col-stat"><div class="cs-label">Dívida Vinculada</div><div class="cs-value" style="color:#880e4f;">' + fmt(debtUsd) + '</div></div>' +
+                    '</div>' +
+
+                    // Health Factor bar
+                    '<div class="hf-bar-wrap">' +
+                        '<div class="hf-bar-label">' +
+                            '<span>❤️ Health Factor</span>' +
+                            '<span class="' + hfClass(hf) + '">' + (hf === null ? '∞ — Sem dívidas' : hf.toFixed(3) + (hf < 1.2 ? ' 🚨 CRÍTICO' : hf < 1.5 ? ' ⚠️ Atenção' : ' ✅ Seguro')) + '</span>' +
+                        '</div>' +
+                        '<div class="hf-bar-bg"><div class="hf-bar-fill ' + hfBar + '" style="width:' + hfPct + '%;"></div></div>' +
+                        '<div class="hf-markers"><span>0</span><span style="color:#c62828;">1.0 Liq</span><span style="color:#f57f17;">1.5</span><span>3.0+</span></div>' +
+                    '</div>' +
+
+                    // LTV bar
+                    '<div class="ltv-bar-wrap">' +
+                        '<div class="ltv-bar-row">' +
+                            '<span>📊 LTV: <strong style="color:' + ltvBarColor + ';">' + ltv.toFixed(1) + '%</strong></span>' +
+                            '<span style="font-size:10px;color:#888;">Máx: ' + ltvMax + '% | Liq: ' + liqThresh + '%</span>' +
+                        '</div>' +
+                        '<div class="ltv-bar-bg" style="height:10px;border-radius:8px;overflow:hidden;position:relative;">' +
+                            '<div class="ltv-bar-fill" style="width:' + Math.min(ltvPct,100) + '%;background:' + ltvBarColor + ';height:100%;border-radius:8px;"></div>' +
+                        '</div>' +
+                        '<div style="display:flex;justify-content:space-between;font-size:9px;color:#bbb;margin-top:2px;"><span>0%</span><span style="color:#ff6f00;">LTV Max ' + ltvMax + '%</span><span style="color:#c62828;">Liq ' + liqThresh + '%</span><span>100%</span></div>' +
+                    '</div>' +
+
+                    // Borrows vinculados
+                    '<div class="borrows-linked">' +
+                        '<div class="bl-title">🏦 Borrows Vinculados (' + linkedBorrows.length + ')</div>' +
+                        (linkedBorrows.length === 0 ?
+                            '<div class="bl-empty">Nenhum borrow vinculado</div>' :
+                            linkedBorrows.map(b => {
+                                const bPrice = getPrice(b.cryptoId);
+                                const bUsd = parseFloat(b.amount||0) * bPrice;
+                                const bPct = colUsd > 0 ? (bUsd / colUsd * 100).toFixed(1) : '—';
+                                return '<div class="bl-item">' +
+                                    '<span><span class="bl-sym">' + (b.cryptoSymbol||'?').toUpperCase() + '</span> &nbsp;<span style="font-size:10px;color:#aaa;">' + parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4}) + '</span></span>' +
+                                    '<span><span class="bl-val">' + fmt(bUsd) + '</span> <span style="font-size:10px;color:#888;">(' + bPct + '% do col.)</span></span>' +
+                                '</div>';
+                            }).join('')
+                        ) +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        // ===== MODAL =====
+        window.openModal = function() {
+            editingId = null; selectedCryptoId = null; selectedBorrowIds = [];
+            document.getElementById('modalTitle').textContent = '🛡️ Novo Colateral';
+            document.getElementById('colSearch').value = '';
+            document.getElementById('colSelected').textContent = 'Nenhum selecionado';
+            document.getElementById('colAmount').value = '';
+            document.getElementById('colEntryPrice').value = '';
+            document.getElementById('colProtocol').value = 'Aave';
+            document.getElementById('colChain').value = 'Ethereum';
+            document.getElementById('colLtvMax').value = '';
+            document.getElementById('colLiqThreshold').value = '';
+            document.getElementById('colPreview').style.display = 'none';
+            document.getElementById('colSaveBtn').textContent = 'Salvar';
+            filterColList();
+            populateBorrowChecks();
+            document.getElementById('colModal').classList.add('show');
+        };
+
+        window.closeModal = function() { document.getElementById('colModal').classList.remove('show'); };
+
+        window.filterColList = function() {
+            const q = document.getElementById('colSearch').value.toLowerCase().trim();
+            const list = q ? allCryptos.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)) : allCryptos.slice(0, 20);
+            document.getElementById('colCoinList').innerHTML = list.map(c =>
+                '<div class="modal-coin-item' + (selectedCryptoId === c.id ? ' selected' : '') + '" onclick="selectCrypto(\'' + c.id + '\')">' +
+                '<img src="' + c.image + '" onerror="this.style.display=\'none\'">' +
+                '<div><div class="mci-name">' + c.name + '</div><div class="mci-symbol">' + c.symbol.toUpperCase() + '</div></div>' +
+                '<div class="mci-price">' + fmt(c.current_price) + '</div>' +
+                '</div>'
+            ).join('');
+        };
+
+        window.selectCrypto = function(id) {
+            selectedCryptoId = id;
+            const info = getInfo(id);
+            if (info) {
+                document.getElementById('colSelected').textContent = '✅ ' + info.name + ' (' + info.symbol.toUpperCase() + ')';
+                if (!document.getElementById('colEntryPrice').value) {
+                    document.getElementById('colEntryPrice').value = info.current_price;
+                }
+                // Sugerir parâmetros Aave para tokens conhecidos
+                const aaveDefaults = {
+                    'bitcoin': {ltv: 70, liq: 80}, 'ethereum': {ltv: 80, liq: 82.5},
+                    'chainlink': {ltv: 70, liq: 77.5}, 'usd-coin': {ltv: 77, liq: 80},
+                    'tether': {ltv: 75, liq: 78}, 'dai': {ltv: 77, liq: 80},
+                    'wrapped-bitcoin': {ltv: 70, liq: 80}
+                };
+                const def = aaveDefaults[id];
+                if (def && !document.getElementById('colLtvMax').value) {
+                    document.getElementById('colLtvMax').value = def.ltv;
+                    document.getElementById('colLiqThreshold').value = def.liq;
+                }
+            }
+            filterColList();
+            updatePreview();
+        };
+
+        function populateBorrowChecks() {
+            const list = document.getElementById('borrowCheckList');
+            if (borrows.length === 0) {
+                list.innerHTML = '<div style="padding:12px;text-align:center;color:#aaa;font-size:12px;">Nenhum borrow cadastrado</div>';
+                return;
+            }
+            list.innerHTML = borrows.map(b => {
+                const bPrice = getPrice(b.cryptoId);
+                const bUsd = parseFloat(b.amount||0) * bPrice;
+                const checked = selectedBorrowIds.includes(b.id) ? 'checked' : '';
+                return '<div class="borrow-check-item" onclick="toggleBorrow(\'' + b.id + '\')">' +
+                    '<input type="checkbox" id="bc_' + b.id + '" ' + checked + ' onclick="event.stopPropagation();toggleBorrow(\'' + b.id + '\')">' +
+                    '<div><div class="bci-name">' + (b.cryptoSymbol||'?').toUpperCase() + ' — ' + parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4}) + '</div><div style="font-size:10px;color:#888;">' + (b.protocol||'Aave') + ' · ' + (b.chain||'') + '</div></div>' +
+                    '<div class="bci-val">' + fmt(bUsd) + '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        window.toggleBorrow = function(id) {
+            const idx = selectedBorrowIds.indexOf(id);
+            if (idx === -1) selectedBorrowIds.push(id);
+            else selectedBorrowIds.splice(idx, 1);
+            const cb = document.getElementById('bc_' + id);
+            if (cb) cb.checked = selectedBorrowIds.includes(id);
+            updatePreview();
+        };
+
+        window.updatePreview = function() {
+            const amt = parseFloat(document.getElementById('colAmount').value) || 0;
+            const entry = parseFloat(document.getElementById('colEntryPrice').value) || 0;
+            const ltvMax = parseFloat(document.getElementById('colLtvMax').value) || 0;
+            const liqThresh = parseFloat(document.getElementById('colLiqThreshold').value) || 0;
+            const price = selectedCryptoId ? getPrice(selectedCryptoId) : 0;
+            const colUsd = amt * price;
+            const entryUsd = amt * entry;
+            const debtUsd = selectedBorrowIds.reduce((s, bid) => {
+                const b = borrows.find(x => x.id === bid);
+                return s + (b ? parseFloat(b.amount||0) * getPrice(b.cryptoId) : 0);
+            }, 0);
+            const hf = (colUsd > 0 && debtUsd > 0 && liqThresh > 0) ? (colUsd * liqThresh/100) / debtUsd : null;
+            const ltv = colUsd > 0 ? (debtUsd / colUsd * 100) : 0;
+            const prev = document.getElementById('colPreview');
+            if (colUsd > 0 || debtUsd > 0) {
+                prev.style.display = 'block';
+                prev.innerHTML =
+                    '💰 Colateral: ' + fmt(colUsd) + (entry > 0 ? ' (Entrada: ' + fmt(entryUsd) + ')' : '') + '<br>' +
+                    (debtUsd > 0 ? '💸 Dívida vinculada: ' + fmt(debtUsd) + '<br>' : '') +
+                    (hf !== null ? '❤️ Health Factor: <strong>' + hf.toFixed(2) + '</strong><br>' : '') +
+                    (ltv > 0 ? '📊 LTV atual: ' + ltv.toFixed(1) + '%' + (ltvMax > 0 ? ' / Máx ' + ltvMax + '%' : '') : '');
+            } else {
+                prev.style.display = 'none';
+            }
+        };
+
+        window.saveColateral = async function() {
+            if (!selectedCryptoId) { alert('Selecione um token!'); return; }
+            const amt = parseFloat(document.getElementById('colAmount').value);
+            if (!amt || amt <= 0) { alert('Digite a quantidade!'); return; }
+            const info = getInfo(selectedCryptoId);
+            const col = {
+                cryptoId: selectedCryptoId,
+                cryptoName: info ? info.name : '',
+                cryptoSymbol: info ? info.symbol : '',
+                amount: amt,
+                entryPrice: parseFloat(document.getElementById('colEntryPrice').value) || getPrice(selectedCryptoId),
+                protocol: document.getElementById('colProtocol').value,
+                chain: document.getElementById('colChain').value,
+                ltvMax: parseFloat(document.getElementById('colLtvMax').value) || 70,
+                liqThreshold: parseFloat(document.getElementById('colLiqThreshold').value) || 80,
+                linkedBorrowIds: [...selectedBorrowIds],
+                createdAt: editingId ? (colaterais.find(c => c.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            if (editingId) col.id = editingId;
+            const ok = await saveToFirebase(col);
+            if (ok) { closeModal(); await loadColaterais(); renderList(); }
+            else alert('Erro ao salvar!');
+        };
+
+        window.editColateral = function(id) {
+            const col = colaterais.find(c => c.id === id);
+            if (!col) return;
+            editingId = id;
+            selectedCryptoId = col.cryptoId;
+            selectedBorrowIds = [...(col.linkedBorrowIds || [])];
+            const info = getInfo(col.cryptoId);
+            document.getElementById('modalTitle').textContent = '✏️ Editar Colateral';
+            document.getElementById('colSelected').textContent = info ? '✅ ' + info.name + ' (' + info.symbol.toUpperCase() + ')' : col.cryptoSymbol;
+            document.getElementById('colAmount').value = col.amount || '';
+            document.getElementById('colEntryPrice').value = col.entryPrice || '';
+            document.getElementById('colProtocol').value = col.protocol || 'Aave';
+            document.getElementById('colChain').value = col.chain || 'Ethereum';
+            document.getElementById('colLtvMax').value = col.ltvMax || '';
+            document.getElementById('colLiqThreshold').value = col.liqThreshold || '';
+            document.getElementById('colSaveBtn').textContent = 'Atualizar';
+            filterColList();
+            populateBorrowChecks();
+            updatePreview();
+            document.getElementById('colModal').classList.add('show');
+        };
+
+        window.deleteColateral = async function(id) {
+            const col = colaterais.find(c => c.id === id);
+            const name = col ? (col.cryptoName || col.cryptoSymbol) : id;
+            if (!confirm('Deletar colateral ' + name + '?')) return;
+            const ok = await deleteFromFirebase(id);
+            if (ok) { await loadColaterais(); renderList(); }
+            else alert('Erro ao deletar!');
+        };
+
+        // ===== INIT =====
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            userId = user.uid;
+            await loadPrices();
+            await loadBorrows();
+            await loadColaterais();
+            renderList();
+            filterColList();
+            setInterval(async () => { await loadPrices(); renderList(); }, 60000);
+        });
+    </script>
+</body>
+</html>
