@@ -1033,7 +1033,16 @@
                 updatedAt: new Date().toISOString()
             };
 
-            if (editingId) pool.id = editingId;
+            if (editingId) {
+                pool.id = editingId;
+                // Preservar campos que nao estao no formulario (para nao apagar ao editar)
+                const existing = pools.find(p => p.id === editingId);
+                if (existing) {
+                    if (existing.feeCollections && existing.feeCollections.length > 0) {
+                        pool.feeCollections = existing.feeCollections;
+                    }
+                }
+            }
             const ok = await savePoolToFirebase(pool);
             if (ok) { await loadPools(); renderPoolList(); closePoolModal(); }
             else alert('Erro ao salvar!');
