@@ -463,25 +463,6 @@
             return Math.min(100, (hf / 3) * 100);
         }
 
-        function hfClass(hf) {
-            if (hf === null) return 'hf-safe';
-            if (hf < 1.2) return 'hf-danger';
-            if (hf < 1.5) return 'hf-warn';
-            return 'hf-safe';
-        }
-
-        function hfBarClass(hf) {
-            if (hf === null) return 'hf-safe-bar';
-            if (hf < 1.2) return 'hf-danger-bar';
-            if (hf < 1.5) return 'hf-warn-bar';
-            return 'hf-safe-bar';
-        }
-
-        function hfBarPct(hf) {
-            if (hf === null) return 100;
-            return Math.min(100, (hf / 3) * 100); // escala 0–3
-        }
-
         // ===== RENDER =====
         function updateSummary() {
             // Resumo reflete o filtro ativo
