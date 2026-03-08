@@ -16,7 +16,7 @@
         .content { padding: 15px 20px; }
 
         /* Summary */
-        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 15px; }
         .summary-card { border-radius: 10px; padding: 10px 6px; text-align: center; }
         .summary-card .label { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.8; }
         .summary-card .value { font-size: 15px; font-weight: 800; margin-top: 2px; }
@@ -24,6 +24,8 @@
         .sc-pools { background: #ede7f6; color: #4a2c8a; }
         .sc-fees { background: #e8f5e9; color: #2e7d32; }
         .sc-pnl { background: #fff3e0; color: #e65100; }
+        .sc-lucro { background: #e8f5e9; color: #1b5e20; }
+        .sc-divida { background: #f3e5f5; color: #6a1b9a; }
 
         /* Filter tabs */
         .filter-tabs { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -172,6 +174,8 @@
         body.dark-mode .summary-card.sc-pools { background: #1a153e; }
         body.dark-mode .summary-card.sc-fees { background: #152e15; }
         body.dark-mode .summary-card.sc-pnl { background: #2e2515; }
+        body.dark-mode .summary-card.sc-lucro { background: #152e20; }
+        body.dark-mode .summary-card.sc-divida { background: #2a153e; }
         body.dark-mode .modal-box { background: #0f0f23; }
         body.dark-mode .modal-title { color: #e0e0e0; }
         body.dark-mode .modal-input, body.dark-mode .modal-select, body.dark-mode .modal-search { background: #16213e; color: #e0e0e0; border-color: #333; }
@@ -183,8 +187,49 @@
         body.dark-mode .modal-preview { background: #152030; }
         body.dark-mode .modal-btn-cancel { background: #333; color: #aaa; }
 
+
+        /* Panorama Geral */
+        .panorama-section { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-top: 20px; }
+        .panorama-title { font-size: 14px; font-weight: 800; color: #1565c0; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .panorama-tabs { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
+        .pan-tab { padding: 6px 14px; border-radius: 18px; border: 2px solid #ddd; background: white; font-size: 11px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
+        .pan-tab.active { background: #1565c0; color: white; border-color: #1565c0; }
+        .pan-content { display: none; }
+        .pan-content.show { display: block; }
+
+        /* Tabela comparativa */
+        .comp-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .comp-table th { background: #1565c0; color: white; padding: 8px 6px; text-align: center; font-size: 10px; font-weight: 700; }
+        .comp-table td { padding: 7px 6px; text-align: center; border-bottom: 1px solid #eee; font-weight: 600; }
+        .comp-table tr:hover td { background: #f0f7ff; }
+        .comp-table .td-name { text-align: left; font-weight: 800; }
+
+        /* Gráfico de fees */
+        .fees-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding: 0 4px; margin-bottom: 6px; }
+        .fees-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; justify-content: flex-end; }
+        .fees-bar { background: linear-gradient(180deg, #43a047, #2e7d32); border-radius: 4px 4px 0 0; width: 100%; min-height: 4px; transition: all 0.3s; cursor: default; }
+        .fees-bar-label { font-size: 9px; color: #888; font-weight: 600; white-space: nowrap; }
+        .fees-bar-val { font-size: 9px; color: #2e7d32; font-weight: 800; }
+
+        /* Alocação por pool */
+        .alloc-row { margin-bottom: 10px; }
+        .alloc-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #333; margin-bottom: 3px; }
+        .alloc-bar { height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .alloc-fill { height: 100%; border-radius: 5px; transition: width 0.5s; }
+
+        /* DEX resumo */
+        .dex-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+        .dex-card { background: white; border-radius: 10px; padding: 10px; text-align: center; border: 2px solid #e0e0e0; }
+        .dex-card .dc-name { font-size: 12px; font-weight: 800; color: #333; margin-bottom: 4px; }
+        .dex-card .dc-val { font-size: 14px; font-weight: 800; color: #1565c0; }
+        .dex-card .dc-sub { font-size: 10px; color: #888; font-weight: 600; }
+
+        /* Range alert melhorado */
+        .range-alert-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+        .range-alert-days { background: #c62828; color: white; border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: 700; }
+
         @media (max-width: 600px) {
-            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .summary-grid { grid-template-columns: repeat(3, 1fr) !important; }
             .header { flex-direction: column; text-align: center; }
             .pool-grid { grid-template-columns: 1fr 1fr; }
         }
@@ -222,6 +267,16 @@
                     <div class="label">📊 PnL</div>
                     <div class="value" id="sumPnl">—</div>
                 </div>
+                <div class="summary-card sc-lucro">
+                    <div class="label">🏆 Lucro Real</div>
+                    <div class="value" id="sumLucro">—</div>
+                    <div id="sumRoi" style="font-size:10px;font-weight:700;margin-top:3px;">—</div>
+                </div>
+                <div class="summary-card sc-divida">
+                    <div class="label">🏦 Dívida Borrows</div>
+                    <div class="value" id="sumDivida">—</div>
+                    <div id="sumLiquido" style="font-size:10px;font-weight:700;margin-top:3px;">—</div>
+                </div>
             </div>
 
             <!-- Range Alert -->
@@ -242,6 +297,27 @@
                 </div>
             </div>
         </div>
+
+
+            <!-- Panorama Geral -->
+            <div class="panorama-section" id="panoramaSection">
+                <div class="panorama-title" onclick="togglePanorama()">
+                    <span>📊 Panorama Geral</span>
+                    <span id="panoramaArrow" style="font-size:12px;color:#888;">▼ Expandir</span>
+                </div>
+                <div id="panoramaBody" style="display:none;">
+                    <div class="panorama-tabs">
+                        <span class="pan-tab active" onclick="showPanTab('tabComp', this)">📋 Comparativo</span>
+                        <span class="pan-tab" onclick="showPanTab('tabFees', this)">📈 Fees/Mês</span>
+                        <span class="pan-tab" onclick="showPanTab('tabAlloc', this)">🥧 Alocação</span>
+                        <span class="pan-tab" onclick="showPanTab('tabDex', this)">🌐 Por DEX</span>
+                    </div>
+                    <div class="pan-content show" id="tabComp"></div>
+                    <div class="pan-content" id="tabFees"></div>
+                    <div class="pan-content" id="tabAlloc"></div>
+                    <div class="pan-content" id="tabDex"></div>
+                </div>
+            </div>
 
         <!-- Pool Modal -->
         <div class="modal-overlay" id="poolModal">
@@ -508,6 +584,7 @@
         function getInfo(id) { return allCryptos.find(x => x.id === id) || null; }
 
         // ===== RENDER =====
+        let panoramaOpen = false;
         function updateSummary() {
             let tvl = 0, totalFees = 0, totalInvest = 0;
             const activePools = pools.filter(p => p.status !== 'closed');
@@ -528,11 +605,45 @@
 
             const pnl = tvl - totalInvest + totalFees;
 
+            // Calcular dias desde a primeira pool (para ROI anualizado)
+            const poolDates = pools.map(p => new Date(p.poolDate || p.createdAt)).filter(d => !isNaN(d));
+            const oldestDate = poolDates.length > 0 ? new Date(Math.min(...poolDates)) : new Date();
+            const diasTotal = Math.max(1, Math.floor((new Date() - oldestDate) / (1000 * 60 * 60 * 24)));
+
+            const lucroReal = pnl + totalFees;
+            const roi = totalInvest > 0 ? (lucroReal / totalInvest) * 100 : 0;
+            const roiAnual = roi * (365 / diasTotal);
+
             document.getElementById('sumTvl').textContent = fmtUsd(tvl);
             document.getElementById('sumPools').textContent = activePools.length + '/' + pools.length;
             document.getElementById('sumFees').textContent = fmtUsd(totalFees);
             document.getElementById('sumPnl').textContent = (pnl >= 0 ? '+' : '') + fmtUsd(pnl);
             document.getElementById('sumPnl').style.color = pnl >= 0 ? '#2e7d32' : '#c62828';
+            document.getElementById('sumLucro').textContent = (lucroReal >= 0 ? '+' : '') + fmtUsd(lucroReal);
+            document.getElementById('sumLucro').style.color = lucroReal >= 0 ? '#1b5e20' : '#c62828';
+            document.getElementById('sumLucro').closest('.summary-card').style.background = lucroReal >= 0 ? '#e8f5e9' : '#fdecea';
+            document.getElementById('sumLucro').closest('.summary-card').style.color = lucroReal >= 0 ? '#1b5e20' : '#c62828';
+            const roiColor = lucroReal >= 0 ? '#1b5e20' : '#c62828';
+            document.getElementById('sumRoi').textContent = (roi >= 0 ? '+' : '') + roi.toFixed(1) + '% | ' + (roiAnual >= 0 ? '+' : '') + roiAnual.toFixed(1) + '%/ano';
+            document.getElementById('sumRoi').style.color = roiColor;
+
+            // Dívida total de borrows vinculados às pools
+            let totalDivida = 0;
+            pools.forEach(p => {
+                if (p.borrowIdA) {
+                    const bA = borrows.find(b => b.id === p.borrowIdA);
+                    if (bA) totalDivida += parseFloat(bA.amount || 0) * (parseFloat(p.borrowPctA || 0) / 100) * getPrice(bA.cryptoId);
+                }
+                if (p.borrowIdB) {
+                    const bB = borrows.find(b => b.id === p.borrowIdB);
+                    if (bB) totalDivida += parseFloat(bB.amount || 0) * (parseFloat(p.borrowPctB || 0) / 100) * getPrice(bB.cryptoId);
+                }
+            });
+            const liquido = tvl - totalDivida;
+            document.getElementById('sumDivida').textContent = fmtUsd(totalDivida);
+            document.getElementById('sumDivida').style.color = totalDivida > 0 ? '#6a1b9a' : '#2e7d32';
+            document.getElementById('sumLiquido').textContent = 'Líquido: ' + fmtUsd(liquido);
+            document.getElementById('sumLiquido').style.color = liquido >= 0 ? '#2e7d32' : '#c62828';
         }
 
         function renderFilters() {
@@ -561,16 +672,30 @@
                 if (p.status === 'closed') return;
                 const priceA = getPrice(p.tokenAId);
                 const priceB = getPrice(p.tokenBId);
-                if (!priceB || !p.rangeMin && !p.rangeMax) return;
+                if (!priceB || (!p.rangeMin && !p.rangeMax)) return;
                 const ratio = priceA / priceB;
                 if (ratio < (p.rangeMin || 0) || ratio > (p.rangeMax || Infinity)) {
                     const name = p.poolName || ((p.tokenASymbol || '?').toUpperCase() + '/' + (p.tokenBSymbol || '?').toUpperCase());
-                    outOfRange.push('❌ <strong>' + name + '</strong> — Ratio: ' + ratio.toFixed(2) + ' (Range: ' + (p.rangeMin||'—') + ' — ' + (p.rangeMax||'—') + ')');
+                    // Calcular dias fora do range (usa campo outOfRangeSince se disponível)
+                    let diasFora = '';
+                    if (p.outOfRangeSince) {
+                        const d = Math.floor((new Date() - new Date(p.outOfRangeSince)) / (1000*60*60*24));
+                        diasFora = d === 0 ? 'hoje' : d + 'd fora';
+                    }
+                    const distMin = p.rangeMin ? ((ratio - p.rangeMin) / p.rangeMin * 100).toFixed(1) : null;
+                    const distMax = p.rangeMax ? ((ratio - p.rangeMax) / p.rangeMax * 100).toFixed(1) : null;
+                    const dist = ratio < (p.rangeMin||0) ? distMin + '% abaixo' : distMax + '% acima';
+                    outOfRange.push(
+                        '<div class="range-alert-item">' +
+                        '<span>❌ <strong>' + name + '</strong> — Ratio atual: ' + ratio.toFixed(2) + ' | Range: ' + (p.rangeMin||'—') + ' – ' + (p.rangeMax||'—') + ' <span style="color:#888;font-size:10px;">(' + dist + ')</span></span>' +
+                        (diasFora ? '<span class="range-alert-days">' + diasFora + '</span>' : '') +
+                        '</div>'
+                    );
                 }
             });
             if (outOfRange.length > 0) {
                 alertDiv.style.display = 'block';
-                alertList.innerHTML = outOfRange.join('<br>');
+                alertList.innerHTML = outOfRange.join('');
             } else {
                 alertDiv.style.display = 'none';
             }
@@ -606,6 +731,7 @@
                 return;
             }
 
+            if (panoramaOpen) renderPanorama();
             document.getElementById('poolList').innerHTML = filtered.map(p => {
                 const infoA = getInfo(p.tokenAId);
                 const infoB = getInfo(p.tokenBId);
@@ -879,6 +1005,156 @@
                     '</div>' +
                 '</div>';
             }).join('');
+        }
+
+
+        // ===== PANORAMA GERAL =====
+        window.togglePanorama = function() {
+            panoramaOpen = !panoramaOpen;
+            document.getElementById('panoramaBody').style.display = panoramaOpen ? 'block' : 'none';
+            document.getElementById('panoramaArrow').textContent = panoramaOpen ? '▲ Recolher' : '▼ Expandir';
+            if (panoramaOpen) renderPanorama();
+        };
+
+        window.showPanTab = function(tabId, el) {
+            document.querySelectorAll('.pan-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.pan-content').forEach(t => t.classList.remove('show'));
+            el.classList.add('active');
+            document.getElementById(tabId).classList.add('show');
+        };
+
+        const POOL_COLORS = ['#1565c0','#2e7d32','#6a1b9a','#e65100','#c62828','#00838f','#4527a0','#558b2f'];
+
+        function renderPanorama() {
+            renderTabComp();
+            renderTabFees();
+            renderTabAlloc();
+            renderTabDex();
+        }
+
+        function renderTabComp() {
+            const active = pools.filter(p => p.status !== 'closed');
+            if (active.length === 0) { document.getElementById('tabComp').innerHTML = '<p style="color:#888;text-align:center;padding:20px;">Nenhuma pool ativa</p>'; return; }
+            let rows = '';
+            active.forEach(p => {
+                const priceA = getPrice(p.tokenAId), priceB = getPrice(p.tokenBId);
+                const curA = (p.currentAmountA !== undefined && p.currentAmountA !== '' && p.currentAmountA !== null) ? parseFloat(p.currentAmountA) : parseFloat(p.amountA || 0);
+                const curB = (p.currentAmountB !== undefined && p.currentAmountB !== '' && p.currentAmountB !== null) ? parseFloat(p.currentAmountB) : parseFloat(p.amountB || 0);
+                const tvlP = curA * priceA + curB * priceB;
+                const invA = p.investmentA || ((p.amountA||0)*(p.entryPriceA||0));
+                const invB = p.investmentB || ((p.amountB||0)*(p.entryPriceB||0));
+                const inv = invA + invB;
+                const fees = getTotalFees(p);
+                const pnl = tvlP - inv + fees;
+                const roi = inv > 0 ? (pnl / inv * 100) : 0;
+                const dStart = new Date(p.poolDate || p.createdAt);
+                const dias = Math.floor((new Date() - dStart) / (1000*60*60*24));
+                const roiAnual = dias > 0 ? roi * (365/dias) : 0;
+                const name = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '-' + (p.tokenBSymbol||'?').toUpperCase());
+                const pnlColor = pnl >= 0 ? '#2e7d32' : '#c62828';
+                rows += '<tr>' +
+                    '<td class="td-name">' + name + '<br><span style="font-size:9px;color:#888;">' + (p.dex||'DEX') + ' · ' + dias + 'd</span></td>' +
+                    '<td>' + fmtUsd(inv) + '</td>' +
+                    '<td>' + fmtUsd(tvlP) + '</td>' +
+                    '<td style="color:#2e7d32;">' + fmtUsd(fees) + '</td>' +
+                    '<td style="color:' + pnlColor + ';font-weight:800;">' + (pnl>=0?'+':'') + fmtUsd(pnl) + '</td>' +
+                    '<td style="color:' + pnlColor + ';">' + (roi>=0?'+':'') + roi.toFixed(1) + '%</td>' +
+                    '<td style="color:' + pnlColor + ';">' + (roiAnual>=0?'+':'') + roiAnual.toFixed(0) + '%</td>' +
+                '</tr>';
+            });
+            document.getElementById('tabComp').innerHTML =
+                '<div style="overflow-x:auto;"><table class="comp-table">' +
+                '<thead><tr><th>Pool</th><th>Investido</th><th>Hoje</th><th>Fees</th><th>PnL</th><th>ROI</th><th>ROI/Ano</th></tr></thead>' +
+                '<tbody>' + rows + '</tbody></table></div>';
+        }
+
+        function renderTabFees() {
+            // Agrupar todas as coletas por mês
+            const byMonth = {};
+            pools.forEach(p => {
+                (p.feeCollections || []).forEach(fc => {
+                    const d = new Date(fc.date);
+                    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+                    byMonth[key] = (byMonth[key]||0) + parseFloat(fc.amount||0);
+                });
+                // fees earned antigas (sem data, colocar em "Anterior")
+                if (parseFloat(p.feesEarned||0) > 0) {
+                    byMonth['Anterior'] = (byMonth['Anterior']||0) + parseFloat(p.feesEarned);
+                }
+            });
+            const keys = Object.keys(byMonth).filter(k => k !== 'Anterior').sort();
+            if (byMonth['Anterior']) keys.unshift('Anterior');
+            if (keys.length === 0) { document.getElementById('tabFees').innerHTML = '<p style="color:#888;text-align:center;padding:20px;">Nenhuma coleta registrada</p>'; return; }
+            const maxVal = Math.max(...keys.map(k => byMonth[k]));
+            const bars = keys.map(k => {
+                const pct = maxVal > 0 ? (byMonth[k] / maxVal) * 100 : 0;
+                const label = k === 'Anterior' ? 'Ant.' : k.slice(5) + '/' + k.slice(2,4);
+                return '<div class="fees-bar-wrap">' +
+                    '<div class="fees-bar-val">' + fmtUsd(byMonth[k]) + '</div>' +
+                    '<div class="fees-bar" style="height:' + Math.max(4, pct) + '%;"></div>' +
+                    '<div class="fees-bar-label">' + label + '</div>' +
+                '</div>';
+            }).join('');
+            const total = keys.reduce((s,k) => s+byMonth[k], 0);
+            const avg = byMonth['Anterior'] ? total / (keys.length-1||1) : total / (keys.length||1);
+            document.getElementById('tabFees').innerHTML =
+                '<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;">' +
+                '<span style="font-weight:700;color:#2e7d32;">Total: ' + fmtUsd(total) + '</span>' +
+                '<span style="color:#888;">Média/mês: ' + fmtUsd(avg) + '</span>' +
+                '</div>' +
+                '<div class="fees-chart">' + bars + '</div>';
+        }
+
+        function renderTabAlloc() {
+            const active = pools.filter(p => p.status !== 'closed');
+            let totalTvl = 0;
+            const data = active.map(p => {
+                const priceA = getPrice(p.tokenAId), priceB = getPrice(p.tokenBId);
+                const curA = (p.currentAmountA !== undefined && p.currentAmountA !== '' && p.currentAmountA !== null) ? parseFloat(p.currentAmountA) : parseFloat(p.amountA || 0);
+                const curB = (p.currentAmountB !== undefined && p.currentAmountB !== '' && p.currentAmountB !== null) ? parseFloat(p.currentAmountB) : parseFloat(p.amountB || 0);
+                const tvlP = curA * priceA + curB * priceB;
+                totalTvl += tvlP;
+                const name = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '-' + (p.tokenBSymbol||'?').toUpperCase());
+                return { name, tvlP };
+            });
+            data.sort((a,b) => b.tvlP - a.tvlP);
+            const rows = data.map((d, i) => {
+                const pct = totalTvl > 0 ? (d.tvlP / totalTvl * 100) : 0;
+                const color = POOL_COLORS[i % POOL_COLORS.length];
+                return '<div class="alloc-row">' +
+                    '<div class="alloc-header"><span>' + d.name + '</span><span style="color:' + color + ';">' + pct.toFixed(1) + '% · ' + fmtUsd(d.tvlP) + '</span></div>' +
+                    '<div class="alloc-bar"><div class="alloc-fill" style="width:' + pct + '%;background:' + color + ';"></div></div>' +
+                '</div>';
+            }).join('');
+            document.getElementById('tabAlloc').innerHTML = rows || '<p style="color:#888;text-align:center;padding:20px;">Nenhuma pool ativa</p>';
+        }
+
+        function renderTabDex() {
+            const byDex = {};
+            let totalTvl = 0;
+            pools.filter(p => p.status !== 'closed').forEach(p => {
+                const priceA = getPrice(p.tokenAId), priceB = getPrice(p.tokenBId);
+                const curA = (p.currentAmountA !== undefined && p.currentAmountA !== '' && p.currentAmountA !== null) ? parseFloat(p.currentAmountA) : parseFloat(p.amountA || 0);
+                const curB = (p.currentAmountB !== undefined && p.currentAmountB !== '' && p.currentAmountB !== null) ? parseFloat(p.currentAmountB) : parseFloat(p.amountB || 0);
+                const tvlP = curA * priceA + curB * priceB;
+                const dex = p.dex || 'Outro';
+                if (!byDex[dex]) byDex[dex] = { tvl: 0, pools: 0, fees: 0 };
+                byDex[dex].tvl += tvlP;
+                byDex[dex].pools += 1;
+                byDex[dex].fees += getTotalFees(p);
+                totalTvl += tvlP;
+            });
+            const cards = Object.entries(byDex).sort((a,b) => b[1].tvl - a[1].tvl).map(([dex, d], i) => {
+                const pct = totalTvl > 0 ? (d.tvl/totalTvl*100).toFixed(1) : 0;
+                const color = POOL_COLORS[i % POOL_COLORS.length];
+                return '<div class="dex-card" style="border-color:' + color + ';">' +
+                    '<div class="dc-name" style="color:' + color + ';">' + dex + '</div>' +
+                    '<div class="dc-val">' + fmtUsd(d.tvl) + '</div>' +
+                    '<div class="dc-sub">' + d.pools + ' pool' + (d.pools>1?'s':'') + ' · ' + pct + '% do TVL</div>' +
+                    '<div class="dc-sub" style="color:#2e7d32;margin-top:2px;">Fees: ' + fmtUsd(d.fees) + '</div>' +
+                '</div>';
+            }).join('');
+            document.getElementById('tabDex').innerHTML = '<div class="dex-cards">' + cards + '</div>' || '<p style="color:#888;text-align:center;padding:20px;">Nenhum dado</p>';
         }
 
         // ===== MODAL =====
