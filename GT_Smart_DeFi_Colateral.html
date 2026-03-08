@@ -418,22 +418,47 @@
 
         // ===== CÁLCULOS GLOBAIS (igual ao Aave) =====
 
-        // Dívida total de TODOS os borrows cadastrados
-        function getTotalDebt() {
-            return borrows.reduce((sum, b) => sum + parseFloat(b.amount || 0) * getPrice(b.cryptoId), 0);
+        // Dívida total filtrada por blockchain (igual ao Aave — cada rede é separada)
+        function getTotalDebt(chain) {
+            return borrows
+                .filter(b => !chain || (b.chain || 'Ethereum') === chain)
+                .reduce((sum, b) => sum + parseFloat(b.amount || 0) * getPrice(b.cryptoId), 0);
         }
 
-        // HF global = Σ(col_i × liqThresh_i%) / dívida_total
+        // HF por blockchain = Σ(col_i × liqThresh_i%) / dívida_total_da_mesma_rede
         function calcGlobalHF(lista) {
-            const totalDebt = getTotalDebt();
-            if (totalDebt <= 0) return null;
-            const numerador = lista.reduce((sum, col) => {
-                const price = getPrice(col.cryptoId);
-                const colUsd = parseFloat(col.amount || 0) * price;
-                const liq = parseFloat(col.liqThreshold || 80) / 100;
-                return sum + colUsd * liq;
-            }, 0);
-            return numerador / totalDebt;
+            // Detecta a blockchain da lista (pode ser mista se "Todos")
+            // Agrupa por chain e calcula HF separado para cada
+            const chains = [...new Set(lista.map(c => c.chain || 'Ethereum'))];
+            if (chains.length === 1) {
+                // Uma só rede — simples
+                const chain = chains[0];
+                const totalDebt = getTotalDebt(chain);
+                if (totalDebt <= 0) return null;
+                const numerador = lista.reduce((sum, col) => {
+                    const price = getPrice(col.cryptoId);
+                    const colUsd = parseFloat(col.amount || 0) * price;
+                    const liq = parseFloat(col.liqThreshold || 80) / 100;
+                    return sum + colUsd * liq;
+                }, 0);
+                return numerador / totalDebt;
+            } else {
+                // Múltiplas redes — HF ponderado pela dívida de cada rede
+                let totalNum = 0, totalDebtAll = 0;
+                chains.forEach(chain => {
+                    const colsChain = lista.filter(c => (c.chain || 'Ethereum') === chain);
+                    const debt = getTotalDebt(chain);
+                    totalDebtAll += debt;
+                    colsChain.forEach(col => {
+                        const price = getPrice(col.cryptoId);
+                        const colUsd = parseFloat(col.amount || 0) * price;
+                        const liq = parseFloat(col.liqThreshold || 80) / 100;
+                        totalNum += colUsd * liq;
+                    });
+                });
+                if (totalDebtAll <= 0) return null;
+                return totalNum / totalDebtAll;
+            }
         }
 
         // Contribuição de cada colateral para o numerador do HF
@@ -469,7 +494,10 @@
             const listaResumo = activeChain === 'Todos' ? colaterais : colaterais.filter(c => (c.chain || 'Outro') === activeChain);
 
             const totalColUsd = listaResumo.reduce((s, col) => s + parseFloat(col.amount||0) * getPrice(col.cryptoId), 0);
-            const totalDebtUsd = getTotalDebt(); // TODOS os borrows, modo global
+            // Dívida: se filtrado por chain, usa só dívidas dessa chain
+            const totalDebtUsd = activeChain === 'Todos'
+                ? [...new Set(colaterais.map(c => c.chain || 'Ethereum'))].reduce((s, ch) => s + getTotalDebt(ch), 0)
+                : getTotalDebt(activeChain);
             const globalHF = calcGlobalHF(listaResumo);
             const globalLTV = totalColUsd > 0 ? (totalDebtUsd / totalColUsd) * 100 : 0;
             const margem = totalColUsd - totalDebtUsd;
@@ -541,10 +569,9 @@
                 document.getElementById('colList').innerHTML = '<div class="empty-state"><div class="icon">🔗</div><h3>Nenhum colateral em ' + activeChain + '</h3></div>';
                 return;
             }
-            // Cálculos globais para contexto dos cards
+            // Cálculos globais para contexto dos cards (agrupados por chain)
             const globalHFtotal = calcGlobalHF(filtered);
             const totalColUsdFiltered = filtered.reduce((s, c) => s + parseFloat(c.amount||0) * getPrice(c.cryptoId), 0);
-            const totalDebt = getTotalDebt();
 
             document.getElementById('colList').innerHTML = filtered.map(col => {
                 const info = getInfo(col.cryptoId);
@@ -557,15 +584,23 @@
                 const liqThresh = parseFloat(col.liqThreshold || 80);
                 const chainCls = 'chain-' + (col.chain || 'default').toLowerCase();
 
-                // Contribuição deste colateral para o HF global
-                const contrib = colContribuicao(col); // col × liqThresh%
-                const contribPct = totalColUsdFiltered > 0 ? (colUsd / totalColUsdFiltered * 100).toFixed(1) : '0';
-                const colPct = totalColUsdFiltered > 0 ? (colUsd / totalColUsdFiltered * 100) : 0;
+                // Cálculos por chain deste colateral
+                const colChain = col.chain || 'Ethereum';
+                const borrowsChain = borrows.filter(b => (b.chain || 'Ethereum') === colChain);
+                const totalDebtChain = getTotalDebt(colChain);
+                const colsChain = filtered.filter(c => (c.chain || 'Ethereum') === colChain);
+                const totalColChain = colsChain.reduce((s, c) => s + parseFloat(c.amount||0) * getPrice(c.cryptoId), 0);
 
-                // LTV proporcional (dívida alocada proporcionalmente)
-                const debtProporcional = totalColUsdFiltered > 0 ? totalDebt * (colUsd / totalColUsdFiltered) : 0;
+                const contrib = colContribuicao(col);
+                const contribPct = totalColChain > 0 ? (colUsd / totalColChain * 100).toFixed(1) : '0';
+
+                // LTV proporcional dentro da mesma chain
+                const debtProporcional = totalColChain > 0 ? totalDebtChain * (colUsd / totalColChain) : 0;
                 const ltvProporcional = colUsd > 0 ? (debtProporcional / colUsd * 100) : 0;
                 const ltvBarColor = ltvProporcional > liqThresh ? '#c62828' : ltvProporcional > ltvMax ? '#ff6f00' : '#00695c';
+                
+                // HF desta chain específica
+                const hfChain = calcGlobalHF(colsChain);
 
                 return '<div class="col-card">' +
                     '<div class="col-top">' +
@@ -595,13 +630,13 @@
                         '<div class="col-stat"><div class="cs-label">Contribuição HF</div><div class="cs-value" style="color:#00695c;">' + fmt(contrib) + '</div></div>' +
                     '</div>' +
 
-                    // HF Global (mesmo valor para todos — é global)
+                    // HF da mesma blockchain (igual ao Aave por rede)
                     '<div class="hf-bar-wrap">' +
                         '<div class="hf-bar-label">' +
-                            '<span>❤️ HF Global (Aave)</span>' +
-                            '<span class="' + hfClass(globalHFtotal) + '">' + (globalHFtotal === null ? '∞ — Sem dívidas' : globalHFtotal.toFixed(3) + (globalHFtotal < 1.2 ? ' 🚨 CRÍTICO' : globalHFtotal < 1.5 ? ' ⚠️ Atenção' : ' ✅ Seguro')) + '</span>' +
+                            '<span>❤️ HF ' + colChain + ' (Aave)</span>' +
+                            '<span class="' + hfClass(hfChain) + '">' + (hfChain === null ? '∞ — Sem dívidas' : hfChain.toFixed(3) + (hfChain < 1.2 ? ' 🚨 CRÍTICO' : hfChain < 1.5 ? ' ⚠️ Atenção' : ' ✅ Seguro')) + '</span>' +
                         '</div>' +
-                        '<div class="hf-bar-bg"><div class="hf-bar-fill ' + hfBarClass(globalHFtotal) + '" style="width:' + hfBarPct(globalHFtotal) + '%;"></div></div>' +
+                        '<div class="hf-bar-bg"><div class="hf-bar-fill ' + hfBarClass(hfChain) + '" style="width:' + hfBarPct(hfChain) + '%;"></div></div>' +
                         '<div class="hf-markers"><span>0</span><span style="color:#c62828;">1.0 Liq</span><span style="color:#f57f17;">1.5</span><span>3.0+</span></div>' +
                     '</div>' +
 
@@ -617,15 +652,15 @@
                         '<div style="display:flex;justify-content:space-between;font-size:9px;color:#bbb;margin-top:2px;"><span>0%</span><span style="color:#ff6f00;">LTV Max ' + ltvMax + '%</span><span style="color:#c62828;">Liq ' + liqThresh + '%</span><span>100%</span></div>' +
                     '</div>' +
 
-                    // Borrows (lista global, exibida em cada card para contexto)
+                    // Borrows da mesma chain
                     '<div class="borrows-linked">' +
-                        '<div class="bl-title">🏦 Dívidas Globais (' + borrows.length + ') — Dívida proporcional: ' + fmt(debtProporcional) + '</div>' +
-                        (borrows.length === 0 ?
-                            '<div class="bl-empty">Nenhum borrow cadastrado</div>' :
-                            borrows.map(b => {
+                        '<div class="bl-title">🏦 Dívidas ' + colChain + ' (' + borrowsChain.length + ') — Dívida proporcional: ' + fmt(debtProporcional) + '</div>' +
+                        (borrowsChain.length === 0 ?
+                            '<div class="bl-empty">Nenhum borrow em ' + colChain + '</div>' :
+                            borrowsChain.map(b => {
                                 const bPrice = getPrice(b.cryptoId);
                                 const bUsd = parseFloat(b.amount||0) * bPrice;
-                                const bProporcional = totalColUsdFiltered > 0 ? bUsd * (colUsd / totalColUsdFiltered) : 0;
+                                const bProporcional = totalColChain > 0 ? bUsd * (colUsd / totalColChain) : 0;
                                 return '<div class="bl-item">' +
                                     '<span><span class="bl-sym">' + (b.cryptoSymbol||'?').toUpperCase() + '</span> &nbsp;<span style="font-size:10px;color:#aaa;">' + parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4}) + '</span></span>' +
                                     '<span><span class="bl-val">' + fmt(bUsd) + '</span> <span style="font-size:10px;color:#888;">(prop: ' + fmt(bProporcional) + ')</span></span>' +
