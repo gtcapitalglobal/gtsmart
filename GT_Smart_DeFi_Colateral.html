@@ -468,7 +468,10 @@
             let totalColUsd = 0, totalDebtUsd = 0;
             let weightedHF = 0, hfDenom = 0;
 
-            colaterais.forEach(col => {
+            // Resumo reflete o filtro ativo
+            const listaResumo = activeChain === 'Todos' ? colaterais : colaterais.filter(c => (c.chain || 'Outro') === activeChain);
+
+            listaResumo.forEach(col => {
                 const price = getPrice(col.cryptoId);
                 const colUsd = parseFloat(col.amount || 0) * price;
                 const debtUsd = getLinkedDebt(col);
@@ -499,7 +502,7 @@
             }
 
             document.getElementById('sumTotal').textContent = fmt(totalColUsd);
-            document.getElementById('sumPositions').textContent = colaterais.length + ' posição(ões)';
+            document.getElementById('sumPositions').textContent = listaResumo.length + ' posição(ões)' + (activeChain !== 'Todos' ? ' (' + activeChain + ')' : '');
             document.getElementById('sumLTV').textContent = globalLTV.toFixed(1) + '%';
             document.getElementById('sumLTVMax').textContent = 'Col: ' + fmt(totalColUsd);
             document.getElementById('sumDebt').textContent = fmt(totalDebtUsd);
@@ -507,7 +510,7 @@
 
             // Alertas HF
             const dangers = [], warns = [];
-            colaterais.forEach(col => {
+            listaResumo.forEach(col => {
                 const hf = calcHF(col);
                 if (hf === null) return;
                 const name = col.cryptoName || col.cryptoSymbol || '?';
