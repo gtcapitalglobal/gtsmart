@@ -416,32 +416,51 @@
             catch(e) { return false; }
         }
 
-        // ===== CÁLCULOS =====
-        function calcHF(col) {
-            // Health Factor = (Colateral USD × Limiar Liquidação%) / Dívida Borrows USD
-            const colPrice = getPrice(col.cryptoId);
-            const colUsd = parseFloat(col.amount || 0) * colPrice;
-            const liqThresh = parseFloat(col.liqThreshold || 80) / 100;
-            const debtUsd = getLinkedDebt(col);
-            if (debtUsd <= 0) return null; // sem dívida = sem risco
-            return (colUsd * liqThresh) / debtUsd;
+        // ===== CÁLCULOS GLOBAIS (igual ao Aave) =====
+
+        // Dívida total de TODOS os borrows cadastrados
+        function getTotalDebt() {
+            return borrows.reduce((sum, b) => sum + parseFloat(b.amount || 0) * getPrice(b.cryptoId), 0);
         }
 
-        function calcLTV(col) {
-            // LTV = Dívida / Colateral × 100
-            const colPrice = getPrice(col.cryptoId);
-            const colUsd = parseFloat(col.amount || 0) * colPrice;
-            const debtUsd = getLinkedDebt(col);
-            if (colUsd <= 0) return 0;
-            return (debtUsd / colUsd) * 100;
-        }
-
-        function getLinkedDebt(col) {
-            return (col.linkedBorrowIds || []).reduce((sum, bid) => {
-                const b = borrows.find(x => x.id === bid);
-                if (!b) return sum;
-                return sum + parseFloat(b.amount || 0) * getPrice(b.cryptoId);
+        // HF global = Σ(col_i × liqThresh_i%) / dívida_total
+        function calcGlobalHF(lista) {
+            const totalDebt = getTotalDebt();
+            if (totalDebt <= 0) return null;
+            const numerador = lista.reduce((sum, col) => {
+                const price = getPrice(col.cryptoId);
+                const colUsd = parseFloat(col.amount || 0) * price;
+                const liq = parseFloat(col.liqThreshold || 80) / 100;
+                return sum + colUsd * liq;
             }, 0);
+            return numerador / totalDebt;
+        }
+
+        // Contribuição de cada colateral para o numerador do HF
+        function colContribuicao(col) {
+            const price = getPrice(col.cryptoId);
+            const colUsd = parseFloat(col.amount || 0) * price;
+            const liq = parseFloat(col.liqThreshold || 80) / 100;
+            return colUsd * liq;
+        }
+
+        function hfClass(hf) {
+            if (hf === null) return 'hf-safe';
+            if (hf < 1.2) return 'hf-danger';
+            if (hf < 1.5) return 'hf-warn';
+            return 'hf-safe';
+        }
+
+        function hfBarClass(hf) {
+            if (hf === null) return 'hf-safe-bar';
+            if (hf < 1.2) return 'hf-danger-bar';
+            if (hf < 1.5) return 'hf-warn-bar';
+            return 'hf-safe-bar';
+        }
+
+        function hfBarPct(hf) {
+            if (hf === null) return 100;
+            return Math.min(100, (hf / 3) * 100);
         }
 
         function hfClass(hf) {
@@ -465,26 +484,12 @@
 
         // ===== RENDER =====
         function updateSummary() {
-            let totalColUsd = 0, totalDebtUsd = 0;
-            let weightedHF = 0, hfDenom = 0;
-
             // Resumo reflete o filtro ativo
             const listaResumo = activeChain === 'Todos' ? colaterais : colaterais.filter(c => (c.chain || 'Outro') === activeChain);
 
-            listaResumo.forEach(col => {
-                const price = getPrice(col.cryptoId);
-                const colUsd = parseFloat(col.amount || 0) * price;
-                const debtUsd = getLinkedDebt(col);
-                totalColUsd += colUsd;
-                totalDebtUsd += debtUsd;
-                const hf = calcHF(col);
-                if (hf !== null && debtUsd > 0) {
-                    weightedHF += hf * debtUsd;
-                    hfDenom += debtUsd;
-                }
-            });
-
-            const globalHF = hfDenom > 0 ? weightedHF / hfDenom : null;
+            const totalColUsd = listaResumo.reduce((s, col) => s + parseFloat(col.amount||0) * getPrice(col.cryptoId), 0);
+            const totalDebtUsd = getTotalDebt(); // TODOS os borrows, modo global
+            const globalHF = calcGlobalHF(listaResumo);
             const globalLTV = totalColUsd > 0 ? (totalDebtUsd / totalColUsd) * 100 : 0;
             const margem = totalColUsd - totalDebtUsd;
 
@@ -508,16 +513,13 @@
             document.getElementById('sumDebt').textContent = fmt(totalDebtUsd);
             document.getElementById('sumMargin').textContent = 'Margem: ' + fmt(margem);
 
-            // Alertas HF
+            // Alertas — só um alerta global
             const dangers = [], warns = [];
-            listaResumo.forEach(col => {
-                const hf = calcHF(col);
-                if (hf === null) return;
-                const name = col.cryptoName || col.cryptoSymbol || '?';
-                const txt = name + ' — HF: ' + hf.toFixed(2) + ' | LTV: ' + calcLTV(col).toFixed(1) + '%';
-                if (hf < 1.2) dangers.push(txt);
-                else if (hf < 1.5) warns.push(txt);
-            });
+            if (globalHF !== null) {
+                const txt = 'HF Global: ' + globalHF.toFixed(2) + ' | LTV: ' + globalLTV.toFixed(1) + '%';
+                if (globalHF < 1.2) dangers.push(txt);
+                else if (globalHF < 1.5) warns.push(txt);
+            }
             const dEl = document.getElementById('alertDanger');
             const wEl = document.getElementById('alertWarn');
             dEl.style.display = dangers.length ? 'block' : 'none';
@@ -558,6 +560,11 @@
                 document.getElementById('colList').innerHTML = '<div class="empty-state"><div class="icon">🔗</div><h3>Nenhum colateral em ' + activeChain + '</h3></div>';
                 return;
             }
+            // Cálculos globais para contexto dos cards
+            const globalHFtotal = calcGlobalHF(filtered);
+            const totalColUsdFiltered = filtered.reduce((s, c) => s + parseFloat(c.amount||0) * getPrice(c.cryptoId), 0);
+            const totalDebt = getTotalDebt();
+
             document.getElementById('colList').innerHTML = filtered.map(col => {
                 const info = getInfo(col.cryptoId);
                 const price = getPrice(col.cryptoId);
@@ -565,25 +572,19 @@
                 const entryUsd = parseFloat(col.amount || 0) * parseFloat(col.entryPrice || 0);
                 const pnl = colUsd - entryUsd;
                 const pnlPct = entryUsd > 0 ? (pnl / entryUsd * 100) : 0;
-                const debtUsd = getLinkedDebt(col);
-                const hf = calcHF(col);
-                const ltv = calcLTV(col);
                 const ltvMax = parseFloat(col.ltvMax || 70);
                 const liqThresh = parseFloat(col.liqThreshold || 80);
                 const chainCls = 'chain-' + (col.chain || 'default').toLowerCase();
 
-                // HF bar — escala 0 a 3
-                const hfPct = hfBarPct(hf);
-                const hfBar = hfBarClass(hf);
+                // Contribuição deste colateral para o HF global
+                const contrib = colContribuicao(col); // col × liqThresh%
+                const contribPct = totalColUsdFiltered > 0 ? (colUsd / totalColUsdFiltered * 100).toFixed(1) : '0';
+                const colPct = totalColUsdFiltered > 0 ? (colUsd / totalColUsdFiltered * 100) : 0;
 
-                // LTV bar
-                const ltvPct = Math.min(100, ltv);
-                const ltvMaxPct = Math.min(100, ltvMax);
-                const liqPct = Math.min(100, liqThresh);
-                const ltvBarColor = ltv > liqThresh ? '#c62828' : ltv > ltvMax ? '#ff6f00' : '#00695c';
-
-                // Borrows vinculados
-                const linkedBorrows = (col.linkedBorrowIds || []).map(bid => borrows.find(b => b.id === bid)).filter(Boolean);
+                // LTV proporcional (dívida alocada proporcionalmente)
+                const debtProporcional = totalColUsdFiltered > 0 ? totalDebt * (colUsd / totalColUsdFiltered) : 0;
+                const ltvProporcional = colUsd > 0 ? (debtProporcional / colUsd * 100) : 0;
+                const ltvBarColor = ltvProporcional > liqThresh ? '#c62828' : ltvProporcional > ltvMax ? '#ff6f00' : '#00695c';
 
                 return '<div class="col-card">' +
                     '<div class="col-top">' +
@@ -609,44 +610,44 @@
                         '<div class="col-stat"><div class="cs-label">Valor Atual</div><div class="cs-value">' + fmt(colUsd) + '</div></div>' +
                         '<div class="col-stat"><div class="cs-label">PnL Colateral</div><div class="cs-value" style="color:' + (pnl>=0?'#2e7d32':'#c62828') + ';">' + (pnl>=0?'+':'') + fmt(pnl) + ' (' + (pnlPct>=0?'+':'') + pnlPct.toFixed(1) + '%)</div></div>' +
                         '<div class="col-stat"><div class="cs-label">Preço Atual</div><div class="cs-value">' + fmt(price) + '</div></div>' +
-                        '<div class="col-stat"><div class="cs-label">Preço Entrada</div><div class="cs-value">' + (col.entryPrice ? fmt(col.entryPrice) : '—') + '</div></div>' +
-                        '<div class="col-stat"><div class="cs-label">Dívida Vinculada</div><div class="cs-value" style="color:#880e4f;">' + fmt(debtUsd) + '</div></div>' +
+                        '<div class="col-stat"><div class="cs-label">Peso no Colateral</div><div class="cs-value">' + contribPct + '% do total</div></div>' +
+                        '<div class="col-stat"><div class="cs-label">Contribuição HF</div><div class="cs-value" style="color:#00695c;">' + fmt(contrib) + '</div></div>' +
                     '</div>' +
 
-                    // Health Factor bar
+                    // HF Global (mesmo valor para todos — é global)
                     '<div class="hf-bar-wrap">' +
                         '<div class="hf-bar-label">' +
-                            '<span>❤️ Health Factor</span>' +
-                            '<span class="' + hfClass(hf) + '">' + (hf === null ? '∞ — Sem dívidas' : hf.toFixed(3) + (hf < 1.2 ? ' 🚨 CRÍTICO' : hf < 1.5 ? ' ⚠️ Atenção' : ' ✅ Seguro')) + '</span>' +
+                            '<span>❤️ HF Global (Aave)</span>' +
+                            '<span class="' + hfClass(globalHFtotal) + '">' + (globalHFtotal === null ? '∞ — Sem dívidas' : globalHFtotal.toFixed(3) + (globalHFtotal < 1.2 ? ' 🚨 CRÍTICO' : globalHFtotal < 1.5 ? ' ⚠️ Atenção' : ' ✅ Seguro')) + '</span>' +
                         '</div>' +
-                        '<div class="hf-bar-bg"><div class="hf-bar-fill ' + hfBar + '" style="width:' + hfPct + '%;"></div></div>' +
+                        '<div class="hf-bar-bg"><div class="hf-bar-fill ' + hfBarClass(globalHFtotal) + '" style="width:' + hfBarPct(globalHFtotal) + '%;"></div></div>' +
                         '<div class="hf-markers"><span>0</span><span style="color:#c62828;">1.0 Liq</span><span style="color:#f57f17;">1.5</span><span>3.0+</span></div>' +
                     '</div>' +
 
-                    // LTV bar
+                    // LTV proporcional
                     '<div class="ltv-bar-wrap">' +
                         '<div class="ltv-bar-row">' +
-                            '<span>📊 LTV: <strong style="color:' + ltvBarColor + ';">' + ltv.toFixed(1) + '%</strong></span>' +
+                            '<span>📊 LTV Proporcional: <strong style="color:' + ltvBarColor + ';">' + ltvProporcional.toFixed(1) + '%</strong></span>' +
                             '<span style="font-size:10px;color:#888;">Máx: ' + ltvMax + '% | Liq: ' + liqThresh + '%</span>' +
                         '</div>' +
                         '<div class="ltv-bar-bg" style="height:10px;border-radius:8px;overflow:hidden;position:relative;">' +
-                            '<div class="ltv-bar-fill" style="width:' + Math.min(ltvPct,100) + '%;background:' + ltvBarColor + ';height:100%;border-radius:8px;"></div>' +
+                            '<div class="ltv-bar-fill" style="width:' + Math.min(ltvProporcional,100) + '%;background:' + ltvBarColor + ';height:100%;border-radius:8px;"></div>' +
                         '</div>' +
                         '<div style="display:flex;justify-content:space-between;font-size:9px;color:#bbb;margin-top:2px;"><span>0%</span><span style="color:#ff6f00;">LTV Max ' + ltvMax + '%</span><span style="color:#c62828;">Liq ' + liqThresh + '%</span><span>100%</span></div>' +
                     '</div>' +
 
-                    // Borrows vinculados
+                    // Borrows (lista global, exibida em cada card para contexto)
                     '<div class="borrows-linked">' +
-                        '<div class="bl-title">🏦 Borrows Vinculados (' + linkedBorrows.length + ')</div>' +
-                        (linkedBorrows.length === 0 ?
-                            '<div class="bl-empty">Nenhum borrow vinculado</div>' :
-                            linkedBorrows.map(b => {
+                        '<div class="bl-title">🏦 Dívidas Globais (' + borrows.length + ') — Dívida proporcional: ' + fmt(debtProporcional) + '</div>' +
+                        (borrows.length === 0 ?
+                            '<div class="bl-empty">Nenhum borrow cadastrado</div>' :
+                            borrows.map(b => {
                                 const bPrice = getPrice(b.cryptoId);
                                 const bUsd = parseFloat(b.amount||0) * bPrice;
-                                const bPct = colUsd > 0 ? (bUsd / colUsd * 100).toFixed(1) : '—';
+                                const bProporcional = totalColUsdFiltered > 0 ? bUsd * (colUsd / totalColUsdFiltered) : 0;
                                 return '<div class="bl-item">' +
                                     '<span><span class="bl-sym">' + (b.cryptoSymbol||'?').toUpperCase() + '</span> &nbsp;<span style="font-size:10px;color:#aaa;">' + parseFloat(b.amount||0).toLocaleString('en-US',{maximumFractionDigits:4}) + '</span></span>' +
-                                    '<span><span class="bl-val">' + fmt(bUsd) + '</span> <span style="font-size:10px;color:#888;">(' + bPct + '% do col.)</span></span>' +
+                                    '<span><span class="bl-val">' + fmt(bUsd) + '</span> <span style="font-size:10px;color:#888;">(prop: ' + fmt(bProporcional) + ')</span></span>' +
                                 '</div>';
                             }).join('')
                         ) +
