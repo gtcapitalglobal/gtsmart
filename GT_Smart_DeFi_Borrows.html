@@ -311,6 +311,34 @@
             } catch(e) {}
         }
 
+        // rETH: preço calculado como ETH × proporção rETH/ETH (sempre atualizado)
+        async function loadSpecialTokens() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=rocket-pool-eth,ethereum&vs_currencies=usd,eth');
+                if (!res.ok) return;
+                const data = await res.json();
+
+                const ethPrice = data['ethereum']?.usd || 0;
+                const rethPrice = data['rocket-pool-eth']?.usd || 0;
+                const rethInEth = data['rocket-pool-eth']?.eth || 0; // ex: 1.16 ETH por rETH
+
+                if (rethPrice > 0) {
+                    const pct = ethPrice > 0 ? (((rethPrice / ethPrice) - 1) * 100).toFixed(2) : '0';
+                    // Adiciona/atualiza rETH em allCryptos
+                    const existing = allCryptos.findIndex(x => x.id === 'rocket-pool-eth');
+                    const rethObj = {
+                        id: 'rocket-pool-eth',
+                        symbol: 'reth',
+                        name: 'rETH (ETH ×' + rethInEth.toFixed(4) + ' | +' + pct + '% vs ETH)',
+                        image: 'https://assets.coingecko.com/coins/images/20764/small/reth.png',
+                        current_price: rethPrice
+                    };
+                    if (existing >= 0) allCryptos[existing] = rethObj;
+                    else allCryptos.push(rethObj);
+                }
+            } catch(e) { console.error('Erro rETH:', e); }
+        }
+
         async function loadPools() {
             if (!userId) return;
             try {
@@ -580,11 +608,12 @@
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
             userId = user.uid;
             await loadPrices();
+            await loadSpecialTokens(); // rETH, wstETH, cbETH, etc.
             await loadBorrows();
             await loadPools();
             renderBorrows();
             // Auto refresh prices every 60s
-            setInterval(async () => { await loadPrices(); renderBorrows(); }, 60000);
+            setInterval(async () => { await loadPrices(); await loadSpecialTokens(); renderBorrows(); }, 60000);
         });
     </script>
 </body>
