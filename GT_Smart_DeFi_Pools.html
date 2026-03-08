@@ -812,7 +812,7 @@
                             '<div class="fee-base">' + colCount + ' coletas | Média: ' + fmtUsd(feAvg) + '/mês' +
                                 (lastCol ? ' | Última: ' + fmtDate(lastCol.date) : '') +
                             '</div>' +
-                            (parseFloat(p.feesEarned || 0) > 0 && (p.feeCollections || []).length === 0 ? '<div class="fee-base" style="color:#f57f17;">⚠️ Fees legadas (campo antigo): ' + fmtUsd(p.feesEarned) + '</div>' : '') + (parseFloat(p.feesEarned || 0) > 0 && (p.feeCollections || []).length > 0 ? '<div class="fee-base" style="color:#888;">ℹ️ Campo antigo ignorado (usando coletas)</div>' : '') +
+                            (parseFloat(p.feesEarned || 0) > 0 ? '<div class="fee-base" style="color:#f57f17;">+ Já resgatado antes: ' + fmtUsd(p.feesEarned) + '</div>' : '') +
                             (colCount > 0 ?
                                 '<div class="fee-list">' + show3.map((fc, idx) =>
                                     '<div class="fee-item">' +
@@ -1165,14 +1165,12 @@
         };
 
         function getTotalFees(p) {
-            const collections = (p.feeCollections || []);
-            const colTotal = collections.reduce((s, c) => s + parseFloat(c.amount || 0), 0);
-            // Se ja tem coletas registradas no sistema novo, usa so elas (evita dupla contagem com feesEarned)
-            // Se nao tem coletas, usa o campo legado feesEarned
-            if (collections.length > 0) {
-                return colTotal;
-            }
-            return parseFloat(p.feesEarned || 0);
+            // feesEarned = valor ja resgatado antes de usar o sistema de coletas
+            // feeCollections = coletas mensais lancadas pelo botao Nova Coleta
+            // Total = soma dos dois
+            const base = parseFloat(p.feesEarned || 0);
+            const colTotal = (p.feeCollections || []).reduce((s, c) => s + parseFloat(c.amount || 0), 0);
+            return base + colTotal;
         }
 
         // ===== INIT =====
