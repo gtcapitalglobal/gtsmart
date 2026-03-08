@@ -673,11 +673,16 @@
 
         window.closeModal = function() { document.getElementById('colModal').classList.remove('show'); };
 
-        window.filterColList = function() {
+        window.filterColList = async function() {
+            // Se allCryptos vazio (API falhou no load), tenta recarregar
+            if (allCryptos.length === 0) {
+                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Carregando moedas... ⏳</div>';
+                await loadPrices();
+            }
             const q = document.getElementById('colSearch').value.toLowerCase().trim();
             let list = q ? allCryptos.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)) : allCryptos.slice(0, 20);
             if (list.length === 0 && q.length >= 2) {
-                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Buscando... ⏳</div>';
+                document.getElementById('colCoinList').innerHTML = '<div style="padding:10px;text-align:center;color:#999;font-size:12px;">Buscando na API... ⏳</div>';
                 searchCryptoByName(q);
                 return;
             }
