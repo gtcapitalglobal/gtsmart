@@ -4,13 +4,12 @@
 // =============================================
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAraCosjcg7lSKUqL6PfXyoxC0QcAQ17pE",
-  authDomain: "gestao-pessoal-f2a6d-727cc.firebaseapp.com",
-  projectId: "gestao-pessoal-f2a6d-727cc",
-  storageBucket: "gestao-pessoal-f2a6d-727cc.firebasestorage.app",
-  messagingSenderId: "461231828356",
-  appId: "1:461231828356:web:396a064a247255345e41d1",
-  measurementId: "G-S6GMCW2JV4"
+  apiKey: "AIzaSyCAt7D5HOkdXZEV9o_DZck9pjPoGKW-GSY",
+  authDomain: "gtsmart-387b4.firebaseapp.com",
+  projectId: "gtsmart-387b4",
+  storageBucket: "gtsmart-387b4.firebasestorage.app",
+  messagingSenderId: "319681648843",
+  appId: "1:319681648843:web:8d9974ffa13d070850a34e"
 };
 
 // =============================================
