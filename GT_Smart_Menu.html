@@ -154,6 +154,10 @@
             <button id="btnBackup" onclick="fazerBackup()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
                 ☁️ Backup
             </button>
+            <button onclick="document.getElementById('inputImport').click()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                📥 Importar
+            </button>
+            <input type="file" id="inputImport" accept=".json" style="display:none;" onchange="importarBackup(this)">
         </div>
 
         <!-- Dashboard -->
@@ -252,7 +256,7 @@
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script type="module">
-        import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, getLoans, getDebts, getCards } from './firebase-config.js';
+        import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, importFullBackup, getLoans, getDebts, getCards } from './firebase-config.js';
         
         // Tentar importar extras (pode não existir em versões antigas do firebase-config)
         let getEmpresas = async () => [];
@@ -489,6 +493,21 @@
                 document.getElementById('totalAlertas').innerHTML = '❌ Erro';
             }
         }
+
+
+        window.importarBackup = async function(input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (!confirm("⚠️ Isso vai RESTAURAR todos os dados do backup.\n\nTem certeza?")) { input.value = ""; return; }
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                await importFullBackup(data);
+                alert("✅ Backup importado com sucesso! A página vai recarregar.");
+                window.location.reload();
+            } catch(e) { alert("❌ Erro ao importar: " + e.message); }
+            input.value = "";
+        };
 
         window.fazerBackup = async function() {
             const btn = document.getElementById('btnBackup');
