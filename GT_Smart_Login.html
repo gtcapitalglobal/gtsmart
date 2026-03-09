@@ -129,7 +129,7 @@
                     erro.textContent = '⚠️ Email inválido!';
                     document.getElementById('email').classList.add('erro');
                 } else {
-                    erro.textContent = '❌ Erro ao entrar. Verifique sua conexão e tente novamente.';
+                    erro.textContent = '❌ Erro: ' + e.code + ' | ' + e.message;
                 }
                 erro.style.display = 'block';
             }
