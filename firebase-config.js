@@ -292,7 +292,7 @@ async function exportFullBackup() {
 
 async function importFullBackup(jsonData) {
   try {
-    const backup = JSON.parse(jsonData);
+    const backup = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
     if (!backup.data || backup.system !== 'GT Smart Equity') {
       throw new Error('Arquivo inválido');
     }
