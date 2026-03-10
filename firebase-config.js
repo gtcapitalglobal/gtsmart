@@ -222,6 +222,20 @@ async function exportFullBackup() {
       defiBorrows = snap.docs.map(d => ({ ...d.data(), id: d.id }));
     } catch(e) { console.warn('defi_borrows vazio ou erro:', e); }
 
+    // DeFi Colateral
+    let defiColateral = [];
+    try {
+      const snap = await getDocs(collection(db, 'users', userId, 'defi_colateral'));
+      defiColateral = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    } catch(e) { console.warn('defi_colateral vazio ou erro:', e); }
+
+    // DeFi Fee Records
+    let defiFeeRecords = [];
+    try {
+      const snap = await getDocs(collection(db, 'users', userId, 'defi_fee_records'));
+      defiFeeRecords = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    } catch(e) { console.warn('defi_fee_records vazio ou erro:', e); }
+
     // Cripto — favoritos e pools
     let cryptoFavorites = null, stableFavorites = null, cryptoPools = null;
     try {
@@ -241,7 +255,7 @@ async function exportFullBackup() {
       exportDate: new Date().toISOString(),
       exportDateFormatted: new Date().toLocaleString('pt-BR'),
       system: 'GT Smart Equity',
-      version: '4.0-firebase-completo',
+      version: '6.0-completo',
       data: {
         loans,
         debts,
@@ -250,6 +264,8 @@ async function exportFullBackup() {
         empresas,
         defiPools,
         defiBorrows,
+        defiColateral,
+        defiFeeRecords,
         cripto: { cryptoFavorites, stableFavorites, cryptoPools }
       },
       statistics: {
@@ -260,6 +276,8 @@ async function exportFullBackup() {
         totalEmpresas: empresas.length,
         totalDefiPools: defiPools.length,
         totalDefiBorrows: defiBorrows.length,
+        totalDefiColateral: defiColateral.length,
+        totalDefiFeeRecords: defiFeeRecords.length,
         activeLoans: loans.filter(l => l.status === 'active').length,
         archivedLoans: loans.filter(l => l.archived === true).length
       }
