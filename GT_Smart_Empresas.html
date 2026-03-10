@@ -195,7 +195,7 @@ body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#263
 <body>
 <div class="container">
     <div class="header">
-        <h2>🏢 Minhas Empresas <span style="font-size:11px;background:#7c4dff;padding:2px 8px;border-radius:10px;margin-left:8px;">v3.5b</span></h2>
+        <h2>🏢 Minhas Empresas <span style="font-size:11px;background:#7c4dff;padding:2px 8px;border-radius:10px;margin-left:8px;">v3.1</span></h2>
         <div class="header-right">
             <button class="btn-add" onclick="abrirModalEmpresa()">+ Nova Empresa</button>
             <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
@@ -554,74 +554,78 @@ const GRUPO_GT = [
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-    empresas = (await getEmpresas() || []).sort((a,b) => (a.ordem ?? 999) - (b.ordem ?? 999));
-    const idsSalvos = empresas.map(e => e.id);
-    const faltando = GRUPO_GT.filter(e => !idsSalvos.includes(e.id));
-    // Migra empresas que têm campos bancários soltos (banco, account, ach) mas não têm contas[]
-    const precisamMigrar = empresas.filter(e => (!e.contas || e.contas.length === 0) && e.banco);
-    for (const emp of precisamMigrar) {
-        emp.contas = [{
-            banco: emp.banco || '',
-            tipo: 'Conta Bancária',
-            account: emp.account || emp.accountNumber || '',
-            ach: emp.ach || emp.routingACH || '',
-            wire: emp.wire || emp.routingWire || '',
-            branch: emp.branch || emp.branchAddress || '',
-            zelle: emp.zelle || '',
-            payoneer: emp.payoneer || '',
-            obs: 'Migrado automaticamente'
-        }];
-        emp.updatedAt = new Date().toISOString();
-        try { await updateEmpresa(emp); } catch(e){}
-    }
-
-    // Atualiza empresas existentes que ainda não têm 'contas' (nova estrutura)
-    const precisamAtualizar = empresas.filter(e => {
-        const gt = GRUPO_GT.find(g => g.id === e.id);
-        return gt && (!e.contas || e.contas.length === 0) && gt.contas && gt.contas.length > 0;
-    });
-    if (faltando.length > 0 || precisamAtualizar.length > 0) {
-        const box = document.getElementById('seedBox');
-        box.style.display = 'block';
-        const total = faltando.length + precisamAtualizar.length;
-        box.innerHTML = `<p style="color:#f57f17;font-weight:700;">⏳ Atualizando ${total} empresa(s)...</p>`;
-        for (const emp of faltando) {
-            try { const r = await saveEmpresa({...emp, updatedAt:new Date().toISOString()}); if(r) empresas.push(emp); } catch(e){}
-        }
-        for (const emp of precisamAtualizar) {
-            const gt = GRUPO_GT.find(g => g.id === emp.id);
-            if (!gt) continue;
-            emp.contas = gt.contas;
-            emp.ordem = gt.ordem;
-            if (!emp.digital || Object.keys(emp.digital).length === 0) emp.digital = gt.digital;
+    try {
+        empresas = (await getEmpresas() || []).sort((a,b) => (a.ordem ?? 999) - (b.ordem ?? 999));
+        const idsSalvos = empresas.map(e => e.id);
+        const faltando = GRUPO_GT.filter(e => !idsSalvos.includes(e.id));
+        // Migra empresas que têm campos bancários soltos (banco, account, ach) mas não têm contas[]
+        const precisamMigrar = empresas.filter(e => (!e.contas || e.contas.length === 0) && e.banco);
+        for (const emp of precisamMigrar) {
+            emp.contas = [{
+                banco: emp.banco || '',
+                tipo: 'Conta Bancária',
+                account: emp.account || emp.accountNumber || '',
+                ach: emp.ach || emp.routingACH || '',
+                wire: emp.wire || emp.routingWire || '',
+                branch: emp.branch || emp.branchAddress || '',
+                zelle: emp.zelle || '',
+                payoneer: emp.payoneer || '',
+                obs: 'Migrado automaticamente'
+            }];
             emp.updatedAt = new Date().toISOString();
             try { await updateEmpresa(emp); } catch(e){}
         }
-        box.innerHTML = `<p style="color:#2e7d32;font-weight:700;">✅ Empresas atualizadas com dados bancários!</p>`;
-        setTimeout(() => box.style.display='none', 4000);
-        empresas = (await getEmpresas() || []).sort((a,b) => (a.ordem ?? 999) - (b.ordem ?? 999));
-    } else { document.getElementById('seedBox').style.display='none'; }
-    
-    // Migração: sync zelleQr/zelleTag do GRUPO_GT para Firebase se ausente
-    for (const emp of empresas) {
-        const gt = GRUPO_GT.find(g => g.id === emp.id);
-        if(!gt) continue;
-        let needsUpdate = false;
-        // Sync zelleQr from seed if Firebase doesn't have it
-        if(gt.zelleQr && !emp.zelleQr) { emp.zelleQr = gt.zelleQr; needsUpdate = true; }
-        if(gt.zelleTag && !emp.zelleTag) { emp.zelleTag = gt.zelleTag; needsUpdate = true; }
-        // Sync zelleQr into contas[0] too
-        if(gt.contas && gt.contas[0] && emp.contas && emp.contas[0]) {
-            if(gt.contas[0].zelleQr && !emp.contas[0].zelleQr) { emp.contas[0].zelleQr = gt.contas[0].zelleQr; needsUpdate = true; }
-            if(gt.contas[0].zelleTag && !emp.contas[0].zelleTag) { emp.contas[0].zelleTag = gt.contas[0].zelleTag; needsUpdate = true; }
+
+        // Atualiza empresas existentes que ainda não têm 'contas' (nova estrutura)
+        const precisamAtualizar = empresas.filter(e => {
+            const gt = GRUPO_GT.find(g => g.id === e.id);
+            return gt && (!e.contas || e.contas.length === 0) && gt.contas && gt.contas.length > 0;
+        });
+        if (faltando.length > 0 || precisamAtualizar.length > 0) {
+            const box = document.getElementById('seedBox');
+            box.style.display = 'block';
+            const total = faltando.length + precisamAtualizar.length;
+            box.innerHTML = `<p style="color:#f57f17;font-weight:700;">⏳ Atualizando ${total} empresa(s)...</p>`;
+            for (const emp of faltando) {
+                try { const r = await saveEmpresa({...emp, updatedAt:new Date().toISOString()}); if(r) empresas.push(emp); } catch(e){ console.warn('Erro ao salvar empresa seed:', e); }
+            }
+            for (const emp of precisamAtualizar) {
+                const gt = GRUPO_GT.find(g => g.id === emp.id);
+                if (!gt) continue;
+                emp.contas = gt.contas;
+                emp.ordem = gt.ordem;
+                if (!emp.digital || Object.keys(emp.digital).length === 0) emp.digital = gt.digital;
+                emp.updatedAt = new Date().toISOString();
+                try { await updateEmpresa(emp); } catch(e){ console.warn('Erro ao atualizar empresa:', e); }
+            }
+            box.innerHTML = `<p style="color:#2e7d32;font-weight:700;">✅ Empresas atualizadas!</p>`;
+            setTimeout(() => { const b = document.getElementById('seedBox'); if(b) b.style.display='none'; }, 4000);
+            try { empresas = (await getEmpresas() || []).sort((a,b) => (a.ordem ?? 999) - (b.ordem ?? 999)); } catch(e){}
+        } else { const b = document.getElementById('seedBox'); if(b) b.style.display='none'; }
+        
+        // Migração: sync zelleQr/zelleTag do GRUPO_GT para Firebase se ausente
+        for (const emp of empresas) {
+            try {
+                const gt = GRUPO_GT.find(g => g.id === emp.id);
+                if(!gt) continue;
+                let needsUpdate = false;
+                if(gt.zelleQr && !emp.zelleQr) { emp.zelleQr = gt.zelleQr; needsUpdate = true; }
+                if(gt.zelleTag && !emp.zelleTag) { emp.zelleTag = gt.zelleTag; needsUpdate = true; }
+                if(gt.contas && gt.contas[0] && emp.contas && emp.contas[0]) {
+                    if(gt.contas[0].zelleQr && !emp.contas[0].zelleQr) { emp.contas[0].zelleQr = gt.contas[0].zelleQr; needsUpdate = true; }
+                    if(gt.contas[0].zelleTag && !emp.contas[0].zelleTag) { emp.contas[0].zelleTag = gt.contas[0].zelleTag; needsUpdate = true; }
+                }
+                if(needsUpdate) {
+                    emp.updatedAt = new Date().toISOString();
+                    await updateEmpresa(emp);
+                }
+            } catch(e){ console.warn('Erro ao sincronizar QR:', e); }
         }
-        if(needsUpdate) {
-            emp.updatedAt = new Date().toISOString();
-            try { await updateEmpresa(emp); console.log('✅ QR migrado para:', emp.nome); } catch(e){ console.warn('⚠️ Erro ao migrar QR:', e); }
-        }
+    } catch(err) {
+        console.error('Erro ao carregar empresas:', err);
+    } finally {
+        renderLista();
     }
-    
-    renderLista();
 });
 
 function iv(v){ return v ? `<span class="val">${v}</span>` : `<span class="val empty">—</span>`; }
@@ -1183,7 +1187,7 @@ window.savePayCard = async () => {
             w.document.write('<html><head><title>Payment Card</title><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"><style>body{margin:0;padding:20px;background:linear-gradient(145deg,#f5f0ff,#ece5ff);display:flex;justify-content:center;font-family:Segoe UI,sans-serif;}</style></head><body>');
             w.document.write(el.outerHTML);
             w.document.write('
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.0 | 06/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.1 | 10/03/2026</p>
 </body></html>');
             w.document.close();
             alert('💡 Dica: Faça uma captura de tela (screenshot) para salvar a imagem.');
@@ -1198,7 +1202,7 @@ window.printPayCard = () => {
     w.document.write(`<html><head><title>Payment Card</title><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"><style>body{margin:0;padding:20px;display:flex;justify-content:center;font-family:'Segoe UI',sans-serif;}@media print{body{padding:40px;}}</style></head><body>`);
     w.document.write(el.outerHTML);
     w.document.write('
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.0 | 06/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.1 | 10/03/2026</p>
 </body></html>');
     w.document.close();
     setTimeout(() => w.print(), 500);
@@ -1209,6 +1213,6 @@ document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('cli
 document.getElementById('payCardModal').addEventListener('click', e => { if(e.target.id==='payCardModal') fecharPayCard(); });
 </script>
 
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.0 | 06/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.1 | 10/03/2026</p>
 </body>
 </html>
