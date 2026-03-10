@@ -478,12 +478,12 @@ body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#263
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script type="module">
+import { auth, onAuthStateChanged, getEmpresas, saveEmpresa, updateEmpresa, deleteEmpresa } from './firebase-config.js';
+
         // Dark mode
         if (localStorage.getItem('gtSmartDarkMode') === 'true') {
             document.body.classList.add('dark-mode');
         }
-
-import { auth, onAuthStateChanged, getEmpresas, saveEmpresa, updateEmpresa, deleteEmpresa } from './firebase-config.js';
 
 let empresas = [];
 
