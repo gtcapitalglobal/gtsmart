@@ -69,6 +69,32 @@
         .stable-empty { text-align: center; padding: 15px; color: #999; font-size: 13px; border: 2px dashed #e0e0e0; border-radius: 12px; }
         .btn-add-stable { background: #43a047; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; width: 100%; }
         .btn-add-stable:hover { background: #2e7d32; }
+
+        /* ===== STABLECOINS DEFI PARTICULARES ===== */
+        .defi-stable-section { margin-bottom: 15px; }
+        .defi-stable-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .defi-stable-title { font-size: 15px; font-weight: 800; color: #1565c0; }
+        .defi-stable-subtitle { font-size: 10px; color: #999; margin-top: 2px; }
+        .defi-stable-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .defi-stable-card { border: 2px solid #1976d2; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; background: #f8fbff; transition: all 0.2s; }
+        .defi-stable-card:hover { box-shadow: 0 4px 12px rgba(21,101,192,0.2); transform: translateY(-1px); }
+        .defi-stable-card.depegged { border-color: #e53935; background: #fff5f5; }
+        .defi-stable-card.loading { opacity: 0.5; }
+        .defi-stable-icon { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+        .defi-stable-icon-placeholder { width: 28px; height: 28px; border-radius: 50%; background: #e3f2fd; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #1565c0; flex-shrink: 0; }
+        .defi-stable-info { flex: 1; min-width: 0; }
+        .defi-stable-name { font-size: 12px; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .defi-stable-desc { font-size: 10px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .defi-stable-right { text-align: right; flex-shrink: 0; }
+        .defi-stable-price { font-size: 15px; font-weight: 800; color: #1565c0; }
+        .defi-stable-price.depegged { color: #e53935; }
+        .defi-stable-peg { font-size: 10px; font-weight: 700; }
+        .peg-ok { color: #2e7d32; }
+        .peg-warn { color: #f57f17; }
+        .peg-bad { color: #e53935; }
+        .defi-stable-na { font-size: 12px; color: #bbb; font-style: italic; }
+        .defi-stable-loading { text-align: center; padding: 10px; color: #999; font-size: 12px; grid-column: 1/-1; }
+        @media (max-width: 480px) { .defi-stable-grid { grid-template-columns: 1fr; } }
         .converter { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .converter-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 10px; }
         .converter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
@@ -134,6 +160,9 @@
         body.dark-mode .stable-name { color: #e0e0e0; }
         body.dark-mode .stable-empty { border-color: #333; color: #666; }
         body.dark-mode .btn-add-stable { background: #2e7d32; }
+        body.dark-mode .defi-stable-card { background: #0d1b2a; border-color: #1976d2; }
+        body.dark-mode .defi-stable-name { color: #e0e0e0; }
+        body.dark-mode .defi-stable-desc { color: #666; }
         body.dark-mode .detail-stat { background: #16213e; }
         body.dark-mode .detail-stat .ds-value, body.dark-mode .detail-name, body.dark-mode .detail-price-big { color: #e0e0e0; }
         body.dark-mode .converter { background: #16213e; }
@@ -283,6 +312,20 @@
                     </div>
                 </div>
             </div>
+            <!-- Stablecoins DeFi Particulares -->
+            <div class="defi-stable-section">
+                <div class="defi-stable-header">
+                    <div>
+                        <div class="defi-stable-title">🔷 Stablecoins DeFi</div>
+                        <div class="defi-stable-subtitle">Cotações em tempo real | Peg $1.00</div>
+                    </div>
+                    <div id="defiStableUpdate" style="font-size:10px;color:#999;"></div>
+                </div>
+                <div class="defi-stable-grid" id="defiStableGrid">
+                    <div class="defi-stable-loading">⏳ Carregando cotações...</div>
+                </div>
+            </div>
+
             <!-- Stablecoin Favoritas -->
             <div class="stable-section">
                 <div class="stable-header">
@@ -618,6 +661,83 @@
             }).join('');
         };
 
+        // ===== STABLECOINS DEFI PARTICULARES =====
+        const DEFI_STABLES = [
+            { id: 'gho',                  symbol: 'GHO',    name: 'GHO',        desc: 'Aave Protocol' },
+            { id: 'crvusd',               symbol: 'crvUSD', name: 'crvUSD',     desc: 'Curve Finance' },
+            { id: 'first-digital-usd',    symbol: 'FDUSD',  name: 'FDUSD',      desc: 'First Digital' },
+            { id: 'mstable-usd',          symbol: 'mUSD',   name: 'mStable USD',desc: 'mStable' },
+            { id: 'lista-usd',            symbol: 'lisUSD', name: 'lisUSD',     desc: 'Lista DAO / BSC' },
+            { id: 'usd1-wlfi',            symbol: 'USD1',   name: 'USD1',       desc: 'World Liberty (Trump)' },
+            { id: 'global-dollar',        symbol: 'USDG',   name: 'USDG',       desc: 'Global Dollar / Paxos' },
+            { id: 'cash-phantom',         symbol: 'CASH',   name: 'CASH',       desc: 'Phantom / Stripe' },
+        ];
+
+        let defiStablesData = {};
+
+        async function loadDefiStables() {
+            const grid = document.getElementById('defiStableGrid');
+            // Renderiza loading nos cards conhecidos
+            grid.innerHTML = DEFI_STABLES.map(s =>
+                '<div class="defi-stable-card loading" id="dsc-' + s.id + '">' +
+                '<div class="defi-stable-icon-placeholder">' + s.symbol.slice(0,2) + '</div>' +
+                '<div class="defi-stable-info"><div class="defi-stable-name">' + s.name + '</div><div class="defi-stable-desc">' + s.desc + '</div></div>' +
+                '<div class="defi-stable-right"><div class="defi-stable-price">...</div></div>' +
+                '</div>'
+            ).join('');
+
+            const ids = DEFI_STABLES.map(s => s.id).join(',');
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids + '&order=market_cap_desc&sparkline=false&price_change_percentage=24h');
+                if (!res.ok) throw new Error('API status ' + res.status);
+                const data = await res.json();
+                data.forEach(c => { defiStablesData[c.id] = c; });
+
+                // Tentar também IDs alternativos para USDG se não retornou
+                if (!defiStablesData['global-dollar']) {
+                    try {
+                        const r2 = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=global-dollar-network,usdg-paxos&sparkline=false');
+                        if (r2.ok) { const d2 = await r2.json(); d2.forEach(c => { defiStablesData[c.id] = c; }); }
+                    } catch(e) {}
+                }
+
+                renderDefiStables();
+                document.getElementById('defiStableUpdate').textContent = '🕐 ' + new Date().toLocaleTimeString('pt-BR');
+            } catch(e) {
+                grid.innerHTML = '<div class="defi-stable-loading">❌ Erro ao carregar: ' + e.message + '</div>';
+            }
+        }
+
+        function renderDefiStables() {
+            const grid = document.getElementById('defiStableGrid');
+            grid.innerHTML = DEFI_STABLES.map(s => {
+                const c = defiStablesData[s.id];
+                const price = c ? c.current_price : null;
+                const isDepegged = price !== null && (price < 0.98 || price > 1.02);
+                const pegDiff = price !== null ? ((price - 1) * 100) : null;
+                let pegClass = 'peg-ok', pegLabel = '✅ Peg OK';
+                if (price === null) { pegClass = ''; pegLabel = ''; }
+                else if (Math.abs(pegDiff) > 2) { pegClass = 'peg-bad'; pegLabel = '🔴 Despegado'; }
+                else if (Math.abs(pegDiff) > 0.5) { pegClass = 'peg-warn'; pegLabel = '⚠️ Alerta'; }
+
+                return '<div class="defi-stable-card' + (isDepegged ? ' depegged' : '') + '">' +
+                    (c && c.image
+                        ? '<img class="defi-stable-icon" src="' + c.image + '" onerror="this.style.display=\'none\'">'
+                        : '<div class="defi-stable-icon-placeholder">' + s.symbol.slice(0,2) + '</div>') +
+                    '<div class="defi-stable-info">' +
+                        '<div class="defi-stable-name">' + (c ? c.name : s.name) + '</div>' +
+                        '<div class="defi-stable-desc">' + s.desc + '</div>' +
+                    '</div>' +
+                    '<div class="defi-stable-right">' +
+                        (price !== null
+                            ? '<div class="defi-stable-price' + (isDepegged ? ' depegged' : '') + '">$' + price.toFixed(4) + '</div>' +
+                              '<div class="defi-stable-peg ' + pegClass + '">' + pegLabel + (pegDiff !== null ? ' (' + (pegDiff >= 0 ? '+' : '') + pegDiff.toFixed(2) + '%)' : '') + '</div>'
+                            : '<div class="defi-stable-na">N/D</div><div style="font-size:10px;color:#bbb;">Sem dados</div>') +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
         // ===== POOLS (Firebase) =====
         let pools = []; // array of {base: 'ethereum', quote: 'chainlink'}
 
@@ -828,6 +948,7 @@
                 renderStableFavs();
                 renderPools();
                 filterCryptos();
+                loadDefiStables();
                 document.getElementById('lastUpdate').textContent = '🕐 ' + new Date().toLocaleTimeString('pt-BR') + ' — CoinGecko | Auto-refresh 60s';
             } catch(e) {
                 document.getElementById('cryptoList').innerHTML = '<div class="error-box">❌ ' + e.message + '</div>';
