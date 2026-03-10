@@ -326,34 +326,43 @@
             else allCryptos.push(rethObj);
         }
 
-        // ===== STABLECOINS DEFI — carregadas separadamente pois ficam fora do top 100 =====
-        const DEFI_STABLE_IDS = [
-            'gho', 'crvusd', 'first-digital-usd', 'mstable-usd',
-            'lista-usd', 'usd1-wlfi', 'global-dollar', 'cash-phantom'
+        // ===== STABLECOINS DEFI — sempre visíveis no modal =====
+        // Fallback garantido: mesmo sem API, aparecem com preço $1.00
+        const DEFI_STABLES_META = [
+            { id: 'gho',               symbol: 'GHO',    name: 'GHO',         desc: 'Aave' },
+            { id: 'crvusd',            symbol: 'crvUSD', name: 'crvUSD',      desc: 'Curve Finance' },
+            { id: 'true-usd',          symbol: 'TUSD',   name: 'TrueUSD',     desc: 'TrueUSD' },
+            { id: 'first-digital-usd', symbol: 'FDUSD',  name: 'FDUSD',       desc: 'First Digital' },
+            { id: 'mstable-usd',       symbol: 'mUSD',   name: 'mStable USD', desc: 'mStable' },
+            { id: 'lista-usd',         symbol: 'lisUSD', name: 'lisUSD',      desc: 'Lista DAO' },
+            { id: 'usd1-wlfi',         symbol: 'USD1',   name: 'USD1',        desc: 'World Liberty' },
+            { id: 'global-dollar-usdg',symbol: 'USDG',   name: 'USDG',        desc: 'Global Dollar' },
+            { id: 'cash-phantom',      symbol: 'CASH',   name: 'CASH',        desc: 'Phantom/Stripe' },
         ];
 
         async function loadDefiStablecoins() {
+            // Garantir que todas existem em allCryptos (fallback $1.00)
+            DEFI_STABLES_META.forEach(s => {
+                if (!allCryptos.find(x => x.id === s.id)) {
+                    allCryptos.push({
+                        id: s.id, symbol: s.symbol.toLowerCase(),
+                        name: s.name + ' (' + s.desc + ')',
+                        image: '', current_price: 1.00
+                    });
+                }
+            });
+            // Buscar preços reais da API
             try {
-                const ids = DEFI_STABLE_IDS.join(',');
+                const ids = DEFI_STABLES_META.map(s => s.id).join(',');
                 const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids + '&sparkline=false');
                 if (!res.ok) return;
                 const coins = await res.json();
                 coins.forEach(c => {
-                    if (!allCryptos.find(x => x.id === c.id)) allCryptos.push(c);
-                    else {
-                        const idx = allCryptos.findIndex(x => x.id === c.id);
-                        if (idx >= 0) allCryptos[idx] = c;
-                    }
+                    const idx = allCryptos.findIndex(x => x.id === c.id);
+                    if (idx >= 0) allCryptos[idx] = c;
+                    else allCryptos.push(c);
                 });
-                // Tokens sem dados na API — adicionar com preço $1.00 para não ficar fora da lista
-                DEFI_STABLE_IDS.forEach(id => {
-                    if (!allCryptos.find(x => x.id === id)) {
-                        const names = { 'gho': 'GHO', 'crvusd': 'crvUSD', 'first-digital-usd': 'FDUSD', 'mstable-usd': 'mStable USD', 'lista-usd': 'lisUSD', 'usd1-wlfi': 'USD1', 'global-dollar': 'USDG', 'cash-phantom': 'CASH' };
-                        const symbols = { 'gho': 'gho', 'crvusd': 'crvusd', 'first-digital-usd': 'fdusd', 'mstable-usd': 'musd', 'lista-usd': 'lisusd', 'usd1-wlfi': 'usd1', 'global-dollar': 'usdg', 'cash-phantom': 'cash' };
-                        allCryptos.push({ id, symbol: symbols[id] || id, name: names[id] || id, image: '', current_price: 1.00 });
-                    }
-                });
-            } catch(e) { console.error('Erro stablecoins DeFi:', e); }
+            } catch(e) { console.error('Erro preços stablecoins DeFi:', e); }
         }
 
         async function loadPools() {
@@ -522,22 +531,39 @@
             }
 
             let filtered = allCryptos;
-            if (search) filtered = allCryptos.filter(c => c.name.toLowerCase().includes(search) || c.symbol.toLowerCase().includes(search));
-            else filtered = allCryptos.slice(0, 20);
+            if (search) {
+                filtered = allCryptos.filter(c => c.name.toLowerCase().includes(search) || c.symbol.toLowerCase().includes(search));
+            } else {
+                // Sem busca: top 20 + stablecoins DeFi fixas sempre visíveis
+                const defiIds = DEFI_STABLES_META.map(s => s.id);
+                const top20 = allCryptos.slice(0, 20);
+                const extras = defiIds
+                    .map(id => allCryptos.find(c => c.id === id))
+                    .filter(c => c && !top20.find(t => t.id === c.id));
+                filtered = [...top20, ...extras];
+            }
 
-            container.innerHTML = filtered.map(c => {
+            // Montar HTML com separador antes das stablecoins DeFi
+            const defiIds2 = DEFI_STABLES_META.map(s => s.id);
+            let html = '';
+            let separatorAdded = false;
+            filtered.forEach(c => {
+                if (!separatorAdded && defiIds2.includes(c.id)) {
+                    html += '<div style="padding:6px 10px;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;background:#f8f9fa;border-top:1px solid #e0e0e0;letter-spacing:1px;">💵 Stablecoins DeFi</div>';
+                    separatorAdded = true;
+                }
                 const isSel = selectedCryptoId === c.id;
-                return '<div class="modal-coin-item' + (isSel ? ' selected' : '') + '" onclick="selectBorrowCrypto(\'' + c.id + '\')">' +
-                    '<img src="' + c.image + '" onerror="this.style.display=\'none\'">' +
-                    '<div><div class="mci-name">' + c.name + '</div><div class="mci-symbol">' + c.symbol + '</div></div>' +
+                html += '<div class="modal-coin-item' + (isSel ? ' selected' : '') + '" onclick="selectBorrowCrypto(\'' + c.id + '\')">' +
+                    (c.image ? '<img src="' + c.image + '" onerror="this.style.display=\'none\'">' : '<div style="width:24px;height:24px;border-radius:50%;background:#e3f2fd;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#1565c0;flex-shrink:0;">' + (c.symbol||'').toUpperCase().slice(0,2) + '</div>') +
+                    '<div><div class="mci-name">' + c.name + '</div><div class="mci-symbol">' + (c.symbol||'').toUpperCase() + '</div></div>' +
                     '<div class="mci-price">' + fmtUsd(c.current_price) + '</div>' +
                 '</div>';
-            }).join('');
+            });
+            container.innerHTML = html || '<div style="padding:12px;text-align:center;color:#999;font-size:12px;">Nenhuma moeda encontrada</div>';
 
-            if (filtered.length === 0) {
-                container.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:12px;">Buscando na API... <span id="searchSpinner">⏳</span></div>';
-                if (search.length >= 2) searchCryptoByName(search);
-            }
+            if (filtered.length === 0 && search.length >= 2) searchCryptoByName(search);
+            return; // já renderizou acima
+
         };
 
         // Alias para compatibilidade
