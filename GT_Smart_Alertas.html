@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Central de Alertas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #7b1fa2 0%, #4a0e8f 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 900px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+
+        .header { background: linear-gradient(135deg, #7b1fa2, #4a0e8f); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .btn-refresh { background: white; color: #7b1fa2; border: none; padding: 7px 13px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .version-tag { font-size: 11px; opacity: 0.6; }
+
+        .content { padding: 15px 20px; }
+
+        /* Resumo topo */
+        .resumo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .resumo-card { border-radius: 10px; padding: 12px; text-align: center; }
+        .resumo-card .r-label { font-size: 11px; font-weight: 600; opacity: 0.75; margin-bottom: 4px; }
+        .resumo-card .r-value { font-size: 26px; font-weight: 800; }
+        .resumo-card .r-sub { font-size: 11px; margin-top: 2px; opacity: 0.8; }
+        .rc-critico { background: #fdecea; color: #c62828; }
+        .rc-atencao { background: #fff8e1; color: #e65100; }
+        .rc-info { background: #e3f2fd; color: #1565c0; }
+
+        /* Seções de alertas */
+        .secao { margin-bottom: 14px; }
+        .secao-titulo { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; border-radius: 8px 8px 0 0; display: flex; align-items: center; gap: 6px; }
+        .secao-critico { background: #c62828; color: white; }
+        .secao-atencao { background: #e65100; color: white; }
+        .secao-info { background: #1565c0; color: white; }
+        .secao-ok { background: #2e7d32; color: white; }
+
+        .alerta-lista { border: 2px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+        .alerta-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f5f5f5; font-size: 13px; gap: 10px; }
+        .alerta-item:last-child { border-bottom: none; }
+        .alerta-item.critico { background: #fff5f5; }
+        .alerta-item.atencao { background: #fffdf0; }
+        .alerta-item.info { background: #f0f7ff; }
+
+        .alerta-main { flex: 1; }
+        .alerta-titulo { font-weight: 700; color: #333; }
+        .alerta-desc { font-size: 11px; color: #888; margin-top: 2px; }
+
+        .badge-modulo { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+        .badge-critico { background: #fdecea; color: #c62828; }
+        .badge-atencao { background: #fff8e1; color: #e65100; }
+        .badge-info { background: #e3f2fd; color: #1565c0; }
+
+        .badge-link { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; text-decoration: none; white-space: nowrap; }
+        .badge-link-critico { background: #c62828; color: white; }
+        .badge-link-atencao { background: #e65100; color: white; }
+        .badge-link-info { background: #1565c0; color: white; }
+
+        .tudo-ok { background: #e8f5e9; border: 2px solid #a5d6a7; border-radius: 10px; padding: 20px; text-align: center; color: #1b5e20; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+        .tudo-ok .ok-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+
+        .loading { text-align: center; padding: 30px; color: #888; font-size: 14px; }
+        .atualizado { text-align: center; font-size: 11px; color: #aaa; margin-top: 10px; padding-bottom: 10px; }
+
+        @media (max-width: 600px) {
+            .resumo-grid { grid-template-columns: repeat(2, 1fr); }
+            .alerta-item { flex-wrap: wrap; gap: 6px; }
+            .badge-link { font-size: 10px; padding: 3px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h2>🚨 Central de Alertas</h2>
+                <div class="version-tag">Basic 1.0 | 10/03/2026</div>
+            </div>
+            <div class="header-right">
+                <button class="btn-refresh" onclick="window.location.reload()">🔄 Atualizar</button>
+                <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+            </div>
+        </div>
+        <div class="content">
+            <div id="mainContent">
+                <div class="loading">⏳ Carregando alertas de todos os módulos...</div>
+            </div>
+            <div class="atualizado" id="atualizado"></div>
+        </div>
+    </div>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#7b1fa2;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, db } from './firebase-config.js';
+        import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const fmt2 = v => '$' + parseFloat(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+        const parseLocalDate = (ds) => {
+            if (!ds) return null;
+            const p = ds.split('T')[0].split('-');
+            const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+            d.setHours(0,0,0,0);
+            return d;
+        };
+
+        function diasAte(dateStr) {
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            const dt = parseLocalDate(dateStr);
+            if (!dt) return null;
+            return Math.round((dt - hoje) / (1000*60*60*24));
+        }
+
+        let precos = {};
+
+        async function loadPrices(ids) {
+            if (!ids || ids.length === 0) return;
+            const uniq = [...new Set(ids)].filter(Boolean).join(',');
+            try {
+                const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${uniq}&vs_currencies=usd`);
+                const data = await r.json();
+                Object.assign(precos, data);
+            } catch(e) {}
+        }
+
+        function getPrice(id) {
+            if (!id) return 0;
+            return precos[id]?.usd || 0;
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            const uid = user.uid;
+
+            async function fetchCol(nome) {
+                try { const s = await getDocs(collection(db,'users',uid,nome)); return s.docs.map(d=>({...d.data(),id:d.id})); }
+                catch(e) { return []; }
+            }
+
+            // Buscar tudo em paralelo
+            const [loans, debts, cards, pools, borrows, colaterais] = await Promise.all([
+                fetchCol('loans'), fetchCol('debts'), fetchCol('cards'),
+                fetchCol('defi_pools'), fetchCol('defi_borrows'), fetchCol('defi_colateral')
+            ]);
+
+            // Coletar todos os IDs de cripto para buscar preços
+            const cryptoIds = [
+                ...borrows.map(b => b.cryptoId),
+                ...colaterais.map(c => c.cryptoId),
+                ...pools.map(p => [p.tokenAId, p.tokenBId]).flat()
+            ].filter(Boolean);
+            await loadPrices(cryptoIds);
+
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+            // ===================================================
+            // MONTAR ALERTAS
+            // ===================================================
+            const criticos = [], atencao = [], informativos = [];
+
+            // ---- EMPRÉSTIMOS ----
+            loans.forEach(loan => {
+                if (loan.archived || loan.status === 'finished') return;
+                const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
+                if (!proxima) return;
+                const dias = diasAte(proxima.date);
+                const nome = loan.clientName || 'Sem nome';
+                const val = proxima.amount ? fmt2(proxima.amount) : '';
+                if (dias !== null && dias < 0) {
+                    criticos.push({ icon: '📋', titulo: nome + ' — parcela atrasada', desc: 'Venceu ' + Math.abs(dias) + ' dia(s) atrás' + (val ? ' · ' + val : ''), link: 'GT_Smart_Emprestimos.html', modulo: 'Empréstimos', nivel: 'critico' });
+                } else if (dias !== null && dias <= 7) {
+                    atencao.push({ icon: '📋', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Próxima parcela' + (val ? ' · ' + val : ''), link: 'GT_Smart_Emprestimos.html', modulo: 'Empréstimos', nivel: 'atencao' });
+                } else if (dias !== null && dias <= 30) {
+                    informativos.push({ icon: '📋', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Parcela programada' + (val ? ' · ' + val : ''), link: 'GT_Smart_Emprestimos.html', modulo: 'Empréstimos', nivel: 'info' });
+                }
+            });
+
+            // ---- DÍVIDAS ----
+            debts.forEach(debt => {
+                if (debt.archived || debt.status === 'finished') return;
+                const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
+                if (!proxima) return;
+                const dias = diasAte(proxima.date);
+                const nome = debt.creditor || debt.nome || 'Dívida';
+                const val = proxima.amount ? fmt2(proxima.amount) : '';
+                if (dias !== null && dias < 0) {
+                    criticos.push({ icon: '💰', titulo: nome + ' — parcela atrasada', desc: 'Venceu ' + Math.abs(dias) + ' dia(s) atrás' + (val ? ' · ' + val : ''), link: 'GT_Smart_Dividas.html', modulo: 'Dívidas', nivel: 'critico' });
+                } else if (dias !== null && dias <= 7) {
+                    atencao.push({ icon: '💰', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Próxima parcela' + (val ? ' · ' + val : ''), link: 'GT_Smart_Dividas.html', modulo: 'Dívidas', nivel: 'atencao' });
+                } else if (dias !== null && dias <= 30) {
+                    informativos.push({ icon: '💰', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Parcela programada' + (val ? ' · ' + val : ''), link: 'GT_Smart_Dividas.html', modulo: 'Dívidas', nivel: 'info' });
+                }
+            });
+
+            // ---- CARTÕES ----
+            cards.forEach(c => {
+                // Uso alto
+                const pct = c.limite && c.saldoUsado ? (c.saldoUsado / c.limite * 100) : 0;
+                if (pct >= 90) {
+                    criticos.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — uso crítico (' + pct.toFixed(0) + '%)', desc: 'Limite: ' + fmt2(c.limite) + ' · Usado: ' + fmt2(c.saldoUsado), link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'critico' });
+                } else if (pct >= 70) {
+                    atencao.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — uso alto (' + pct.toFixed(0) + '%)', desc: 'Limite: ' + fmt2(c.limite) + ' · Usado: ' + fmt2(c.saldoUsado), link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'atencao' });
+                }
+
+                // Pagamento em atraso
+                if (c.dataVencimento) {
+                    const dias = diasAte(c.dataVencimento);
+                    if (dias !== null && dias < 0 && !c.pago) {
+                        criticos.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — fatura atrasada', desc: 'Venceu ' + Math.abs(dias) + ' dia(s) atrás', link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'critico' });
+                    } else if (dias !== null && dias <= 5 && !c.pago) {
+                        atencao.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — fatura vence em ' + dias + ' dia(s)', desc: 'Valor: ' + fmt2(c.saldoUsado), link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'atencao' });
+                    }
+                }
+
+                // Bônus expirando
+                if (c.bonusPrazo) {
+                    const dias = diasAte(c.bonusPrazo);
+                    if (dias !== null && dias >= 0 && dias <= 15) {
+                        atencao.push({ icon: '⏱️', titulo: 'Bônus ' + (c.nome || 'Cartão') + ' — vence em ' + dias + ' dia(s)', desc: 'Prazo do bônus de boas-vindas', link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'atencao' });
+                    } else if (dias !== null && dias < 0 && dias >= -7) {
+                        criticos.push({ icon: '⏱️', titulo: 'Bônus ' + (c.nome || 'Cartão') + ' expirou há ' + Math.abs(dias) + ' dia(s)', desc: 'Bônus de boas-vindas perdido', link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'critico' });
+                    }
+                }
+
+                // Promo 0% acabando
+                if (c.promo) {
+                    const match = (c.promo || '').match(/(\d{1,2})\/(\d{4})/);
+                    if (match) {
+                        const promoDate = new Date(parseInt(match[2]), parseInt(match[1])-1, 28);
+                        const dias = Math.round((promoDate - hoje) / (1000*60*60*24));
+                        if (dias >= 0 && dias <= 30) {
+                            informativos.push({ icon: '🎯', titulo: 'Promo ' + (c.nome || 'Cartão') + ' acaba em ' + dias + ' dias', desc: c.promo, link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'info' });
+                        }
+                    }
+                }
+            });
+
+            // ---- DEFI COLATERAL — Health Factor ----
+            const allChains = [...new Set([...colaterais.map(c=>c.chain||'Ethereum'), ...borrows.map(b=>b.chain||'Ethereum')])];
+            allChains.forEach(chain => {
+                const colsChain = colaterais.filter(c=>(c.chain||'Ethereum')===chain);
+                if (colsChain.length === 0) return;
+                const debt = borrows.filter(b=>(b.chain||'Ethereum')===chain).reduce((s,b)=>s+(parseFloat(b.amount||0)*getPrice(b.cryptoId)),0);
+                if (debt <= 0) return;
+                const num = colsChain.reduce((s,col)=>s+parseFloat(col.amount||0)*getPrice(col.cryptoId)*(parseFloat(col.liqThreshold||80)/100),0);
+                const hf = num / debt;
+                if (hf < 1.2) {
+                    criticos.push({ icon: '🛡️', titulo: 'Health Factor CRÍTICO — ' + chain, desc: 'HF: ' + hf.toFixed(2) + ' — risco de liquidação iminente!', link: 'GT_Smart_DeFi_Colateral.html', modulo: 'DeFi Colateral', nivel: 'critico' });
+                } else if (hf < 1.5) {
+                    atencao.push({ icon: '🛡️', titulo: 'Health Factor baixo — ' + chain, desc: 'HF: ' + hf.toFixed(2) + ' — zona de atenção (ideal > 1.5)', link: 'GT_Smart_DeFi_Colateral.html', modulo: 'DeFi Colateral', nivel: 'atencao' });
+                }
+            });
+
+            // ---- DEFI BORROWS — Preço de Liquidação ----
+            borrows.forEach(b => {
+                if (!b.liquidationPrice || b.liquidationPrice <= 0) return;
+                // Para borrows, liquidationPrice é o preço do COLATERAL que aciona liquidação
+                // Precisamos do token de colateral. Como não temos referência direta,
+                // usamos o próprio borrow como proxy (o preço do token borrowed perto do liq)
+                const priceAtual = getPrice(b.cryptoId);
+                if (!priceAtual) return;
+                const liqPrice = b.liquidationPrice;
+                const pctDist = ((priceAtual - liqPrice) / liqPrice * 100);
+                const nome = (b.cryptoName || b.cryptoSymbol || 'Borrow') + ' (' + (b.chain || '') + ')';
+                if (pctDist < 10) {
+                    criticos.push({ icon: '💥', titulo: nome + ' — liquidação muito próxima!', desc: 'Preço atual: ' + fmt2(priceAtual) + ' · Liq: ' + fmt2(liqPrice) + ' (' + pctDist.toFixed(1) + '% de distância)', link: 'GT_Smart_DeFi_Borrows.html', modulo: 'DeFi Borrows', nivel: 'critico' });
+                } else if (pctDist < 20) {
+                    atencao.push({ icon: '⚡', titulo: nome + ' — atenção ao preço de liquidação', desc: 'Preço atual: ' + fmt2(priceAtual) + ' · Liq: ' + fmt2(liqPrice) + ' (' + pctDist.toFixed(1) + '% de distância)', link: 'GT_Smart_DeFi_Borrows.html', modulo: 'DeFi Borrows', nivel: 'atencao' });
+                }
+            });
+
+            // ---- DEFI POOLS — Fora do Range ----
+            pools.forEach(p => {
+                if (p.status === 'closed') return;
+                if (!p.rangeMin && !p.rangeMax) return;
+                const priceA = getPrice(p.tokenAId);
+                const priceB = getPrice(p.tokenBId);
+                if (!priceB) return;
+                const ratio = priceA / priceB;
+                const estaFora = ratio < (p.rangeMin || 0) || ratio > (p.rangeMax || Infinity);
+                if (!estaFora) return;
+                const nome = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '/' + (p.tokenBSymbol||'?').toUpperCase());
+                let diasFora = '';
+                if (p.outOfRangeSince) {
+                    const d = Math.floor((new Date() - new Date(p.outOfRangeSince)) / (1000*60*60*24));
+                    diasFora = d === 0 ? ' · saiu hoje' : ' · fora há ' + d + 'd';
+                }
+                if (p.outOfRangeSince) {
+                    const d = Math.floor((new Date() - new Date(p.outOfRangeSince)) / (1000*60*60*24));
+                    if (d >= 3) {
+                        atencao.push({ icon: '🌊', titulo: nome + ' — fora do range', desc: 'Ratio: ' + ratio.toFixed(4) + ' · Range: ' + (p.rangeMin||'—') + ' – ' + (p.rangeMax||'—') + diasFora, link: 'GT_Smart_DeFi_Pools.html', modulo: 'DeFi Pools', nivel: 'atencao' });
+                        return;
+                    }
+                }
+                informativos.push({ icon: '🌊', titulo: nome + ' — saiu do range', desc: 'Ratio: ' + ratio.toFixed(4) + ' · Range: ' + (p.rangeMin||'—') + ' – ' + (p.rangeMax||'—') + diasFora, link: 'GT_Smart_DeFi_Pools.html', modulo: 'DeFi Pools', nivel: 'info' });
+            });
+
+            // ===================================================
+            // RENDERIZAR
+            // ===================================================
+            renderAlertas(criticos, atencao, informativos);
+            document.getElementById('atualizado').textContent = 'Atualizado em ' + new Date().toLocaleTimeString('pt-BR');
+        });
+
+        function alertaItemHtml(a) {
+            const cls = a.nivel === 'critico' ? 'critico' : a.nivel === 'atencao' ? 'atencao' : 'info';
+            const badgeCls = 'badge-' + cls;
+            const linkCls = 'badge-link-' + cls;
+            return '<div class="alerta-item ' + cls + '">' +
+                '<div class="alerta-main">' +
+                    '<div class="alerta-titulo">' + a.icon + ' ' + a.titulo + '</div>' +
+                    '<div class="alerta-desc">' + a.desc + '</div>' +
+                '</div>' +
+                '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">' +
+                    '<span class="badge-modulo ' + badgeCls + '">' + a.modulo + '</span>' +
+                    '<a href="' + a.link + '" class="badge-link ' + linkCls + '">Ver →</a>' +
+                '</div>' +
+            '</div>';
+        }
+
+        function secaoHtml(titulo, nivel, lista) {
+            if (lista.length === 0) return '';
+            const clsTitulo = nivel === 'critico' ? 'secao-critico' : nivel === 'atencao' ? 'secao-atencao' : nivel === 'ok' ? 'secao-ok' : 'secao-info';
+            return '<div class="secao">' +
+                '<div class="secao-titulo ' + clsTitulo + '">' + titulo + ' <span style="margin-left:auto;background:rgba(255,255,255,0.25);border-radius:10px;padding:1px 8px;font-size:12px;">' + lista.length + '</span></div>' +
+                '<div class="alerta-lista">' + lista.map(alertaItemHtml).join('') + '</div>' +
+            '</div>';
+        }
+
+        function renderAlertas(criticos, atencao, informativos) {
+            const total = criticos.length + atencao.length + informativos.length;
+
+            let html = '';
+
+            // Resumo numérico
+            html += '<div class="resumo-grid">';
+            html += '<div class="resumo-card rc-critico"><div class="r-label">🚨 Críticos</div><div class="r-value">' + criticos.length + '</div><div class="r-sub">ação imediata</div></div>';
+            html += '<div class="resumo-card rc-atencao"><div class="r-label">⚠️ Atenção</div><div class="r-value">' + atencao.length + '</div><div class="r-sub">verificar logo</div></div>';
+            html += '<div class="resumo-card rc-info"><div class="r-label">📋 Informativos</div><div class="r-value">' + informativos.length + '</div><div class="r-sub">nos próximos 30 dias</div></div>';
+            html += '</div>';
+
+            if (total === 0) {
+                html += '<div class="tudo-ok"><span class="ok-icon">✅</span>Tudo tranquilo! Nenhum alerta no momento.</div>';
+            } else {
+                html += secaoHtml('🚨 CRÍTICO — Ação imediata necessária', 'critico', criticos);
+                html += secaoHtml('⚠️ ATENÇÃO — Verificar em breve', 'atencao', atencao);
+                html += secaoHtml('📋 INFORMATIVO — Próximos 30 dias', 'info', informativos);
+            }
+
+            document.getElementById('mainContent').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
