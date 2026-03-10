@@ -326,6 +326,36 @@
             else allCryptos.push(rethObj);
         }
 
+        // ===== STABLECOINS DEFI — carregadas separadamente pois ficam fora do top 100 =====
+        const DEFI_STABLE_IDS = [
+            'gho', 'crvusd', 'first-digital-usd', 'mstable-usd',
+            'lista-usd', 'usd1-wlfi', 'global-dollar', 'cash-phantom'
+        ];
+
+        async function loadDefiStablecoins() {
+            try {
+                const ids = DEFI_STABLE_IDS.join(',');
+                const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids + '&sparkline=false');
+                if (!res.ok) return;
+                const coins = await res.json();
+                coins.forEach(c => {
+                    if (!allCryptos.find(x => x.id === c.id)) allCryptos.push(c);
+                    else {
+                        const idx = allCryptos.findIndex(x => x.id === c.id);
+                        if (idx >= 0) allCryptos[idx] = c;
+                    }
+                });
+                // Tokens sem dados na API — adicionar com preço $1.00 para não ficar fora da lista
+                DEFI_STABLE_IDS.forEach(id => {
+                    if (!allCryptos.find(x => x.id === id)) {
+                        const names = { 'gho': 'GHO', 'crvusd': 'crvUSD', 'first-digital-usd': 'FDUSD', 'mstable-usd': 'mStable USD', 'lista-usd': 'lisUSD', 'usd1-wlfi': 'USD1', 'global-dollar': 'USDG', 'cash-phantom': 'CASH' };
+                        const symbols = { 'gho': 'gho', 'crvusd': 'crvusd', 'first-digital-usd': 'fdusd', 'mstable-usd': 'musd', 'lista-usd': 'lisusd', 'usd1-wlfi': 'usd1', 'global-dollar': 'usdg', 'cash-phantom': 'cash' };
+                        allCryptos.push({ id, symbol: symbols[id] || id, name: names[id] || id, image: '', current_price: 1.00 });
+                    }
+                });
+            } catch(e) { console.error('Erro stablecoins DeFi:', e); }
+        }
+
         async function loadPools() {
             if (!userId) return;
             try {
@@ -488,6 +518,7 @@
                 container.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:12px;">Carregando moedas... ⏳</div>';
                 await loadPrices();
                 loadSpecialTokens();
+                await loadDefiStablecoins();
             }
 
             let filtered = allCryptos;
@@ -603,11 +634,12 @@
             userId = user.uid;
             await loadPrices();
             loadSpecialTokens(); // rETH calculado do ETH
+            await loadDefiStablecoins(); // GHO, crvUSD, FDUSD, mUSD, lisUSD, USD1, USDG, CASH
             await loadBorrows();
             await loadPools();
             renderBorrows();
             // Auto refresh prices every 60s
-            setInterval(async () => { await loadPrices(); loadSpecialTokens(); renderBorrows(); }, 60000);
+            setInterval(async () => { await loadPrices(); loadSpecialTokens(); await loadDefiStablecoins(); renderBorrows(); }, 60000);
         });
     </script>
 </body>
