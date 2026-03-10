@@ -277,7 +277,7 @@
             const chainsComCol=allChains.filter(ch=>colaterais.some(c=>(c.chain||'Ethereum')===ch));
             if(chainsComCol.length>0){
                 document.getElementById('hfSection').style.display='block';
-                const chainEmoji={Ethereum:'⟠',Arbitrum:'🔵',Polygon:'🟣',Optimism:'🔴',Base:'🔷',BSC:'🟡'};
+                const chainEmoji={Ethereum:'⟠',Arbitrum:'🔵',Polygon:'🟣',Optimism:'🔴',Base:'🔷',BSC:'🟡',Solana:'◎'};
                 document.getElementById('hfGrid').innerHTML=chainsComCol.map(ch=>{
                     const colsChain=colaterais.filter(c=>(c.chain||'Ethereum')===ch);
                     const hf=calcHF(colsChain,ch);

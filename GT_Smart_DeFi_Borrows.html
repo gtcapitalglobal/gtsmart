@@ -181,6 +181,8 @@
                 <select class="modal-select" id="borrowProtocol">
                     <option value="Aave">Aave</option>
                     <option value="Compound">Compound</option>
+                    <option value="Kamino">Kamino</option>
+                    <option value="Venus">Venus</option>
                     <option value="Spark">Spark</option>
                     <option value="Radiant">Radiant</option>
                     <option value="Outro">Outro</option>
@@ -203,6 +205,7 @@
                     <option value="Avalanche">Avalanche</option>
                     <option value="Base">Base</option>
                     <option value="BSC">BSC (BNB Chain)</option>
+                    <option value="Solana">Solana</option>
                     <option value="Outro">Outro</option>
                 </select>
 
@@ -374,7 +377,7 @@
             borrows.forEach(b => chains.add(b.chain || 'Outro'));
 
             const labels = { all: '🌐 Todos' };
-            const chainEmojis = { Ethereum: '⟠', Polygon: '🟣', Arbitrum: '🔵', Optimism: '🔴', Avalanche: '🔺', Base: '🔷', BSC: '🟡' };
+            const chainEmojis = { Ethereum: '⟠', Polygon: '🟣', Arbitrum: '🔵', Optimism: '🔴', Avalanche: '🔺', Base: '🔷', BSC: '🟡', Solana: '◎' };
 
             document.getElementById('filterTabs').innerHTML = [...chains].map(ch => {
                 const label = ch === 'all' ? '🌐 Todos' : (chainEmojis[ch] || '⛓️') + ' ' + ch;
