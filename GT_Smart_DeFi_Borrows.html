@@ -329,16 +329,17 @@
         // ===== STABLECOINS DEFI — sempre visíveis no modal =====
         // Fallback garantido: mesmo sem API, aparecem com preço $1.00
         const DEFI_STABLES_META = [
-            { id: 'gho',               symbol: 'GHO',    name: 'GHO',         desc: 'Aave' },
-            { id: 'crvusd',            symbol: 'crvUSD', name: 'crvUSD',      desc: 'Curve Finance' },
-            { id: 'true-usd',          symbol: 'TUSD',   name: 'TrueUSD',     desc: 'TrueUSD' },
-            { id: 'cash-usd',          symbol: 'CASH',   name: 'Cash USD',    desc: 'Cash Protocol' },
-            { id: 'first-digital-usd', symbol: 'FDUSD',  name: 'FDUSD',       desc: 'First Digital' },
-            { id: 'mstable-usd',       symbol: 'mUSD',   name: 'mStable USD', desc: 'mStable' },
-            { id: 'lista-usd',         symbol: 'lisUSD', name: 'lisUSD',      desc: 'Lista DAO' },
-            { id: 'usd1-wlfi',         symbol: 'USD1',   name: 'USD1',        desc: 'World Liberty' },
-            { id: 'global-dollar-usdg',symbol: 'USDG',   name: 'USDG',        desc: 'Global Dollar' },
-            { id: 'cash-phantom',      symbol: 'CASH',   name: 'CASH',        desc: 'Phantom/Stripe' },
+            { id: 'gho',               symbol: 'GHO',    name: 'GHO',             desc: 'Aave' },
+            { id: 'crvusd',            symbol: 'crvUSD', name: 'crvUSD',          desc: 'Curve Finance' },
+            { id: 'true-usd',          symbol: 'TUSD',   name: 'TrueUSD',         desc: 'TrueUSD' },
+            { id: 'cash-usd',          symbol: 'CASH',   name: 'Cash USD',        desc: 'Cash Protocol' },
+            { id: 'first-digital-usd', symbol: 'FDUSD',  name: 'FDUSD',           desc: 'First Digital' },
+            { id: 'mstable-usd',       symbol: 'mUSD',   name: 'mUSD (mStable)',  desc: 'mStable' },
+            { id: 'metamask-usd',      symbol: 'mUSD',   name: 'mUSD (MetaMask)', desc: 'MetaMask / Linea' },
+            { id: 'lista-usd',         symbol: 'lisUSD', name: 'lisUSD',          desc: 'Lista DAO' },
+            { id: 'usd1-wlfi',         symbol: 'USD1',   name: 'USD1',            desc: 'World Liberty' },
+            { id: 'global-dollar',     symbol: 'USDG',   name: 'USDG',            desc: 'Global Dollar / Paxos' },
+            { id: 'cash',              symbol: 'CASH',   name: 'CASH',            desc: 'Phantom / Bridge' },
         ];
 
         async function loadDefiStablecoins() {
