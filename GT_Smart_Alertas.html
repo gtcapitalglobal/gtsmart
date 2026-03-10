@@ -6,351 +6,337 @@
     <title>GT Smart - Central de Alertas</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #7b1fa2 0%, #4a0e8f 100%); min-height: 100vh; padding: 15px; }
-        .container { max-width: 900px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-
-        .header { background: linear-gradient(135deg, #7b1fa2, #4a0e8f); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #b71c1c, #c62828); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .header h2 { font-size: 18px; }
         .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
-        .btn-refresh { background: white; color: #7b1fa2; border: none; padding: 7px 13px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
-        .version-tag { font-size: 11px; opacity: 0.6; }
-
+        .btn-link { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 12px; text-decoration: none; cursor: pointer; }
         .content { padding: 15px 20px; }
 
-        /* Resumo topo */
-        .resumo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-        .resumo-card { border-radius: 10px; padding: 12px; text-align: center; }
-        .resumo-card .r-label { font-size: 11px; font-weight: 600; opacity: 0.75; margin-bottom: 4px; }
-        .resumo-card .r-value { font-size: 26px; font-weight: 800; }
-        .resumo-card .r-sub { font-size: 11px; margin-top: 2px; opacity: 0.8; }
-        .rc-critico { background: #fdecea; color: #c62828; }
-        .rc-atencao { background: #fff8e1; color: #e65100; }
-        .rc-info { background: #e3f2fd; color: #1565c0; }
+        /* Contadores */
+        .counters-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+        .counter-card { border-radius: 10px; padding: 12px; text-align: center; }
+        .counter-card .cc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; }
+        .counter-card .cc-value { font-size: 24px; font-weight: 800; }
+        .cc-critico { background: #fdecea; color: #c62828; }
+        .cc-atencao { background: #fff8e1; color: #f57f17; }
+        .cc-info { background: #e3f2fd; color: #1565c0; }
 
         /* Seções de alertas */
-        .secao { margin-bottom: 14px; }
-        .secao-titulo { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; border-radius: 8px 8px 0 0; display: flex; align-items: center; gap: 6px; }
-        .secao-critico { background: #c62828; color: white; }
-        .secao-atencao { background: #e65100; color: white; }
-        .secao-info { background: #1565c0; color: white; }
-        .secao-ok { background: #2e7d32; color: white; }
+        .alerta-secao { margin-bottom: 20px; }
+        .alerta-secao-titulo { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .titulo-critico { background: #fdecea; color: #c62828; }
+        .titulo-atencao { background: #fff8e1; color: #f57f17; }
+        .titulo-info { background: #e3f2fd; color: #1565c0; }
 
-        .alerta-lista { border: 2px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
-        .alerta-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f5f5f5; font-size: 13px; gap: 10px; }
-        .alerta-item:last-child { border-bottom: none; }
-        .alerta-item.critico { background: #fff5f5; }
-        .alerta-item.atencao { background: #fffdf0; }
-        .alerta-item.info { background: #f0f7ff; }
+        .alerta-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; }
+        .alerta-item-texto .ai-tipo { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+        .alerta-item-texto .ai-msg { font-size: 13px; font-weight: 600; color: #333; }
+        .alerta-item-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; color: white; }
 
-        .alerta-main { flex: 1; }
-        .alerta-titulo { font-weight: 700; color: #333; }
-        .alerta-desc { font-size: 11px; color: #888; margin-top: 2px; }
+        /* Loading */
+        .loading-box { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .loading-box .spin { font-size: 32px; display: block; margin-bottom: 10px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .badge-modulo { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
-        .badge-critico { background: #fdecea; color: #c62828; }
-        .badge-atencao { background: #fff8e1; color: #e65100; }
-        .badge-info { background: #e3f2fd; color: #1565c0; }
-
-        .badge-link { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; text-decoration: none; white-space: nowrap; }
-        .badge-link-critico { background: #c62828; color: white; }
-        .badge-link-atencao { background: #e65100; color: white; }
-        .badge-link-info { background: #1565c0; color: white; }
-
-        .tudo-ok { background: #e8f5e9; border: 2px solid #a5d6a7; border-radius: 10px; padding: 20px; text-align: center; color: #1b5e20; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
-        .tudo-ok .ok-icon { font-size: 36px; display: block; margin-bottom: 8px; }
-
-        .loading { text-align: center; padding: 30px; color: #888; font-size: 14px; }
-        .atualizado { text-align: center; font-size: 11px; color: #aaa; margin-top: 10px; padding-bottom: 10px; }
+        /* Última atualização */
+        .ultima-atualizacao { text-align: center; font-size: 11px; color: #aaa; padding: 8px; }
 
         @media (max-width: 600px) {
-            .resumo-grid { grid-template-columns: repeat(2, 1fr); }
-            .alerta-item { flex-wrap: wrap; gap: 6px; }
-            .badge-link { font-size: 10px; padding: 3px 8px; }
+            .counters-grid { grid-template-columns: repeat(3, 1fr); }
+            .header { flex-direction: column; text-align: center; }
+            .alerta-item { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div>
-                <h2>🚨 Central de Alertas</h2>
-                <div class="version-tag">Basic 1.0 | 10/03/2026</div>
-            </div>
+            <h2>🚨 Central de Alertas</h2>
             <div class="header-right">
-                <button class="btn-refresh" onclick="window.location.reload()">🔄 Atualizar</button>
-                <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+                <button class="btn-link" onclick="carregarTudo()">🔄 Atualizar</button>
+                <a href="GT_Smart_Menu.html" class="btn-link">← Menu</a>
             </div>
         </div>
         <div class="content">
-            <div id="mainContent">
-                <div class="loading">⏳ Carregando alertas de todos os módulos...</div>
+
+            <!-- Contadores -->
+            <div class="counters-grid">
+                <div class="counter-card cc-critico">
+                    <div class="cc-label">🚨 Críticos</div>
+                    <div class="cc-value" id="totalCriticos">—</div>
+                </div>
+                <div class="counter-card cc-atencao">
+                    <div class="cc-label">⚠️ Atenção</div>
+                    <div class="cc-value" id="totalAtencao">—</div>
+                </div>
+                <div class="counter-card cc-info">
+                    <div class="cc-label">📋 Informativos</div>
+                    <div class="cc-value" id="totalInfo">—</div>
+                </div>
             </div>
-            <div class="atualizado" id="atualizado"></div>
+
+            <!-- Loading -->
+            <div class="loading-box" id="loading">
+                <span class="spin">⏳</span>
+                Carregando dados de todos os módulos...
+            </div>
+
+            <!-- Alertas Críticos -->
+            <div class="alerta-secao" id="secaoCritico" style="display:none;">
+                <div class="alerta-secao-titulo titulo-critico">🚨 Críticos — Ação Imediata</div>
+                <div id="alertasCriticos"></div>
+            </div>
+
+            <!-- Alertas Atenção -->
+            <div class="alerta-secao" id="secaoAtencao" style="display:none;">
+                <div class="alerta-secao-titulo titulo-atencao">⚠️ Atenção</div>
+                <div id="alertasAtencao"></div>
+            </div>
+
+            <!-- Alertas Informativos -->
+            <div class="alerta-secao" id="secaoInfo" style="display:none;">
+                <div class="alerta-secao-titulo titulo-info">📋 Informativos</div>
+                <div id="alertasInformativos"></div>
+            </div>
+
+            <div class="ultima-atualizacao">Última atualização: <span id="ultimaAtualizacao">—</span></div>
         </div>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 10/03/2026</p>
     </div>
 
-    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#7b1fa2;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#b71c1c;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
     <script type="module">
-        import { auth, onAuthStateChanged, db } from './firebase-config.js';
-        import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { auth, onAuthStateChanged, getLoans, getDebts, getCards, getDefiPools, getDefiBorrows, getDefiPositions } from './firebase-config.js';
 
-        const fmt2 = v => '$' + parseFloat(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-
-        const parseLocalDate = (ds) => {
-            if (!ds) return null;
-            const p = ds.split('T')[0].split('-');
-            const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
-            d.setHours(0,0,0,0);
-            return d;
+        const NIVEIS = {
+            CRITICO:     { emoji: '🚨', label: 'Crítico',    cor: '#c62828', bg: '#fdecea' },
+            ATENCAO:     { emoji: '⚠️',  label: 'Atenção',    cor: '#f57f17', bg: '#fff8e1' },
+            INFORMATIVO: { emoji: '📋', label: 'Informativo', cor: '#1565c0', bg: '#e3f2fd' },
         };
 
-        function diasAte(dateStr) {
-            const hoje = new Date(); hoje.setHours(0,0,0,0);
-            const dt = parseLocalDate(dateStr);
-            if (!dt) return null;
-            return Math.round((dt - hoje) / (1000*60*60*24));
-        }
+        const precos = {};
 
-        let precos = {};
-
-        async function loadPrices(ids) {
+        async function carregarPrecos(ids) {
             if (!ids || ids.length === 0) return;
-            const uniq = [...new Set(ids)].filter(Boolean).join(',');
             try {
-                const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${uniq}&vs_currencies=usd`);
-                const data = await r.json();
-                Object.assign(precos, data);
-            } catch(e) {}
+                const url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids.join(',') + '&sparkline=false&per_page=100';
+                const r = await fetch(url);
+                if (!r.ok) return;
+                const coins = await r.json();
+                coins.forEach(c => { precos[c.id] = c.current_price; });
+            } catch(e) { console.error('Erro preços alertas:', e); }
         }
 
-        function getPrice(id) {
-            if (!id) return 0;
-            return precos[id]?.usd || 0;
+        function getPrice(id) { return precos[id] || 0; }
+
+        function coletarCryptoIds(pools, borrows, colateral) {
+            const ids = new Set();
+            (pools || []).forEach(p => { if (p.tokenAId) ids.add(p.tokenAId); if (p.tokenBId) ids.add(p.tokenBId); });
+            (borrows || []).forEach(b => { if (b.cryptoId) ids.add(b.cryptoId); });
+            (colateral || []).forEach(c => { if (c.cryptoId) ids.add(c.cryptoId); });
+            return [...ids].filter(Boolean);
         }
+
+        // ===== FONTES DE ALERTAS =====
+
+        function alertasEmprestimos(loans) {
+            const hoje = new Date();
+            const alertas = [];
+            for (const l of (loans || [])) {
+                if (l.status === 'finished' || l.archived) continue;
+                // Checar próxima parcela não paga
+                const proxima = (l.payments || []).find(p => !p.paid && !p.negotiated);
+                if (!proxima) continue;
+                const venc = proxima.date ? new Date(proxima.date + 'T12:00:00') : null;
+                if (!venc) continue;
+                const dias = Math.floor((venc - hoje) / 86400000);
+                const nome = l.clientName || l.nome || 'Empréstimo';
+                if (dias < 0) alertas.push({ nivel: 'CRITICO', modulo: 'Empréstimos', msg: nome + ' — parcela atrasada há ' + Math.abs(dias) + ' dias', link: 'GT_Smart_Detalhe_Emprestimo.html?id=' + l.id });
+                else if (dias <= 7) alertas.push({ nivel: 'ATENCAO', modulo: 'Empréstimos', msg: nome + ' — vence em ' + dias + ' dia(s)', link: 'GT_Smart_Detalhe_Emprestimo.html?id=' + l.id });
+                else if (dias <= 30) alertas.push({ nivel: 'INFORMATIVO', modulo: 'Empréstimos', msg: nome + ' — vence em ' + dias + ' dias', link: 'GT_Smart_Detalhe_Emprestimo.html?id=' + l.id });
+            }
+            return alertas;
+        }
+
+        function alertasDividas(debts) {
+            const hoje = new Date();
+            const alertas = [];
+            for (const d of (debts || [])) {
+                if (d.status === 'pago') continue;
+                if (!d.dataVencimento) continue;
+                const venc = new Date(d.dataVencimento + 'T12:00:00');
+                const dias = Math.floor((venc - hoje) / 86400000);
+                const nome = d.nome || d.credor || 'Dívida';
+                if (dias < 0) alertas.push({ nivel: 'CRITICO', modulo: 'Dívidas', msg: nome + ' — atrasada há ' + Math.abs(dias) + ' dias', link: 'GT_Smart_Minhas_Dividas.html' });
+                else if (dias <= 7) alertas.push({ nivel: 'ATENCAO', modulo: 'Dívidas', msg: nome + ' — vence em ' + dias + ' dia(s)', link: 'GT_Smart_Minhas_Dividas.html' });
+                else if (dias <= 30) alertas.push({ nivel: 'INFORMATIVO', modulo: 'Dívidas', msg: nome + ' — vence em ' + dias + ' dias', link: 'GT_Smart_Minhas_Dividas.html' });
+            }
+            return alertas;
+        }
+
+        function alertasCartoes(cards) {
+            const hoje = new Date();
+            const alertas = [];
+            for (const c of (cards || [])) {
+                const limite = c.limite || c.limiteTotal || 0;
+                const saldo = c.saldoUsado || c.saldoAtual || 0;
+                const uso = limite > 0 ? (saldo / limite * 100) : 0;
+                const nome = c.nome || c.name || 'Cartão';
+                if (uso >= 90) alertas.push({ nivel: 'CRITICO', modulo: 'Cartões', msg: nome + ' — uso crítico ' + uso.toFixed(0) + '%', link: 'GT_Smart_Cartoes.html' });
+                else if (uso >= 70) alertas.push({ nivel: 'ATENCAO', modulo: 'Cartões', msg: nome + ' — uso alto ' + uso.toFixed(0) + '%', link: 'GT_Smart_Cartoes.html' });
+
+                if (c.dataFatura || c.closingDate) {
+                    const dataF = c.dataFatura || c.closingDate;
+                    const dias = Math.floor((new Date(dataF + 'T12:00:00') - hoje) / 86400000);
+                    if (dias < 0) alertas.push({ nivel: 'CRITICO', modulo: 'Cartões', msg: nome + ' — fatura atrasada', link: 'GT_Smart_Cartoes.html' });
+                    else if (dias <= 5) alertas.push({ nivel: 'ATENCAO', modulo: 'Cartões', msg: nome + ' — fatura vence em ' + dias + ' dia(s)', link: 'GT_Smart_Cartoes.html' });
+                }
+                if (c.dataBonus) {
+                    const dias = Math.floor((new Date(c.dataBonus + 'T12:00:00') - hoje) / 86400000);
+                    if (dias >= 0 && dias <= 15) alertas.push({ nivel: 'ATENCAO', modulo: 'Cartões', msg: nome + ' — bônus expira em ' + dias + ' dias', link: 'GT_Smart_Cartoes.html' });
+                }
+                if (c.dataPromo) {
+                    const dias = Math.floor((new Date(c.dataPromo + 'T12:00:00') - hoje) / 86400000);
+                    if (dias >= 0 && dias <= 30) alertas.push({ nivel: 'INFORMATIVO', modulo: 'Cartões', msg: nome + ' — promoção acaba em ' + dias + ' dias', link: 'GT_Smart_Cartoes.html' });
+                }
+            }
+            return alertas;
+        }
+
+        function alertasColateral(colateral, borrows) {
+            const alertas = [];
+            const chains = [...new Set((colateral || []).map(c => c.chain).filter(Boolean))];
+            for (const chain of chains) {
+                const cols = (colateral || []).filter(c => c.chain === chain && c.status !== 'fechado');
+                const bors = (borrows || []).filter(b => b.chain === chain && b.status !== 'fechado');
+                if (!cols.length || !bors.length) continue;
+                const hfNum = cols.reduce((s, c) => {
+                    const val = (c.amount || c.quantidade || 0) * getPrice(c.cryptoId);
+                    return s + val * ((c.liqThreshold || c.liquidationThreshold || 80) / 100);
+                }, 0);
+                const hfDen = bors.reduce((s, b) => s + (b.amount || b.quantidade || 0) * getPrice(b.cryptoId), 0);
+                const hf = hfDen > 0 ? hfNum / hfDen : 999;
+                if (hf < 1.2) alertas.push({ nivel: 'CRITICO', modulo: 'DeFi Colateral', msg: 'Health Factor ' + chain + ': ' + hf.toFixed(2) + ' — RISCO DE LIQUIDAÇÃO', link: 'GT_Smart_DeFi_Colateral.html' });
+                else if (hf < 1.5) alertas.push({ nivel: 'ATENCAO', modulo: 'DeFi Colateral', msg: 'Health Factor ' + chain + ': ' + hf.toFixed(2) + ' — Atenção', link: 'GT_Smart_DeFi_Colateral.html' });
+            }
+            return alertas;
+        }
+
+        function alertasBorrows(borrows) {
+            const alertas = [];
+            for (const b of (borrows || [])) {
+                if (b.status === 'fechado') continue;
+                const liqP = parseFloat(b.liquidationPrice || 0);
+                if (!liqP || liqP <= 0) continue;
+                const current = getPrice(b.cryptoId);
+                if (!current) continue;
+                const dist = ((current - liqP) / current) * 100;
+                const sym = (b.cryptoSymbol || b.symbol || '').toUpperCase();
+                if (dist < 10) alertas.push({ nivel: 'CRITICO', modulo: 'DeFi Borrows', msg: sym + ' — apenas ' + dist.toFixed(1) + '% até liquidação ($' + liqP + ')', link: 'GT_Smart_DeFi_Borrows.html' });
+                else if (dist < 20) alertas.push({ nivel: 'ATENCAO', modulo: 'DeFi Borrows', msg: sym + ' — ' + dist.toFixed(1) + '% de distância da liquidação', link: 'GT_Smart_DeFi_Borrows.html' });
+            }
+            return alertas;
+        }
+
+        function alertasPools(pools) {
+            const hoje = new Date();
+            const alertas = [];
+            for (const p of (pools || [])) {
+                if (p.status === 'closed' || p.status === 'fechado') continue;
+                const priceA = getPrice(p.tokenAId || p.tokenA);
+                const priceB = getPrice(p.tokenBId || p.tokenB);
+                if (!priceA || !priceB) continue;
+                const ratio = priceA / priceB;
+                const inRange = ratio >= (p.rangeMin || 0) && ratio <= (p.rangeMax || Infinity);
+                const nome = p.poolName || ((p.tokenASymbol || '?').toUpperCase() + '/' + (p.tokenBSymbol || '?').toUpperCase());
+                if (!inRange && p.outOfRangeSince) {
+                    const dias = Math.floor((hoje - new Date(p.outOfRangeSince)) / 86400000);
+                    if (dias >= 3) alertas.push({ nivel: 'ATENCAO', modulo: 'DeFi Pools', msg: nome + ' — fora do range há ' + dias + ' dias', link: 'GT_Smart_DeFi_Pools.html' });
+                    else alertas.push({ nivel: 'INFORMATIVO', modulo: 'DeFi Pools', msg: nome + ' — saiu do range recentemente', link: 'GT_Smart_DeFi_Pools.html' });
+                } else if (!inRange && !p.outOfRangeSince) {
+                    alertas.push({ nivel: 'INFORMATIVO', modulo: 'DeFi Pools', msg: nome + ' — fora do range', link: 'GT_Smart_DeFi_Pools.html' });
+                }
+            }
+            return alertas;
+        }
+
+        // ===== RENDERIZAÇÃO =====
+
+        function renderAlertas(todos) {
+            const criticos     = todos.filter(a => a.nivel === 'CRITICO');
+            const atencao      = todos.filter(a => a.nivel === 'ATENCAO');
+            const informativos = todos.filter(a => a.nivel === 'INFORMATIVO');
+
+            document.getElementById('totalCriticos').textContent = criticos.length;
+            document.getElementById('totalAtencao').textContent  = atencao.length;
+            document.getElementById('totalInfo').textContent     = informativos.length;
+
+            function renderGrupo(lista, nivel) {
+                const n = NIVEIS[nivel];
+                if (!lista.length) return '<div style="color:#aaa;font-size:13px;padding:10px 0;">Nenhum ' + n.label.toLowerCase() + ' 👍</div>';
+                return lista.map(a => {
+                    return '<div class="alerta-item" style="background:' + n.bg + ';border-left:4px solid ' + n.cor + ';">' +
+                        '<div class="alerta-item-texto">' +
+                            '<div class="ai-tipo" style="color:' + n.cor + ';">' + n.emoji + ' ' + n.label + ' · ' + a.modulo + '</div>' +
+                            '<div class="ai-msg">' + a.msg + '</div>' +
+                        '</div>' +
+                        '<a href="' + a.link + '" class="alerta-item-btn" style="background:' + n.cor + ';">Ver →</a>' +
+                    '</div>';
+                }).join('');
+            }
+
+            document.getElementById('alertasCriticos').innerHTML     = renderGrupo(criticos, 'CRITICO');
+            document.getElementById('alertasAtencao').innerHTML      = renderGrupo(atencao, 'ATENCAO');
+            document.getElementById('alertasInformativos').innerHTML = renderGrupo(informativos, 'INFORMATIVO');
+
+            document.getElementById('secaoCritico').style.display = 'block';
+            document.getElementById('secaoAtencao').style.display = 'block';
+            document.getElementById('secaoInfo').style.display    = 'block';
+            document.getElementById('ultimaAtualizacao').textContent = new Date().toLocaleString('pt-BR');
+        }
+
+        // ===== INICIALIZAÇÃO =====
+
+        window.carregarTudo = async function() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('secaoCritico').style.display = 'none';
+            document.getElementById('secaoAtencao').style.display = 'none';
+            document.getElementById('secaoInfo').style.display    = 'none';
+            document.getElementById('totalCriticos').textContent = '—';
+            document.getElementById('totalAtencao').textContent  = '—';
+            document.getElementById('totalInfo').textContent     = '—';
+            try {
+                const [loans, debts, cards, pools, borrows, colateral] = await Promise.all([
+                    getLoans(), getDebts(), getCards(),
+                    getDefiPools(), getDefiBorrows(), getDefiPositions()
+                ]);
+                const cryptoIds = coletarCryptoIds(pools, borrows, colateral);
+                if (cryptoIds.length) await carregarPrecos(cryptoIds);
+
+                const alertas = [
+                    ...alertasEmprestimos(loans),
+                    ...alertasDividas(debts),
+                    ...alertasCartoes(cards),
+                    ...alertasColateral(colateral, borrows),
+                    ...alertasBorrows(borrows),
+                    ...alertasPools(pools),
+                ];
+                renderAlertas(alertas);
+            } catch(err) {
+                console.error('Erro ao carregar alertas:', err);
+                document.getElementById('loading').innerHTML = '<div style="color:#c62828;padding:20px;text-align:center;">❌ Erro ao carregar. Tente atualizar.</div>';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-            const uid = user.uid;
-
-            async function fetchCol(nome) {
-                try { const s = await getDocs(collection(db,'users',uid,nome)); return s.docs.map(d=>({...d.data(),id:d.id})); }
-                catch(e) { return []; }
-            }
-
-            // Buscar tudo em paralelo
-            const [loans, debts, cards, pools, borrows, colaterais] = await Promise.all([
-                fetchCol('loans'), fetchCol('debts'), fetchCol('cards'),
-                fetchCol('defi_pools'), fetchCol('defi_borrows'), fetchCol('defi_colateral')
-            ]);
-
-            // Coletar todos os IDs de cripto para buscar preços
-            const cryptoIds = [
-                ...borrows.map(b => b.cryptoId),
-                ...colaterais.map(c => c.cryptoId),
-                ...pools.map(p => [p.tokenAId, p.tokenBId]).flat()
-            ].filter(Boolean);
-            await loadPrices(cryptoIds);
-
-            const hoje = new Date(); hoje.setHours(0,0,0,0);
-
-            // ===================================================
-            // MONTAR ALERTAS
-            // ===================================================
-            const criticos = [], atencao = [], informativos = [];
-
-            // ---- EMPRÉSTIMOS ----
-            loans.forEach(loan => {
-                if (loan.archived || loan.status === 'finished') return;
-                const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
-                if (!proxima) return;
-                const dias = diasAte(proxima.date);
-                const nome = loan.clientName || 'Sem nome';
-                const val = proxima.amount ? fmt2(proxima.amount) : '';
-                if (dias !== null && dias < 0) {
-                    criticos.push({ icon: '📋', titulo: nome + ' — parcela atrasada', desc: 'Venceu ' + Math.abs(dias) + ' dia(s) atrás' + (val ? ' · ' + val : ''), link: 'GT_Smart_Emprestimos.html', modulo: 'Empréstimos', nivel: 'critico' });
-                } else if (dias !== null && dias <= 7) {
-                    atencao.push({ icon: '📋', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Próxima parcela' + (val ? ' · ' + val : ''), link: 'GT_Smart_Emprestimos.html', modulo: 'Empréstimos', nivel: 'atencao' });
-                } else if (dias !== null && dias <= 30) {
-                    informativos.push({ icon: '📋', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Parcela programada' + (val ? ' · ' + val : ''), link: 'GT_Smart_Emprestimos.html', modulo: 'Empréstimos', nivel: 'info' });
-                }
-            });
-
-            // ---- DÍVIDAS ----
-            debts.forEach(debt => {
-                if (debt.archived || debt.status === 'finished') return;
-                const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
-                if (!proxima) return;
-                const dias = diasAte(proxima.date);
-                const nome = debt.creditor || debt.nome || 'Dívida';
-                const val = proxima.amount ? fmt2(proxima.amount) : '';
-                if (dias !== null && dias < 0) {
-                    criticos.push({ icon: '💰', titulo: nome + ' — parcela atrasada', desc: 'Venceu ' + Math.abs(dias) + ' dia(s) atrás' + (val ? ' · ' + val : ''), link: 'GT_Smart_Dividas.html', modulo: 'Dívidas', nivel: 'critico' });
-                } else if (dias !== null && dias <= 7) {
-                    atencao.push({ icon: '💰', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Próxima parcela' + (val ? ' · ' + val : ''), link: 'GT_Smart_Dividas.html', modulo: 'Dívidas', nivel: 'atencao' });
-                } else if (dias !== null && dias <= 30) {
-                    informativos.push({ icon: '💰', titulo: nome + ' — vence em ' + dias + ' dia(s)', desc: 'Parcela programada' + (val ? ' · ' + val : ''), link: 'GT_Smart_Dividas.html', modulo: 'Dívidas', nivel: 'info' });
-                }
-            });
-
-            // ---- CARTÕES ----
-            cards.forEach(c => {
-                // Uso alto
-                const pct = c.limite && c.saldoUsado ? (c.saldoUsado / c.limite * 100) : 0;
-                if (pct >= 90) {
-                    criticos.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — uso crítico (' + pct.toFixed(0) + '%)', desc: 'Limite: ' + fmt2(c.limite) + ' · Usado: ' + fmt2(c.saldoUsado), link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'critico' });
-                } else if (pct >= 70) {
-                    atencao.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — uso alto (' + pct.toFixed(0) + '%)', desc: 'Limite: ' + fmt2(c.limite) + ' · Usado: ' + fmt2(c.saldoUsado), link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'atencao' });
-                }
-
-                // Pagamento em atraso
-                if (c.dataVencimento) {
-                    const dias = diasAte(c.dataVencimento);
-                    if (dias !== null && dias < 0 && !c.pago) {
-                        criticos.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — fatura atrasada', desc: 'Venceu ' + Math.abs(dias) + ' dia(s) atrás', link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'critico' });
-                    } else if (dias !== null && dias <= 5 && !c.pago) {
-                        atencao.push({ icon: '💳', titulo: (c.nome || 'Cartão') + ' — fatura vence em ' + dias + ' dia(s)', desc: 'Valor: ' + fmt2(c.saldoUsado), link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'atencao' });
-                    }
-                }
-
-                // Bônus expirando
-                if (c.bonusPrazo) {
-                    const dias = diasAte(c.bonusPrazo);
-                    if (dias !== null && dias >= 0 && dias <= 15) {
-                        atencao.push({ icon: '⏱️', titulo: 'Bônus ' + (c.nome || 'Cartão') + ' — vence em ' + dias + ' dia(s)', desc: 'Prazo do bônus de boas-vindas', link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'atencao' });
-                    } else if (dias !== null && dias < 0 && dias >= -7) {
-                        criticos.push({ icon: '⏱️', titulo: 'Bônus ' + (c.nome || 'Cartão') + ' expirou há ' + Math.abs(dias) + ' dia(s)', desc: 'Bônus de boas-vindas perdido', link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'critico' });
-                    }
-                }
-
-                // Promo 0% acabando
-                if (c.promo) {
-                    const match = (c.promo || '').match(/(\d{1,2})\/(\d{4})/);
-                    if (match) {
-                        const promoDate = new Date(parseInt(match[2]), parseInt(match[1])-1, 28);
-                        const dias = Math.round((promoDate - hoje) / (1000*60*60*24));
-                        if (dias >= 0 && dias <= 30) {
-                            informativos.push({ icon: '🎯', titulo: 'Promo ' + (c.nome || 'Cartão') + ' acaba em ' + dias + ' dias', desc: c.promo, link: 'GT_Smart_Cartoes.html', modulo: 'Cartões', nivel: 'info' });
-                        }
-                    }
-                }
-            });
-
-            // ---- DEFI COLATERAL — Health Factor ----
-            const allChains = [...new Set([...colaterais.map(c=>c.chain||'Ethereum'), ...borrows.map(b=>b.chain||'Ethereum')])];
-            allChains.forEach(chain => {
-                const colsChain = colaterais.filter(c=>(c.chain||'Ethereum')===chain);
-                if (colsChain.length === 0) return;
-                const debt = borrows.filter(b=>(b.chain||'Ethereum')===chain).reduce((s,b)=>s+(parseFloat(b.amount||0)*getPrice(b.cryptoId)),0);
-                if (debt <= 0) return;
-                const num = colsChain.reduce((s,col)=>s+parseFloat(col.amount||0)*getPrice(col.cryptoId)*(parseFloat(col.liqThreshold||80)/100),0);
-                const hf = num / debt;
-                if (hf < 1.2) {
-                    criticos.push({ icon: '🛡️', titulo: 'Health Factor CRÍTICO — ' + chain, desc: 'HF: ' + hf.toFixed(2) + ' — risco de liquidação iminente!', link: 'GT_Smart_DeFi_Colateral.html', modulo: 'DeFi Colateral', nivel: 'critico' });
-                } else if (hf < 1.5) {
-                    atencao.push({ icon: '🛡️', titulo: 'Health Factor baixo — ' + chain, desc: 'HF: ' + hf.toFixed(2) + ' — zona de atenção (ideal > 1.5)', link: 'GT_Smart_DeFi_Colateral.html', modulo: 'DeFi Colateral', nivel: 'atencao' });
-                }
-            });
-
-            // ---- DEFI BORROWS — Preço de Liquidação ----
-            borrows.forEach(b => {
-                if (!b.liquidationPrice || b.liquidationPrice <= 0) return;
-                // Para borrows, liquidationPrice é o preço do COLATERAL que aciona liquidação
-                // Precisamos do token de colateral. Como não temos referência direta,
-                // usamos o próprio borrow como proxy (o preço do token borrowed perto do liq)
-                const priceAtual = getPrice(b.cryptoId);
-                if (!priceAtual) return;
-                const liqPrice = b.liquidationPrice;
-                const pctDist = ((priceAtual - liqPrice) / liqPrice * 100);
-                const nome = (b.cryptoName || b.cryptoSymbol || 'Borrow') + ' (' + (b.chain || '') + ')';
-                if (pctDist < 10) {
-                    criticos.push({ icon: '💥', titulo: nome + ' — liquidação muito próxima!', desc: 'Preço atual: ' + fmt2(priceAtual) + ' · Liq: ' + fmt2(liqPrice) + ' (' + pctDist.toFixed(1) + '% de distância)', link: 'GT_Smart_DeFi_Borrows.html', modulo: 'DeFi Borrows', nivel: 'critico' });
-                } else if (pctDist < 20) {
-                    atencao.push({ icon: '⚡', titulo: nome + ' — atenção ao preço de liquidação', desc: 'Preço atual: ' + fmt2(priceAtual) + ' · Liq: ' + fmt2(liqPrice) + ' (' + pctDist.toFixed(1) + '% de distância)', link: 'GT_Smart_DeFi_Borrows.html', modulo: 'DeFi Borrows', nivel: 'atencao' });
-                }
-            });
-
-            // ---- DEFI POOLS — Fora do Range ----
-            pools.forEach(p => {
-                if (p.status === 'closed') return;
-                if (!p.rangeMin && !p.rangeMax) return;
-                const priceA = getPrice(p.tokenAId);
-                const priceB = getPrice(p.tokenBId);
-                if (!priceB) return;
-                const ratio = priceA / priceB;
-                const estaFora = ratio < (p.rangeMin || 0) || ratio > (p.rangeMax || Infinity);
-                if (!estaFora) return;
-                const nome = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '/' + (p.tokenBSymbol||'?').toUpperCase());
-                let diasFora = '';
-                if (p.outOfRangeSince) {
-                    const d = Math.floor((new Date() - new Date(p.outOfRangeSince)) / (1000*60*60*24));
-                    diasFora = d === 0 ? ' · saiu hoje' : ' · fora há ' + d + 'd';
-                }
-                if (p.outOfRangeSince) {
-                    const d = Math.floor((new Date() - new Date(p.outOfRangeSince)) / (1000*60*60*24));
-                    if (d >= 3) {
-                        atencao.push({ icon: '🌊', titulo: nome + ' — fora do range', desc: 'Ratio: ' + ratio.toFixed(4) + ' · Range: ' + (p.rangeMin||'—') + ' – ' + (p.rangeMax||'—') + diasFora, link: 'GT_Smart_DeFi_Pools.html', modulo: 'DeFi Pools', nivel: 'atencao' });
-                        return;
-                    }
-                }
-                informativos.push({ icon: '🌊', titulo: nome + ' — saiu do range', desc: 'Ratio: ' + ratio.toFixed(4) + ' · Range: ' + (p.rangeMin||'—') + ' – ' + (p.rangeMax||'—') + diasFora, link: 'GT_Smart_DeFi_Pools.html', modulo: 'DeFi Pools', nivel: 'info' });
-            });
-
-            // ===================================================
-            // RENDERIZAR
-            // ===================================================
-            renderAlertas(criticos, atencao, informativos);
-            document.getElementById('atualizado').textContent = 'Atualizado em ' + new Date().toLocaleTimeString('pt-BR');
+            await carregarTudo();
         });
-
-        function alertaItemHtml(a) {
-            const cls = a.nivel === 'critico' ? 'critico' : a.nivel === 'atencao' ? 'atencao' : 'info';
-            const badgeCls = 'badge-' + cls;
-            const linkCls = 'badge-link-' + cls;
-            return '<div class="alerta-item ' + cls + '">' +
-                '<div class="alerta-main">' +
-                    '<div class="alerta-titulo">' + a.icon + ' ' + a.titulo + '</div>' +
-                    '<div class="alerta-desc">' + a.desc + '</div>' +
-                '</div>' +
-                '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">' +
-                    '<span class="badge-modulo ' + badgeCls + '">' + a.modulo + '</span>' +
-                    '<a href="' + a.link + '" class="badge-link ' + linkCls + '">Ver →</a>' +
-                '</div>' +
-            '</div>';
-        }
-
-        function secaoHtml(titulo, nivel, lista) {
-            if (lista.length === 0) return '';
-            const clsTitulo = nivel === 'critico' ? 'secao-critico' : nivel === 'atencao' ? 'secao-atencao' : nivel === 'ok' ? 'secao-ok' : 'secao-info';
-            return '<div class="secao">' +
-                '<div class="secao-titulo ' + clsTitulo + '">' + titulo + ' <span style="margin-left:auto;background:rgba(255,255,255,0.25);border-radius:10px;padding:1px 8px;font-size:12px;">' + lista.length + '</span></div>' +
-                '<div class="alerta-lista">' + lista.map(alertaItemHtml).join('') + '</div>' +
-            '</div>';
-        }
-
-        function renderAlertas(criticos, atencao, informativos) {
-            const total = criticos.length + atencao.length + informativos.length;
-
-            let html = '';
-
-            // Resumo numérico
-            html += '<div class="resumo-grid">';
-            html += '<div class="resumo-card rc-critico"><div class="r-label">🚨 Críticos</div><div class="r-value">' + criticos.length + '</div><div class="r-sub">ação imediata</div></div>';
-            html += '<div class="resumo-card rc-atencao"><div class="r-label">⚠️ Atenção</div><div class="r-value">' + atencao.length + '</div><div class="r-sub">verificar logo</div></div>';
-            html += '<div class="resumo-card rc-info"><div class="r-label">📋 Informativos</div><div class="r-value">' + informativos.length + '</div><div class="r-sub">nos próximos 30 dias</div></div>';
-            html += '</div>';
-
-            if (total === 0) {
-                html += '<div class="tudo-ok"><span class="ok-icon">✅</span>Tudo tranquilo! Nenhum alerta no momento.</div>';
-            } else {
-                html += secaoHtml('🚨 CRÍTICO — Ação imediata necessária', 'critico', criticos);
-                html += secaoHtml('⚠️ ATENÇÃO — Verificar em breve', 'atencao', atencao);
-                html += secaoHtml('📋 INFORMATIVO — Próximos 30 dias', 'info', informativos);
-            }
-
-            document.getElementById('mainContent').innerHTML = html;
-        }
     </script>
 </body>
 </html>

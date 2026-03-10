@@ -545,7 +545,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.0 | 08/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.1 | 10/03/2026</p>
     </div>
 
 
@@ -831,17 +831,27 @@
             renderPoolList();
         };
 
-        function checkRangeAlerts() {
+        async function checkRangeAlerts() {
             const alertDiv = document.getElementById('rangeAlert');
             const alertList = document.getElementById('rangeAlertList');
             const outOfRange = [];
+            const savePromises = [];
             pools.forEach(p => {
                 if (p.status === 'closed') return;
                 const priceA = getPrice(p.tokenAId);
                 const priceB = getPrice(p.tokenBId);
                 if (!priceB || (!p.rangeMin && !p.rangeMax)) return;
                 const ratio = priceA / priceB;
-                if (ratio < (p.rangeMin || 0) || ratio > (p.rangeMax || Infinity)) {
+                const inRange = ratio >= (p.rangeMin || 0) && ratio <= (p.rangeMax || Infinity);
+                // Auto-save outOfRangeSince ao Firebase
+                if (!inRange && !p.outOfRangeSince) {
+                    p.outOfRangeSince = new Date().toISOString();
+                    savePromises.push(savePoolToFirebase({ ...p }));
+                } else if (inRange && p.outOfRangeSince) {
+                    p.outOfRangeSince = '';
+                    savePromises.push(savePoolToFirebase({ ...p }));
+                }
+                if (!inRange) {
                     const name = p.poolName || ((p.tokenASymbol || '?').toUpperCase() + '/' + (p.tokenBSymbol || '?').toUpperCase());
                     // Calcular dias fora do range (usa campo outOfRangeSince se disponível)
                     let diasFora = '';
@@ -860,6 +870,7 @@
                     );
                 }
             });
+            if (savePromises.length > 0) await Promise.all(savePromises);
             if (outOfRange.length > 0) {
                 alertDiv.style.display = 'block';
                 alertList.innerHTML = outOfRange.join('');
@@ -880,10 +891,10 @@
             }
         };
 
-        function renderPoolList() {
+        async function renderPoolList() {
             updateSummary();
             renderFilters();
-            checkRangeAlerts();
+            await checkRangeAlerts();
 
             let filtered = [...pools];
             if (!showArchived) filtered = filtered.filter(p => p.status !== 'closed');

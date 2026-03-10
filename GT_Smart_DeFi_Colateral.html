@@ -245,6 +245,7 @@
                         <input type="number" class="modal-input" id="colLiqThreshold" placeholder="Ex: 80" step="any" oninput="updatePreview()">
                     </div>
                 </div>
+                <div id="aaveAutoHint" style="display:none;background:#ede7f6;color:#4a148c;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;margin-top:8px;"></div>
                 <div class="modal-preview" id="colPreview"></div>
                 <div class="modal-btns">
                     <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -253,7 +254,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.4;padding:10px;">Basic 2.0 | 08/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.4;padding:10px;">Basic 2.1 | 10/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#00695c;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -530,6 +531,8 @@
             document.getElementById('colChain').value='Ethereum';
             document.getElementById('colLtvMax').value='';
             document.getElementById('colLiqThreshold').value='';
+            const hint=document.getElementById('aaveAutoHint');
+            if(hint) { hint.textContent=''; hint.style.display='none'; }
             document.getElementById('colSaveBtn').textContent='Salvar';
             document.getElementById('colPreview').style.display='none';
             filterColList();
@@ -573,11 +576,13 @@
             if(info){
                 document.getElementById('colSelected').textContent='✅ '+info.name+' ('+info.symbol.toUpperCase()+')';
                 if(!document.getElementById('colEntryPrice').value) document.getElementById('colEntryPrice').value=info.current_price;
-                const aaveDefaults={'bitcoin':{ltv:70,liq:80},'wrapped-bitcoin':{ltv:70,liq:80},'tbtc':{ltv:73,liq:78},'coinbase-wrapped-btc':{ltv:70,liq:80},'ethereum':{ltv:80,liq:82.5},'rocket-pool-eth':{ltv:68,liq:75},'chainlink':{ltv:70,liq:77.5},'usd-coin':{ltv:77,liq:80},'tether':{ltv:75,liq:78},'dai':{ltv:77,liq:80},'polygon-ecosystem-token':{ltv:65,liq:70}};
+                const aaveDefaults={'bitcoin':{ltv:70,liq:80},'wrapped-bitcoin':{ltv:70,liq:80},'tbtc':{ltv:73,liq:78},'coinbase-wrapped-btc':{ltv:70,liq:80},'ethereum':{ltv:80,liq:82.5},'rocket-pool-eth':{ltv:68,liq:75},'staked-ether':{ltv:78.5,liq:81},'wrapped-steth':{ltv:78.5,liq:81},'usd-coin':{ltv:77,liq:80},'tether':{ltv:75,liq:78},'dai':{ltv:77,liq:80},'ethena-usde':{ltv:72,liq:75},'frax':{ltv:70,liq:75},'chainlink':{ltv:70,liq:77.5},'aave':{ltv:60,liq:70},'uniswap':{ltv:65,liq:77},'compound-governance-token':{ltv:57,liq:65},'matic-network':{ltv:58,liq:73},'polygon-ecosystem-token':{ltv:58,liq:73},'avalanche-2':{ltv:65,liq:75},'arbitrum':{ltv:58,liq:73},'optimism':{ltv:58,liq:73}};
                 const def=aaveDefaults[id];
                 if(def){
                     if(!document.getElementById('colLtvMax').value) document.getElementById('colLtvMax').value=def.ltv;
                     if(!document.getElementById('colLiqThreshold').value) document.getElementById('colLiqThreshold').value=def.liq;
+                    const hint=document.getElementById('aaveAutoHint');
+                    if(hint){ hint.textContent='🤖 Valores Aave V3: LTV '+def.ltv+'% · Limiar '+def.liq+'% (ajuste se necessário)'; hint.style.display='block'; }
                 }
                 filterColList(); updatePreview();
             }
