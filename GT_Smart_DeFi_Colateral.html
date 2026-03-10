@@ -311,13 +311,25 @@
             } catch(e) { document.getElementById('colCoinList').innerHTML='<div style="padding:10px;text-align:center;color:#e53935;font-size:12px;">⚠️ Erro ao buscar. Tente novamente.</div>'; }
         }
 
-        function loadSpecialTokens() {
+        async function loadSpecialTokens() {
             const eth = allCryptos.find(x=>x.id==='ethereum');
             if (!eth) return;
             const RETH_RATIO = 1.1615;
             const rethObj = { id:'rocket-pool-eth', symbol:'reth', name:'rETH — ETH ×'+RETH_RATIO+' (+'+(((RETH_RATIO-1)*100).toFixed(2))+'%)', image:'https://assets.coingecko.com/coins/images/20764/small/reth.png', current_price: eth.current_price * RETH_RATIO };
             const idx = allCryptos.findIndex(x=>x.id==='rocket-pool-eth');
             if (idx>=0) allCryptos[idx]=rethObj; else allCryptos.push(rethObj);
+            // BTC variants — garantir que tBTC, cbBTC e wBTC sempre apareçam no modal
+            try {
+                const btcIds = ['tbtc','coinbase-wrapped-btc','wrapped-bitcoin'];
+                const missing = btcIds.filter(id => !allCryptos.find(x=>x.id===id));
+                if (missing.length > 0) {
+                    const r2 = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+missing.join(',')+'&sparkline=false');
+                    if (r2.ok) {
+                        const btcs = await r2.json();
+                        btcs.forEach(c => { if (!allCryptos.find(x=>x.id===c.id)) allCryptos.push(c); });
+                    }
+                }
+            } catch(e) {}
         }
 
         function getPrice(id) { const c=allCryptos.find(x=>x.id===id); return c?c.current_price:0; }
@@ -561,7 +573,7 @@
             if(info){
                 document.getElementById('colSelected').textContent='✅ '+info.name+' ('+info.symbol.toUpperCase()+')';
                 if(!document.getElementById('colEntryPrice').value) document.getElementById('colEntryPrice').value=info.current_price;
-                const aaveDefaults={'bitcoin':{ltv:70,liq:80},'wrapped-bitcoin':{ltv:70,liq:80},'tbtc':{ltv:73,liq:78},'ethereum':{ltv:80,liq:82.5},'rocket-pool-eth':{ltv:68,liq:75},'chainlink':{ltv:70,liq:77.5},'usd-coin':{ltv:77,liq:80},'tether':{ltv:75,liq:78},'dai':{ltv:77,liq:80},'polygon-ecosystem-token':{ltv:65,liq:70}};
+                const aaveDefaults={'bitcoin':{ltv:70,liq:80},'wrapped-bitcoin':{ltv:70,liq:80},'tbtc':{ltv:73,liq:78},'coinbase-wrapped-btc':{ltv:70,liq:80},'ethereum':{ltv:80,liq:82.5},'rocket-pool-eth':{ltv:68,liq:75},'chainlink':{ltv:70,liq:77.5},'usd-coin':{ltv:77,liq:80},'tether':{ltv:75,liq:78},'dai':{ltv:77,liq:80},'polygon-ecosystem-token':{ltv:65,liq:70}};
                 const def=aaveDefaults[id];
                 if(def){
                     if(!document.getElementById('colLtvMax').value) document.getElementById('colLtvMax').value=def.ltv;
