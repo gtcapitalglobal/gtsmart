@@ -511,20 +511,19 @@
 
         window.fazerBackup = async function() {
             const btn = document.getElementById('btnBackup');
-            btn.textContent = '⏳ Enviando...';
+            btn.textContent = '⏳ Baixando...';
             btn.disabled = true;
             try {
+                await exportFullBackup();
+                btn.textContent = '✅ Baixado!';
+                // Tentar Drive em background silenciosamente (não bloqueia se falhar)
                 if (typeof google !== 'undefined' && google.accounts) {
-                    await backupParaDrive(false);
-                    btn.textContent = '✅ Salvo no Drive!';
-                } else {
-                    await exportFullBackup();
-                    btn.textContent = '📥 Backup local!';
+                    backupParaDrive(true).catch(e => console.log('Drive backup opcional falhou:', e.message));
                 }
                 setTimeout(() => { btn.textContent = '☁️ Backup'; btn.disabled = false; }, 3000);
             } catch(e) {
                 console.error('Erro backup:', e);
-                alert('❌ Erro: ' + e.message);
+                alert('❌ Erro ao baixar backup: ' + e.message);
                 btn.textContent = '☁️ Backup';
                 btn.disabled = false;
             }
