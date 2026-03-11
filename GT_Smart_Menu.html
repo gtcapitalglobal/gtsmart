@@ -786,7 +786,7 @@
         try {
             await exportFullBackup();
             btn.textContent = '✅ Baixado!';
-            if (typeof google !== 'undefined' && google.accounts) backupParaDrive(true).catch(() => {});
+            // Drive backup removido do automático
             setTimeout(() => { btn.textContent = '☁️ Backup'; btn.disabled = false; }, 3000);
         } catch(e) {
             alert('❌ Erro ao baixar backup: ' + e.message);
