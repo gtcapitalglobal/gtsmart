@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ledgerlands — Reset Completo</title>
+    <title>Ledgerlands — Reset Completo v2</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%); min-height: 100vh; padding: 15px; }
@@ -37,41 +37,32 @@
 <body>
 <div class="container">
     <div class="header">
-        <h2>🔄 Reset Completo — Ledgerlands</h2>
-        <p>Apaga e reconstrói: contratos · pagamentos · parcelas · imóveis</p>
+        <h2>🔄 Reset Completo — Ledgerlands v2</h2>
+        <p>Fix: contractId corrigido para formato do Firestore (ll_contract_XX)</p>
     </div>
     <div class="content">
-
         <div class="aviso">
-            <strong>⚠️ O que será feito (sem volta):</strong>
-            Apaga tudo de ll_contracts, ll_payments, ll_installments e ll_properties.<br>
-            Depois reimporta 13 contratos limpos, 72 pagamentos, gera todas as parcelas e restaura os imóveis.
+            <strong>⚠️ Apaga e reconstrói tudo de novo (sem volta):</strong>
+            ll_contracts · ll_payments · ll_installments · ll_properties<br>
+            Desta vez com contractId no formato correto que a página lê.
         </div>
-
         <div class="step-grid">
-            <div class="step-box"><div class="num">1</div><div class="label">Salva imóveis</div><div class="desc">Lê ll_properties atual antes de apagar</div></div>
-            <div class="step-box"><div class="num">2</div><div class="label">Apaga tudo</div><div class="desc">4 coleções Ledgerlands zeradas</div></div>
-            <div class="step-box"><div class="num">3</div><div class="label">Reimporta</div><div class="desc">13 contratos + 72 pagamentos limpos</div></div>
-            <div class="step-box"><div class="num">4</div><div class="label">Gera parcelas</div><div class="desc">Cronograma completo + marcadas como pagas</div></div>
+            <div class="step-box"><div class="num">1</div><div class="label">Salva imóveis</div><div class="desc">Lê ll_properties antes de apagar</div></div>
+            <div class="step-box"><div class="num">2</div><div class="label">Apaga tudo</div><div class="desc">4 coleções zeradas</div></div>
+            <div class="step-box"><div class="num">3</div><div class="label">Reimporta</div><div class="desc">13 contratos + 72 pagamentos (contractId correto)</div></div>
+            <div class="step-box"><div class="num">4</div><div class="label">Gera parcelas</div><div class="desc">Cronograma + marcadas como pagas</div></div>
         </div>
-
-        <button class="btn btn-reset" id="btnReset" onclick="executar()">
-            🔄 Iniciar Reset Completo
-        </button>
-
+        <button class="btn btn-reset" id="btnReset" onclick="executar()">🔄 Iniciar Reset v2</button>
         <div class="log-box" id="logBox"></div>
         <div class="resultado" id="resultado"></div>
     </div>
 </div>
-
 <a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#c62828;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-    getFirestore, collection, getDocs, deleteDoc, setDoc, addDoc, doc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, deleteDoc, setDoc, addDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const app = initializeApp({
     apiKey: "AIzaSyCAt7D5HOkdXZEV9o_DZck9pjPoGKW-GSY",
@@ -86,11 +77,9 @@ const db   = getFirestore(app);
 let uid = null;
 onAuthStateChanged(auth, u => { if (!u) { window.location.href = 'GT_Smart_Login.html'; return; } uid = u.uid; });
 
-// ── Dados embutidos ─────────────────────────────────────────────────────────
 const CONTRACTS_DATA = [{"docId": "ll_contract_27", "contractId": 540001, "propertyId": "#27", "buyerName": "David Orlando Sanabria", "originType": "DIRECT", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2026-02-25", "transferDate": null, "contractPrice": 20051.0, "costBasis": 6769.1, "downPayment": 899.0, "installmentAmount": 399.0, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2026-03-25", "deedStatus": "UNKNOWN", "status": "Active", "notes": "", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": null, "createdAt": "2026-02-26", "updatedAt": "2026-02-26"}, {"docId": "ll_contract_26", "contractId": 510001, "propertyId": "#26", "buyerName": "Alissa Jackson", "originType": "DIRECT", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2026-02-19", "transferDate": null, "contractPrice": 11059.0, "costBasis": 4369.2, "downPayment": 499.0, "installmentAmount": 220.0, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2026-03-25", "deedStatus": "UNKNOWN", "status": "Active", "notes": "", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": null, "createdAt": "2026-02-20", "updatedAt": "2026-02-20"}, {"docId": "ll_contract_64", "contractId": 480001, "propertyId": "#64", "buyerName": "Yoanky Guerrero ramos", "originType": "DIRECT", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2026-02-17", "transferDate": null, "contractPrice": 11059.0, "costBasis": 2147.7, "downPayment": 499.0, "installmentAmount": 220.0, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2026-03-25", "deedStatus": "UNKNOWN", "status": "Active", "notes": "", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": null, "createdAt": "2026-02-18", "updatedAt": "2026-02-18"}, {"docId": "ll_contract_63", "contractId": 450002, "propertyId": "#63", "buyerName": "Nathally Barbosa Fernandez Maciel ", "originType": "DIRECT", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2026-02-15", "transferDate": null, "contractPrice": 11059.0, "costBasis": 2953.3, "downPayment": 499.0, "installmentAmount": 220.0, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2026-03-15", "deedStatus": "UNKNOWN", "status": "Active", "notes": "", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": null, "createdAt": "2026-02-15", "updatedAt": "2026-02-15"}, {"docId": "ll_contract_62", "contractId": 450001, "propertyId": "#62", "buyerName": "Polyana Cunha Barbosa", "originType": "DIRECT", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2026-02-15", "transferDate": null, "contractPrice": 11059.0, "costBasis": 2953.3, "downPayment": 499.0, "installmentAmount": 220.0, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2026-03-15", "deedStatus": "UNKNOWN", "status": "Active", "notes": "", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": "", "createdAt": "2026-02-15", "updatedAt": "2026-02-18"}, {"docId": "ll_contract_43", "contractId": 210004, "propertyId": "#43", "buyerName": "Rafael Garcia Garcia", "originType": "ASSUMED", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2025-04-22", "transferDate": "2025-09-02", "contractPrice": 9260.0, "costBasis": 2968.3, "downPayment": 1000.0, "installmentAmount": 236.0, "installmentCount": 35, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2025-05-25", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "Same buyer as #35 but different property. Assumed on 2025-09-02.", "openingReceivable": "7320.00", "installmentsPaidByTransfer": 4, "documentFolderLink": "https://drive.google.com/drive/folders/19zdqtGdQyODGFYdcr0iZgxXkZv07iy2P?usp=drive_link", "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}, {"docId": "ll_contract_22", "contractId": 210007, "propertyId": "#22", "buyerName": "Bryan Shawn Hamilton", "originType": "DIRECT", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2025-10-24", "transferDate": null, "contractPrice": 5530.0, "costBasis": 2322.1, "downPayment": 250.0, "installmentAmount": 110.0, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2025-11-25", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "Includes one late-fee payment recorded as $130 (=$110 + $20 fee).", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": null, "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}, {"docId": "ll_contract_31", "contractId": 210008, "propertyId": "#31", "buyerName": "Tomy Rodriguez Gonzalez", "originType": "DIRECT", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2026-01-05", "transferDate": null, "contractPrice": 11059.0, "costBasis": 6466.55, "downPayment": 499.0, "installmentAmount": 220.0, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2026-02-15", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "No installments paid yet; only down payment received.", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": null, "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}, {"docId": "ll_contract_17", "contractId": 210006, "propertyId": "#17", "buyerName": "Donald Thomas Way", "originType": "DIRECT", "saleType": "CFD", "county": "Erie", "state": "PA", "contractDate": "2025-11-03", "transferDate": null, "contractPrice": 8319.2, "costBasis": 5998.32, "downPayment": 500.0, "installmentAmount": 162.9, "installmentCount": 48, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2025-12-03", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "Financed remainder after $500 down.", "openingReceivable": null, "installmentsPaidByTransfer": null, "documentFolderLink": null, "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}, {"docId": "ll_contract_45", "contractId": 210005, "propertyId": "#45", "buyerName": "Jennifer Lynn Soderlund", "originType": "ASSUMED", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2025-04-30", "transferDate": "2025-12-06", "contractPrice": 11972.0, "costBasis": 2953.3, "downPayment": 2000.0, "installmentAmount": 277.0, "installmentCount": 36, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2025-05-25", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "Assumed. G&T received installments 1–6; GT Real received installments 7–8. One payment included $23 late fee (cash $300).", "openingReceivable": "8310.00", "installmentsPaidByTransfer": 6, "documentFolderLink": "https://drive.google.com/drive/folders/1VFNVZzr7xImEXAWA7esG3urqDp5hL0Pw?usp=drive_link", "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}, {"docId": "ll_contract_25", "contractId": 210001, "propertyId": "#25", "buyerName": "Chase Quinton Menerey", "originType": "ASSUMED", "saleType": "CFD", "county": "Levy", "state": "FL", "contractDate": "2025-05-12", "transferDate": "2025-09-08", "contractPrice": 23664.0, "costBasis": 11370.0, "downPayment": 4000.0, "installmentAmount": 449.0, "installmentCount": 36, "balloonAmount": 3500.0, "balloonDate": "2025-11-11", "firstInstallmentDate": "2025-06-15", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "Assumed on 2025-09-08. Includes balloon paid 2025-11-11.", "openingReceivable": "19315.00", "installmentsPaidByTransfer": 3, "documentFolderLink": "https://drive.google.com/drive/folders/1fF0NabYbtEAmhiMJzmW11agJrvdX7DSP?usp=drive_link", "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}, {"docId": "ll_contract_35", "contractId": 210003, "propertyId": "#35", "buyerName": "Rafael Garcia Garcia", "originType": "ASSUMED", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2025-04-22", "transferDate": "2025-09-02", "contractPrice": 9260.0, "costBasis": 1946.3, "downPayment": 1000.0, "installmentAmount": 236.0, "installmentCount": 35, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2025-05-25", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "Assumed from G&T -> GT Real on 2025-09-02.", "openingReceivable": "7320.00", "installmentsPaidByTransfer": 4, "documentFolderLink": "", "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}, {"docId": "ll_contract_33", "contractId": 210002, "propertyId": "#33", "buyerName": "Yandri Garcia Leiva", "originType": "ASSUMED", "saleType": "CFD", "county": "Putnam", "state": "FL", "contractDate": "2025-04-22", "transferDate": "2025-09-02", "contractPrice": 7825.0, "costBasis": 4369.2, "downPayment": 1000.0, "installmentAmount": 195.0, "installmentCount": 35, "balloonAmount": 0.0, "balloonDate": null, "firstInstallmentDate": "2025-05-25", "deedStatus": "NOT_RECORDED", "status": "Active", "notes": "Assumed from G&T -> GT Real on 2025-09-02.", "openingReceivable": "5850.00", "installmentsPaidByTransfer": 4, "documentFolderLink": "https://drive.google.com/drive/folders/10p9XrtPuPVk7XNcObzbwHQyD1I9YQYZI?usp=drive_link", "createdAt": "2026-02-04", "updatedAt": "2026-02-10"}];
-const CLEAN_PAYMENTS = [{"contractId": 210001, "propertyId": "#25", "paymentDate": "2025-06-16", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #1"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2025-07-14", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2025-08-13", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2025-09-15", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2025-10-07", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 2"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2025-11-11", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2025-12-15", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #7"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2026-01-15", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #8"}, {"contractId": 210001, "propertyId": "#25", "paymentDate": "2026-02-20", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #9"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-05-23", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-06-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-07-23", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-08-19", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-09-19", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-10-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #6"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-11-22", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2025-12-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #8"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2026-01-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #9"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2026-02-24", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #10"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2026-03-01", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2026-04-01", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": 210002, "propertyId": "#33", "paymentDate": "2026-05-01", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 9"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-05-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-06-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-07-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-08-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-09-22", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-10-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #6"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-11-19", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2025-12-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #8"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2026-01-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #9"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2026-02-24", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #10"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2026-03-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2026-04-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": 210003, "propertyId": "#35", "paymentDate": "2026-05-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 9"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-04-22", "amountTotal": 1000.0, "principalAmount": 1000.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #0"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-05-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-06-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-07-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-08-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-09-22", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-10-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #6"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-11-19", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2025-12-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #8"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2026-01-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #9"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2026-02-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #10"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2026-03-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2026-04-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": 210004, "propertyId": "#43", "paymentDate": "2026-05-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 9"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2025-04-30", "amountTotal": 2000.0, "principalAmount": 2000.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #0"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2025-05-28", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2025-07-14", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2025-08-13", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2025-09-25", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2025-11-25", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2025-12-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 2"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2026-01-21", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "23 fee"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2026-02-11", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "OTHER", "memo": "square"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2026-03-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 5"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2026-04-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 6"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2026-05-05", "amountTotal": 300.0, "principalAmount": 277.0, "lateFeeAmount": 23.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7 with late fee"}, {"contractId": 210005, "propertyId": "#45", "paymentDate": "2026-06-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": 210006, "propertyId": "#17", "paymentDate": "2025-11-02", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 1"}, {"contractId": 210006, "propertyId": "#17", "paymentDate": "2025-12-03", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": 210006, "propertyId": "#17", "paymentDate": "2026-01-03", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "OTHER", "memo": "Installment #2"}, {"contractId": 210006, "propertyId": "#17", "paymentDate": "2026-02-03", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "OTHER", "memo": "Installment #3"}, {"contractId": 210007, "propertyId": "#22", "paymentDate": "2025-10-23", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 1"}, {"contractId": 210007, "propertyId": "#22", "paymentDate": "2025-11-25", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #1"}, {"contractId": 210007, "propertyId": "#22", "paymentDate": "2025-12-31", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #2"}, {"contractId": 210007, "propertyId": "#22", "paymentDate": "2026-01-26", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #3"}, {"contractId": 210007, "propertyId": "#22", "paymentDate": "2026-02-26", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #4"}, {"contractId": 210008, "propertyId": "#31", "paymentDate": "2026-02-20", "amountTotal": 220.0, "principalAmount": 220.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #1"}];
+const CLEAN_PAYMENTS = [{"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2025-06-16", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #1"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2025-07-14", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2025-08-13", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2025-09-15", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2025-10-07", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 2"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2025-11-11", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2025-12-15", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #7"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2026-01-15", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #8"}, {"contractId": "ll_contract_25", "propertyId": "#25", "paymentDate": "2026-02-20", "amountTotal": 449.0, "principalAmount": 449.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #9"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-05-23", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-06-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-07-23", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-08-19", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-09-19", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-10-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #6"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-11-22", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2025-12-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #8"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2026-01-20", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #9"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2026-02-24", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #10"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2026-03-01", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2026-04-01", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": "ll_contract_33", "propertyId": "#33", "paymentDate": "2026-05-01", "amountTotal": 195.0, "principalAmount": 195.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 9"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-05-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-06-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-07-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-08-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-09-22", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-10-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #6"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-11-19", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2025-12-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #8"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2026-01-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #9"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2026-02-24", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #10"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2026-03-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2026-04-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": "ll_contract_35", "propertyId": "#35", "paymentDate": "2026-05-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 9"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-04-22", "amountTotal": 1000.0, "principalAmount": 1000.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #0"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-05-23", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-06-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-07-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-08-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #4"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-09-22", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-10-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #6"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-11-19", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2025-12-25", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #8"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2026-01-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #9"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2026-02-20", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #10"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2026-03-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2026-04-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": "ll_contract_43", "propertyId": "#43", "paymentDate": "2026-05-01", "amountTotal": 236.0, "principalAmount": 236.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 9"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2025-04-30", "amountTotal": 2000.0, "principalAmount": 2000.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #0"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2025-05-28", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2025-07-14", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #2"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2025-08-13", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #3"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2025-09-25", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #5"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2025-11-25", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #7"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2025-12-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 2"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2026-01-21", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "23 fee"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2026-02-11", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "OTHER", "memo": "square"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2026-03-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 5"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2026-04-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 6"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2026-05-05", "amountTotal": 300.0, "principalAmount": 277.0, "lateFeeAmount": 23.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 7 with late fee"}, {"contractId": "ll_contract_45", "propertyId": "#45", "paymentDate": "2026-06-05", "amountTotal": 277.0, "principalAmount": 277.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 8"}, {"contractId": "ll_contract_17", "propertyId": "#17", "paymentDate": "2025-11-02", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 1"}, {"contractId": "ll_contract_17", "propertyId": "#17", "paymentDate": "2025-12-03", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ZELLE", "memo": "Installment #1"}, {"contractId": "ll_contract_17", "propertyId": "#17", "paymentDate": "2026-01-03", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "OTHER", "memo": "Installment #2"}, {"contractId": "ll_contract_17", "propertyId": "#17", "paymentDate": "2026-02-03", "amountTotal": 162.9, "principalAmount": 162.9, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "OTHER", "memo": "Installment #3"}, {"contractId": "ll_contract_22", "propertyId": "#22", "paymentDate": "2025-10-23", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Payment 1"}, {"contractId": "ll_contract_22", "propertyId": "#22", "paymentDate": "2025-11-25", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #1"}, {"contractId": "ll_contract_22", "propertyId": "#22", "paymentDate": "2025-12-31", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #2"}, {"contractId": "ll_contract_22", "propertyId": "#22", "paymentDate": "2026-01-26", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "ACH", "memo": "Installment #3"}, {"contractId": "ll_contract_22", "propertyId": "#22", "paymentDate": "2026-02-26", "amountTotal": 110.0, "principalAmount": 110.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #4"}, {"contractId": "ll_contract_31", "propertyId": "#31", "paymentDate": "2026-02-20", "amountTotal": 220.0, "principalAmount": 220.0, "lateFeeAmount": 0.0, "receivedBy": "GT_REAL_BANK", "channel": "CHECK", "memo": "Installment #1"}];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function log(txt, tipo) {
     const box = document.getElementById('logBox');
     box.style.display = 'block';
@@ -103,10 +92,9 @@ function log(txt, tipo) {
 
 async function wipeColl(name) {
     const snap = await getDocs(collection(db, 'users', uid, name));
-    if (snap.size === 0) { log(`   ${name}: vazia`, 'dim'); return 0; }
+    if (snap.size === 0) { log(`   ${name}: vazia`, 'dim'); return; }
     await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
     log(`   🗑️  ${name}: ${snap.size} docs apagados`, 'dim');
-    return snap.size;
 }
 
 function genDates(firstDateStr, count) {
@@ -117,8 +105,7 @@ function genDates(firstDateStr, count) {
         const daysInMonth = new Date(year, month, 0).getDate();
         const d = Math.min(day, daysInMonth);
         dates.push(`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
-        month++;
-        if (month > 12) { month = 1; year++; }
+        month++; if (month > 12) { month = 1; year++; }
     }
     return dates;
 }
@@ -129,97 +116,85 @@ function extractInstNum(memo) {
     return m ? +m[1] : null;
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
 window.executar = async function() {
     if (!uid) { alert('Aguarde autenticação...'); return; }
-    if (!confirm('ATENÇÃO: isso apaga e reconstrói todos os dados Ledgerlands. Continuar?')) return;
+    if (!confirm('ATENÇÃO: apaga e reconstrói todos os dados Ledgerlands. Continuar?')) return;
 
     const btn = document.getElementById('btnReset');
-    btn.disabled = true;
-    btn.textContent = '⏳ Processando...';
-
+    btn.disabled = true; btn.textContent = '⏳ Processando...';
     const now = new Date().toISOString();
     let totalOk = 0, totalErr = 0;
 
     try {
-        // ── PASSO 1: Salvar imóveis existentes ─────────────────────────────
-        log('━━━ PASSO 1 — Salvando imóveis existentes', 'title');
+        // PASSO 1: Salvar imóveis
+        log('━━━ PASSO 1 — Salvando imóveis', 'title');
         let savedProperties = [];
         try {
-            const propSnap = await getDocs(collection(db, 'users', uid, 'll_properties'));
-            savedProperties = propSnap.docs.map(d => ({ _docId: d.id, ...d.data() }));
-            log(`   ✅ ${savedProperties.length} imóveis salvos em memória`, 'ok');
-        } catch(e) { log(`   ⚠️  Não foi possível ler imóveis: ${e.message}`, 'warn'); }
+            const snap = await getDocs(collection(db, 'users', uid, 'll_properties'));
+            savedProperties = snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+            log(`   ✅ ${savedProperties.length} imóveis em memória`, 'ok');
+        } catch(e) { log(`   ⚠️ ${e.message}`, 'warn'); }
 
-        // ── PASSO 2: Apagar tudo ───────────────────────────────────────────
-        log('', 'dim');
-        log('━━━ PASSO 2 — Apagando coleções', 'title');
+        // PASSO 2: Apagar
+        log('', 'dim'); log('━━━ PASSO 2 — Apagando coleções', 'title');
         await wipeColl('ll_contracts');
         await wipeColl('ll_payments');
         await wipeColl('ll_installments');
         await wipeColl('ll_properties');
 
-        // ── PASSO 3a: Reimportar contratos ─────────────────────────────────
-        log('', 'dim');
-        log('━━━ PASSO 3a — Importando contratos', 'title');
+        // PASSO 3a: Contratos
+        log('', 'dim'); log('━━━ PASSO 3a — Importando contratos', 'title');
         for (const c of CONTRACTS_DATA) {
             const { docId, contractId, ...fields } = c;
             try {
                 await setDoc(doc(db, 'users', uid, 'll_contracts', docId), {
-                    contractId, ...fields, importedAt: now
+                    contractId: docId,  // ← CORRIGIDO: usa docId como contractId
+                    numericContractId: contractId,  // guarda o numérico como referência
+                    ...fields, importedAt: now
                 });
                 totalOk++;
                 log(`   ✅ ${docId} — ${fields.buyerName}`, 'ok');
-            } catch(e) {
-                totalErr++;
-                log(`   ❌ ${docId}: ${e.message}`, 'err');
-            }
+            } catch(e) { totalErr++; log(`   ❌ ${docId}: ${e.message}`, 'err'); }
         }
 
-        // ── PASSO 3b: Reimportar pagamentos ────────────────────────────────
-        log('', 'dim');
-        log('━━━ PASSO 3b — Importando pagamentos (72)', 'title');
-        const payPromises = CLEAN_PAYMENTS.map(p => {
-            return addDoc(collection(db, 'users', uid, 'll_payments'), {
-                ...p, importedAt: now
-            }).then(() => { totalOk++; })
-              .catch(e => { totalErr++; log(`   ❌ Pagamento ${p.propertyId} ${p.paymentDate}: ${e.message}`, 'err'); });
-        });
-        await Promise.all(payPromises);
+        // PASSO 3b: Pagamentos (contractId já é string "ll_contract_XX")
+        log('', 'dim'); log('━━━ PASSO 3b — Importando pagamentos (72)', 'title');
+        await Promise.all(CLEAN_PAYMENTS.map(p =>
+            addDoc(collection(db, 'users', uid, 'll_payments'), { ...p, importedAt: now })
+                .then(() => totalOk++)
+                .catch(e => { totalErr++; log(`   ❌ ${p.contractId} ${p.paymentDate}: ${e.message}`, 'err'); })
+        ));
         log(`   ✅ 72 pagamentos importados`, 'ok');
 
-        // ── PASSO 4: Gerar parcelas ────────────────────────────────────────
-        log('', 'dim');
-        log('━━━ PASSO 4 — Gerando parcelas', 'title');
-        
-        // Build paid map from CLEAN_PAYMENTS
-        const paidByContract = {};
+        // PASSO 4: Gerar parcelas
+        log('', 'dim'); log('━━━ PASSO 4 — Gerando parcelas', 'title');
+
+        // Build paid map por docId (contractId já é "ll_contract_XX")
+        const paidByDocId = {};
         for (const p of CLEAN_PAYMENTS) {
-            const cid = p.contractId;
-            if (!paidByContract[cid]) paidByContract[cid] = [];
-            paidByContract[cid].push(p);
+            if (!paidByDocId[p.contractId]) paidByDocId[p.contractId] = [];
+            paidByDocId[p.contractId].push(p);
         }
 
         for (const c of CONTRACTS_DATA) {
-            const { docId, contractId, propertyId, installmentCount, installmentAmount,
-                    firstInstallmentDate, balloonAmount, balloonDate } = c;
+            const { docId, contractId: numericCid, propertyId, installmentCount,
+                    installmentAmount, firstInstallmentDate, balloonAmount, balloonDate } = c;
             const pid = propertyId.replace('#', '');
 
             if (!installmentCount || !installmentAmount || !firstInstallmentDate) {
-                log(`   ⏭️  ${propertyId} — sem dados de parcelas`, 'dim');
-                continue;
+                log(`   ⏭️  ${propertyId} — sem dados`, 'dim'); continue;
             }
 
             const dates = genDates(firstInstallmentDate, installmentCount);
-            const pays = paidByContract[contractId] || [];
+            const pays = paidByDocId[docId] || [];
 
-            // Build paid map by installment number (from memo)
+            // Mapear pagamento → número da parcela
             const paidMap = {};
             const unnamed = [];
             for (const p of [...pays].sort((a,b) => a.paymentDate < b.paymentDate ? -1 : 1)) {
                 const n = extractInstNum(p.memo);
                 if (n && n > 0 && !paidMap[n]) paidMap[n] = p;
-                else if (!n || n === 0) unnamed.push(p);
+                else unnamed.push(p);
             }
             let seq = 1;
             for (const p of unnamed) {
@@ -236,7 +211,8 @@ window.executar = async function() {
                 const pago = paidMap[num];
                 instPromises.push(
                     setDoc(doc(db, 'users', uid, 'll_installments', instId), {
-                        contractId, propertyId, installmentNumber: num,
+                        contractId: docId,  // ← "ll_contract_17" etc
+                        propertyId, installmentNumber: num,
                         dueDate: dates[i], amount: installmentAmount, type: 'regular',
                         status: pago ? 'paid' : 'pending',
                         paidDate: pago ? pago.paymentDate : null,
@@ -246,64 +222,55 @@ window.executar = async function() {
                       .catch(e => { totalErr++; log(`   ❌ ${instId}: ${e.message}`, 'err'); })
                 );
             }
-
-            // Balloon
             if (balloonAmount > 0) {
-                const balloonPago = pays.find(p => (p.memo||''). toLowerCase().includes('balloon'));
-                const bDue = balloonDate || dates[dates.length-1];
+                const bp = pays.find(p => (p.memo||''). toLowerCase().includes('balloon'));
                 instPromises.push(
                     setDoc(doc(db, 'users', uid, 'll_installments', `ll_contract_${pid}_balloon`), {
-                        contractId, propertyId, installmentNumber: installmentCount + 1,
-                        dueDate: bDue, amount: balloonAmount, type: 'balloon',
-                        status: balloonPago ? 'paid' : 'pending',
-                        paidDate: balloonPago ? balloonPago.paymentDate : null,
-                        paidAmount: balloonPago ? balloonPago.amountTotal : null,
+                        contractId: docId, propertyId,
+                        installmentNumber: installmentCount + 1,
+                        dueDate: balloonDate || dates[dates.length-1],
+                        amount: balloonAmount, type: 'balloon',
+                        status: bp ? 'paid' : 'pending',
+                        paidDate: bp ? bp.paymentDate : null,
+                        paidAmount: bp ? bp.amountTotal : null,
                         createdAt: now, updatedAt: now
-                    }).then(() => totalOk++)
-                      .catch(e => { totalErr++; })
+                    }).then(() => totalOk++).catch(() => totalErr++)
                 );
             }
-
             await Promise.all(instPromises);
             const paidCount = Object.keys(paidMap).filter(n => +n <= installmentCount).length;
             log(`   ✅ ${propertyId} — ${installmentCount} parcelas · ${paidCount} pagas`, 'ok');
         }
 
-        // ── PASSO 5: Restaurar imóveis ─────────────────────────────────────
-        log('', 'dim');
-        log('━━━ PASSO 5 — Restaurando imóveis', 'title');
+        // PASSO 5: Restaurar imóveis
+        log('', 'dim'); log('━━━ PASSO 5 — Restaurando imóveis', 'title');
         if (savedProperties.length > 0) {
-            const propPromises = savedProperties.map(p => {
+            await Promise.all(savedProperties.map(p => {
                 const { _docId, ...data } = p;
                 return setDoc(doc(db, 'users', uid, 'll_properties', _docId), data)
-                    .then(() => totalOk++)
-                    .catch(e => { totalErr++; log(`   ❌ ${_docId}: ${e.message}`, 'err'); });
-            });
-            await Promise.all(propPromises);
+                    .then(() => totalOk++).catch(e => { totalErr++; log(`   ❌ ${_docId}: ${e.message}`, 'err'); });
+            }));
             log(`   ✅ ${savedProperties.length} imóveis restaurados`, 'ok');
         } else {
             log('   ℹ️  Nenhum imóvel para restaurar', 'dim');
         }
 
-        // ── FIM ────────────────────────────────────────────────────────────
         log('', 'dim');
-        log(`══ CONCLUÍDO — ${totalOk} docs criados · ${totalErr} erros`, totalErr ? 'warn' : 'ok');
+        log(`══ CONCLUÍDO — ${totalOk} docs · ${totalErr} erros`, totalErr ? 'warn' : 'ok');
 
     } catch(e) {
-        log(`❌ Erro fatal: ${e.message}`, 'err');
-        totalErr++;
+        log(`❌ Erro fatal: ${e.message}`, 'err'); totalErr++;
     }
 
     btn.style.display = 'none';
     const res = document.getElementById('resultado');
     res.style.display = 'block';
-
     if (totalErr === 0) {
         res.style.cssText = 'background:#e8f5e9;border:2px solid #43a047;border-radius:10px;padding:18px;margin-top:20px;text-align:center;display:block;';
-        res.innerHTML = `<div style="font-size:28px">✅</div><h3 style="color:#1b5e20;margin:8px 0 4px;">Reset concluído!</h3><p style="color:#555;font-size:13px;">${totalOk} documentos criados · 0 erros</p><a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>`;
+        res.innerHTML = `<div style="font-size:28px">✅</div><h3 style="color:#1b5e20;margin:8px 0 4px;">Concluído!</h3><p style="color:#555;font-size:13px;">${totalOk} documentos · 0 erros</p><a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>`;
     } else {
         res.style.cssText = 'background:#fff8e1;border:2px solid #ffc107;border-radius:10px;padding:18px;margin-top:20px;text-align:center;display:block;';
-        res.innerHTML = `<div style="font-size:28px">⚠️</div><h3 style="color:#f57f17;margin:8px 0 4px;">Concluído com erros</h3><p style="color:#555;font-size:13px;">${totalOk} criados · ${totalErr} erros</p><a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>`;
+        res.innerHTML = `<div style="font-size:28px">⚠️</div><h3 style="color:#f57f17;margin:8px 0 4px;">Com erros</h3><p style="color:#555;font-size:13px;">${totalOk} criados · ${totalErr} erros — veja o log</p><a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>`;
     }
 };
 </script>
