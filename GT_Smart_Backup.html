@@ -45,7 +45,7 @@
     <div class="header">
         <div>
             <h2>☁️ Backup & Restauração</h2>
-            <div class="header-sub">Basic 1.0 | 11/03/2026</div>
+            <div class="header-sub">Basic 8.0 | 11/03/2026</div>
         </div>
         <a href="GT_Smart_Menu.html" class="btn-back">← Menu</a>
     </div>
@@ -61,8 +61,11 @@
             <div class="stat-card"><div class="stat-emoji">💰</div><div class="stat-nome">Dívidas</div><div class="stat-num loading" id="statDebts">...</div></div>
             <div class="stat-card"><div class="stat-emoji">💳</div><div class="stat-nome">Cartões</div><div class="stat-num loading" id="statCards">...</div></div>
             <div class="stat-card"><div class="stat-emoji">🏢</div><div class="stat-nome">Empresas</div><div class="stat-num loading" id="statEmpresas">...</div></div>
-            <div class="stat-card"><div class="stat-emoji">⛓️</div><div class="stat-nome">DeFi Pools</div><div class="stat-num loading" id="statPools">...</div></div>
             <div class="stat-card"><div class="stat-emoji">📄</div><div class="stat-nome">Contratos</div><div class="stat-num loading" id="statContracts">...</div></div>
+            <div class="stat-card"><div class="stat-emoji">🌊</div><div class="stat-nome">DeFi Pools</div><div class="stat-num loading" id="statPools">...</div></div>
+            <div class="stat-card"><div class="stat-emoji">🏦</div><div class="stat-nome">DeFi Borrows</div><div class="stat-num loading" id="statBorrows">...</div></div>
+            <div class="stat-card"><div class="stat-emoji">🔒</div><div class="stat-nome">DeFi Colateral</div><div class="stat-num loading" id="statColateral">...</div></div>
+            <div class="stat-card"><div class="stat-emoji">💸</div><div class="stat-nome">DeFi Taxas</div><div class="stat-num loading" id="statFees">...</div></div>
         </div>
 
         <div class="secao">
@@ -89,19 +92,22 @@
 <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, exportFullBackup, importFullBackup, getLoans, getDebts, getCards, getEmpresas, getContracts, getDefiPools } from './firebase-config.js';
+    import { auth, onAuthStateChanged, exportFullBackup, importFullBackup, getLoans, getDebts, getCards, getEmpresas, getContracts, getDefiPools, getDefiBorrows, getDefiPositions } from './firebase-config.js';
 
     async function carregarStats() {
         try {
-            const [loans, debts, cards, empresas, contracts, pools] = await Promise.all([
-                getLoans(), getDebts(), getCards(), getEmpresas(), getContracts(), getDefiPools()
+            const [loans, debts, cards, empresas, contracts, pools, borrows, colateral] = await Promise.all([
+                getLoans(), getDebts(), getCards(), getEmpresas(), getContracts(), getDefiPools(), getDefiBorrows(), getDefiPositions()
             ]);
             document.getElementById('statLoans').textContent = loans.length;
             document.getElementById('statDebts').textContent = debts.length;
             document.getElementById('statCards').textContent = cards.length;
             document.getElementById('statEmpresas').textContent = empresas.length;
-            document.getElementById('statPools').textContent = pools.length;
             document.getElementById('statContracts').textContent = contracts.length;
+            document.getElementById('statPools').textContent = pools.length;
+            document.getElementById('statBorrows').textContent = borrows.length;
+            document.getElementById('statColateral').textContent = colateral.length;
+            document.getElementById('statFees').textContent = '✓';
             document.querySelectorAll('.stat-num').forEach(el => el.classList.remove('loading'));
         } catch(e) {
             document.querySelectorAll('.stat-num').forEach(el => { el.textContent = '—'; el.classList.remove('loading'); });
