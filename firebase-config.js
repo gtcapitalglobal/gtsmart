@@ -367,6 +367,20 @@ async function importFullBackup(jsonData) {
       }
     }
 
+
+    // Importar DeFi Colateral
+    if (backup.data.defiColateral) {
+      for (const pos of backup.data.defiColateral) {
+        await setDoc(doc(db, 'users', userId, 'defi_colateral', pos.id), pos);
+      }
+    }
+
+    // Importar DeFi Fee Records
+    if (backup.data.defiFeeRecords) {
+      for (const fee of backup.data.defiFeeRecords) {
+        await setDoc(doc(db, 'users', userId, 'defi_fee_records', fee.id), fee);
+      }
+    }
     // Importar Cripto (settings)
     if (backup.data.cripto) {
       const { cryptoFavorites, stableFavorites, cryptoPools } = backup.data.cripto;
@@ -549,6 +563,70 @@ async function getDefiBorrows() {
   } catch(e) { console.error('Erro getDefiBorrows:', e); return []; }
 }
 
+// =============================================
+// FUNÇÕES DEFI — COLATERAL (getDefiPositions)
+// =============================================
+
+async function getDefiPositions() {
+  try {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return [];
+    const snap = await getDocs(collection(db, 'users', userId, 'defi_colateral'));
+    return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+  } catch(e) { console.error('Erro getDefiPositions:', e); return []; }
+}
+
+async function saveDefiPosition(data) {
+  try {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return null;
+    const { id, ...rest } = data;
+    const posId = id || ('POS' + Date.now());
+    await setDoc(doc(db, 'users', userId, 'defi_colateral', posId), rest);
+    return posId;
+  } catch(e) { console.error('Erro saveDefiPosition:', e); return null; }
+}
+
+async function updateDefiPosition(id, data) {
+  try {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return false;
+    await setDoc(doc(db, 'users', userId, 'defi_colateral', id), data);
+    return true;
+  } catch(e) { console.error('Erro updateDefiPosition:', e); return false; }
+}
+
+async function deleteDefiPosition(id) {
+  try {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return false;
+    await deleteDoc(doc(db, 'users', userId, 'defi_colateral', id));
+    return true;
+  } catch(e) { console.error('Erro deleteDefiPosition:', e); return false; }
+}
+
+// =============================================
+// CONFIGURAÇÕES DO USUÁRIO (getUserSetting / saveUserSetting)
+// =============================================
+
+async function getUserSetting(key) {
+  try {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return null;
+    const snap = await getDoc(doc(db, 'users', userId, 'settings', key));
+    return snap.exists() ? snap.data().value : null;
+  } catch(e) { console.error('Erro getUserSetting:', e); return null; }
+}
+
+async function saveUserSetting(key, value) {
+  try {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return false;
+    await setDoc(doc(db, 'users', userId, 'settings', key), { value });
+    return true;
+  } catch(e) { console.error('Erro saveUserSetting:', e); return false; }
+}
+
 export {
   auth,
   db,
@@ -579,5 +657,11 @@ export {
   updateEmpresa,
   deleteEmpresa,
   getDefiPools,
-  getDefiBorrows
+  getDefiBorrows,
+  getDefiPositions,
+  saveDefiPosition,
+  updateDefiPosition,
+  deleteDefiPosition,
+  getUserSetting,
+  saveUserSetting
 };

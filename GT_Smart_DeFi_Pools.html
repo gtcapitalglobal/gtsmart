@@ -473,8 +473,8 @@
                     <option value="">— Nenhum —</option>
                 </select>
                 <div id="borrowLinkDetailsA" style="display:none;">
-                    <div class="modal-label">% do Borrow usado</div>
-                    <input type="number" class="modal-input" id="poolBorrowPctA" placeholder="Ex: 100" step="any" min="0" max="100" oninput="updateBorrowLinkA()">
+                    <div class="modal-label">Quantidade usada deste Borrow <span style="font-weight:400;color:#aaa;font-size:11px;">(o % é calculado automaticamente)</span></div>
+                    <input type="number" class="modal-input" id="poolBorrowQtyA" placeholder="Ex: 2589.30" step="any" min="0" oninput="updateBorrowLinkA()">
                     <div class="modal-preview" id="borrowLinkPreviewA" style="margin-top:6px;"></div>
                 </div>
 
@@ -483,8 +483,8 @@
                     <option value="">— Nenhum —</option>
                 </select>
                 <div id="borrowLinkDetailsB" style="display:none;">
-                    <div class="modal-label">% do Borrow usado</div>
-                    <input type="number" class="modal-input" id="poolBorrowPctB" placeholder="Ex: 72.11" step="any" min="0" max="100" oninput="updateBorrowLinkB()">
+                    <div class="modal-label">Quantidade usada deste Borrow <span style="font-weight:400;color:#aaa;font-size:11px;">(o % é calculado automaticamente)</span></div>
+                    <input type="number" class="modal-input" id="poolBorrowQtyB" placeholder="Ex: 2589.30" step="any" min="0" oninput="updateBorrowLinkB()">
                     <div class="modal-preview" id="borrowLinkPreviewB" style="margin-top:6px;"></div>
                 </div>
 
@@ -545,7 +545,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.1 | 10/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.2 | 11/03/2026</p>
     </div>
 
 
@@ -581,7 +581,7 @@
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
     <script type="module">
-        import { auth, onAuthStateChanged, db } from './firebase-config.js';
+        import { auth, onAuthStateChanged, db, getUserSetting, saveUserSetting } from './firebase-config.js';
         import { doc, setDoc, collection, getDocs, deleteDoc, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         if (localStorage.getItem('gtSmartDarkMode') === 'true') document.body.classList.add('dark-mode');
@@ -597,7 +597,7 @@
         let showArchived = false;
         let quickUpdatePoolId = null;
         let quickNotePoolId = null;
-        let metaFeesMensal = parseFloat(localStorage.getItem('defi_meta_fees') || '0');
+        let metaFeesMensal = 0; // carregado do Firebase no init
 
         const fmtUsd = (v) => {
             if (v >= 1e9) return '$' + (v/1e9).toFixed(2) + 'B';
@@ -673,15 +673,16 @@
             const borrow = borrows.find(b => b.id === borrowId);
             if (!borrow) return;
 
-            const pct = parseFloat(document.getElementById('poolBorrowPct' + side).value) || 0;
+            const qtyInput = parseFloat(document.getElementById('poolBorrowQty' + side).value) || 0;
             const sym = (borrow.cryptoSymbol || '?').toUpperCase();
             const totalBorrow = parseFloat(borrow.amount || 0);
-            const qtyUsed = totalBorrow * (pct / 100);
+            const pct = totalBorrow > 0 ? (qtyInput / totalBorrow) * 100 : 0;
             const price = getPrice(borrow.cryptoId);
-            const debtUsd = qtyUsed * price;
+            const debtUsd = qtyInput * price;
 
-            preview.innerHTML = pct > 0 ?
-                '🏦 Usando <strong>' + pct + '%</strong> = <strong>' + qtyUsed.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) +
+            preview.innerHTML = qtyInput > 0 ?
+                '🏦 Usando <strong>' + qtyInput.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) +
+                ' = <strong>' + pct.toFixed(2) + '% do borrow</strong>' +
                 '<br>💰 Dívida: ' + fmtUsd(debtUsd) : '';
         }
 
@@ -1229,7 +1230,7 @@
             if (!inp) return;
             const val = parseFloat(inp.value) || 0;
             metaFeesMensal = val;
-            localStorage.setItem('defi_meta_fees', val);
+            saveUserSetting('defi_meta_fees', val).catch(e => console.error('Erro ao salvar meta:', e));
             inp.style.display = 'none';
             updateSummary();
         };
@@ -1566,10 +1567,10 @@
             document.getElementById('tokenBEntryPrice').value = '';
             document.getElementById('tokenBCurrentAmount').value = '';
             document.getElementById('poolBorrowIdA').value = '';
-            document.getElementById('poolBorrowPctA').value = '';
+            document.getElementById('poolBorrowQtyA').value = '';
             document.getElementById('borrowLinkDetailsA').style.display = 'none';
             document.getElementById('poolBorrowIdB').value = '';
-            document.getElementById('poolBorrowPctB').value = '';
+            document.getElementById('poolBorrowQtyB').value = '';
             document.getElementById('borrowLinkDetailsB').style.display = 'none';
             document.getElementById('poolRangeMin').value = '';
             document.getElementById('poolRangeMax').value = '';
@@ -1652,7 +1653,13 @@
                 const pnl = totalCur - totalInvest;
                 const pnlSign = pnl >= 0 ? '+' : '';
 
-                preview.innerHTML = '<div>' + symA + '/' + symB + '</div>' +
+                // Entry Ratio calculado automaticamente
+                const entryRatioLine = (entryA > 0 && entryB > 0)
+                    ? '<div>📊 Entry Ratio (auto): 1 ' + symA + ' = ' + (entryA / entryB).toFixed(6) + ' ' + symB + '</div>'
+                    : '';
+
+                preview.innerHTML = '<div style="font-weight:800;">' + symA + '/' + symB + '</div>' +
+                    entryRatioLine +
                     '<div>💵 Investimento: ' + fmtUsd(totalInvest) + ' (' + symA + ': ' + fmtUsd(investA) + ' + ' + symB + ': ' + fmtUsd(investB) + ')</div>' +
                     '<div>📊 Valor Atual: ' + fmtUsd(totalCur) + '</div>' +
                     '<div style="color:' + (pnl >= 0 ? '#2e7d32' : '#c62828') + '">PnL: ' + pnlSign + fmtUsd(pnl) + '</div>';
@@ -1685,9 +1692,23 @@
                 currentAmountB: parseFloat(document.getElementById('tokenBCurrentAmount').value) || 0,
                 lastQtyUpdate: (parseFloat(document.getElementById('tokenACurrentAmount').value) || parseFloat(document.getElementById('tokenBCurrentAmount').value)) ? new Date().toISOString() : (editingId ? (pools.find(p => p.id === editingId)?.lastQtyUpdate || '') : ''),
                 borrowIdA: document.getElementById('poolBorrowIdA').value || '',
-                borrowPctA: parseFloat(document.getElementById('poolBorrowPctA').value) || 0,
+                borrowPctA: (function() {
+                    const bId = document.getElementById('poolBorrowIdA').value;
+                    const qty = parseFloat(document.getElementById('poolBorrowQtyA').value) || 0;
+                    const b = borrows.find(x => x.id === bId);
+                    const total = b ? parseFloat(b.amount || 0) : 0;
+                    return total > 0 ? (qty / total) * 100 : 0;
+                })(),
+                borrowQtyA: parseFloat(document.getElementById('poolBorrowQtyA').value) || 0,
                 borrowIdB: document.getElementById('poolBorrowIdB').value || '',
-                borrowPctB: parseFloat(document.getElementById('poolBorrowPctB').value) || 0,
+                borrowPctB: (function() {
+                    const bId = document.getElementById('poolBorrowIdB').value;
+                    const qty = parseFloat(document.getElementById('poolBorrowQtyB').value) || 0;
+                    const b = borrows.find(x => x.id === bId);
+                    const total = b ? parseFloat(b.amount || 0) : 0;
+                    return total > 0 ? (qty / total) * 100 : 0;
+                })(),
+                borrowQtyB: parseFloat(document.getElementById('poolBorrowQtyB').value) || 0,
                 rangeMin: parseFloat(document.getElementById('poolRangeMin').value) || 0,
                 rangeMax: parseFloat(document.getElementById('poolRangeMax').value) || 0,
                 chain: document.getElementById('poolChain').value,
@@ -1737,9 +1758,24 @@
             document.getElementById('tokenBEntryPrice').value = p.entryPriceB || '';
             document.getElementById('tokenBCurrentAmount').value = p.currentAmountB || '';
             document.getElementById('poolBorrowIdA').value = p.borrowIdA || '';
-            document.getElementById('poolBorrowPctA').value = p.borrowPctA || '';
+            // Mostrar qty salva (campo borrowQtyA) ou calcular da % salva
+            (function() {
+                const qtyEl = document.getElementById('poolBorrowQtyA');
+                if (p.borrowQtyA) { qtyEl.value = p.borrowQtyA; }
+                else if (p.borrowIdA && p.borrowPctA) {
+                    const bA = borrows.find(b => b.id === p.borrowIdA);
+                    if (bA) qtyEl.value = (parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA)/100)).toFixed(4);
+                } else { qtyEl.value = ''; }
+            })();
             document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
-            document.getElementById('poolBorrowPctB').value = p.borrowPctB || '';
+            (function() {
+                const qtyEl = document.getElementById('poolBorrowQtyB');
+                if (p.borrowQtyB) { qtyEl.value = p.borrowQtyB; }
+                else if (p.borrowIdB && p.borrowPctB) {
+                    const bB = borrows.find(b => b.id === p.borrowIdB);
+                    if (bB) qtyEl.value = (parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB)/100)).toFixed(4);
+                } else { qtyEl.value = ''; }
+            })();
             document.getElementById('poolRangeMin').value = p.rangeMin || '';
             document.getElementById('poolRangeMax').value = p.rangeMax || '';
             document.getElementById('poolChain').value = p.chain || 'Ethereum';
@@ -1753,6 +1789,17 @@
             setTimeout(() => {
                 document.getElementById('poolBorrowIdA').value = p.borrowIdA || '';
                 document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
+                // Re-preencher qty após populateBorrowSelect (que reseta os selects)
+                if (p.borrowQtyA) { document.getElementById('poolBorrowQtyA').value = p.borrowQtyA; }
+                else if (p.borrowIdA && p.borrowPctA) {
+                    const bA = borrows.find(b => b.id === p.borrowIdA);
+                    if (bA) document.getElementById('poolBorrowQtyA').value = (parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA)/100)).toFixed(4);
+                }
+                if (p.borrowQtyB) { document.getElementById('poolBorrowQtyB').value = p.borrowQtyB; }
+                else if (p.borrowIdB && p.borrowPctB) {
+                    const bB = borrows.find(b => b.id === p.borrowIdB);
+                    if (bB) document.getElementById('poolBorrowQtyB').value = (parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB)/100)).toFixed(4);
+                }
                 updateBorrowLinkA(); updateBorrowLinkB();
             }, 100);
             updatePoolPreview();
@@ -1861,6 +1908,9 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
             userId = user.uid;
+            // Carregar meta de fees do Firebase
+            const savedMeta = await getUserSetting('defi_meta_fees');
+            if (savedMeta !== null) metaFeesMensal = parseFloat(savedMeta) || 0;
             await loadPrices();
             await loadBorrows();
             await loadPools();

@@ -184,9 +184,17 @@
         </div>
     </div>
     
-    <script>
-        // Define data de hoje como padrão
-        document.getElementById('data').valueAsDate = new Date();
+    <script type="module">
+        import { auth, onAuthStateChanged } from './firebase-config.js';
+
+        // Verificação de login
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+            // Define data de hoje como padrão
+            document.getElementById('data').valueAsDate = new Date();
+        });
+
+        window.calcular = function() {
         
         function calcular() {
             const valor = parseFloat(document.getElementById('valor').value);
@@ -314,7 +322,7 @@
             
             localStorage.setItem('gtSmartLoanData', JSON.stringify(dados));
             window.location.href = 'GT_Smart_Adicionar_Emprestimo.html';
-        }
+        };
     </script>
 
     <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
