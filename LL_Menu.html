@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 700px; margin: 0 auto; }
+
+        /* Header */
+        .header { text-align: center; color: white; padding: 30px 0 20px; }
+        .header .logo { font-size: 42px; margin-bottom: 6px; }
+        .header h1 { font-size: 28px; font-weight: 800; letter-spacing: 1px; }
+        .header p { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+
+        /* KPI strip */
+        .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .kpi-card { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 12px 8px; text-align: center; color: white; }
+        .kpi-card .num { font-size: 22px; font-weight: 800; }
+        .kpi-card .lbl { font-size: 10px; opacity: 0.8; margin-top: 2px; }
+
+        /* Module grid */
+        .modules-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .mod-card { background: white; border-radius: 14px; padding: 20px 16px; text-decoration: none; color: #333; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.2s; cursor: pointer; border: none; width: 100%; }
+        .mod-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.25); }
+        .mod-card .icon { font-size: 32px; }
+        .mod-card .name { font-size: 15px; font-weight: 700; }
+        .mod-card .desc { font-size: 11px; color: #888; }
+        .mod-card.destaque { background: linear-gradient(135deg, #1565c0, #1976d2); color: white; }
+        .mod-card.destaque .desc { color: rgba(255,255,255,0.75); }
+
+        /* Back to GT Smart */
+        .back-bar { text-align: center; margin-top: 10px; }
+        .back-bar a { color: rgba(255,255,255,0.7); font-size: 13px; text-decoration: none; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; }
+        .back-bar a:hover { color: white; }
+
+        /* Badge de contagem */
+        .badge { display: inline-block; background: #c62828; color: white; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700; margin-left: 4px; vertical-align: middle; }
+        .badge-green { background: #2e7d32; }
+        .badge-orange { background: #e65100; }
+
+        .version { text-align: center; color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 15px; }
+
+        @media (max-width: 480px) {
+            .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+            .modules-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏡</div>
+            <h1>Ledgerlands</h1>
+            <p>Gestão Imobiliária GT Real Assets</p>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-strip">
+            <div class="kpi-card">
+                <div class="num" id="kpiContratos">—</div>
+                <div class="lbl">Contratos Ativos</div>
+            </div>
+            <div class="kpi-card">
+                <div class="num" id="kpiBuyers">—</div>
+                <div class="lbl">Compradores</div>
+            </div>
+            <div class="kpi-card">
+                <div class="num" id="kpiParcelas">—</div>
+                <div class="lbl">Parcelas Vencendo</div>
+            </div>
+            <div class="kpi-card">
+                <div class="num" id="kpiRecebido">—</div>
+                <div class="lbl">Recebido/Mês</div>
+            </div>
+        </div>
+
+        <!-- Módulos principais -->
+        <div class="modules-grid">
+            <a href="LL_Buyers.html" class="mod-card destaque">
+                <div class="icon">👥</div>
+                <div class="name">Compradores</div>
+                <div class="desc">Pipeline de clientes e status</div>
+            </a>
+            <a href="LL_Contracts.html" class="mod-card">
+                <div class="icon">📋</div>
+                <div class="name">Contratos</div>
+                <div class="desc">CFD e CASH — gestão completa</div>
+            </a>
+            <a href="LL_Payments.html" class="mod-card">
+                <div class="icon">💰</div>
+                <div class="name">Pagamentos</div>
+                <div class="desc">Registrar e consultar recebimentos</div>
+            </a>
+            <a href="LL_Installments.html" class="mod-card">
+                <div class="icon">📅</div>
+                <div class="name">Parcelas</div>
+                <div class="desc">Cronograma e parcelas vencendo</div>
+            </a>
+            <a href="LL_Dashboard.html" class="mod-card">
+                <div class="icon">📊</div>
+                <div class="name">Dashboard</div>
+                <div class="desc">KPIs, receita e fluxo de caixa</div>
+            </a>
+            <a href="LL_TaxSchedule.html" class="mod-card">
+                <div class="icon">🧾</div>
+                <div class="name">Relatório Fiscal</div>
+                <div class="desc">Receita por ano — export CSV</div>
+            </a>
+            <a href="LL_BuyerForm.html" target="_blank" class="mod-card" style="border:2px dashed #1565c0;">
+                <div class="icon">📝</div>
+                <div class="name">Formulário Público</div>
+                <div class="desc">Link para o cliente preencher</div>
+            </a>
+            <a href="LL_ImportarDados.html" class="mod-card" style="border:2px dashed #e53935;">
+                <div class="icon">📥</div>
+                <div class="name">Importar Dados</div>
+                <div class="desc">Migração do sistema antigo (usar só uma vez)</div>
+            </a>
+        </div>
+
+        <div class="back-bar">
+            <a href="GT_Smart_Menu.html">← Voltar para GT Smart</a>
+        </div>
+
+        <div class="version">Basic 2.0 | 11/03/2026</div>
+    </div>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, getLLContracts, getLLBuyers, getLLPayments, getLLInstallments } from './firebase-config.js';
+
+        const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+
+            try {
+                const [contratos, buyers, pagamentos, parcelas] = await Promise.all([
+                    getLLContracts(), getLLBuyers(), getLLPayments(), getLLInstallments()
+                ]);
+
+                const hoje = new Date();
+                const mesAtual = hoje.getMonth();
+                const anoAtual = hoje.getFullYear();
+
+                // Contratos ativos
+                const ativos = contratos.filter(c => c.status === 'Active').length;
+                document.getElementById('kpiContratos').textContent = ativos;
+
+                // Buyers (exceto cancelados)
+                const buyersAtivos = buyers.filter(b => b.status !== 'CANCELLED').length;
+                document.getElementById('kpiBuyers').textContent = buyersAtivos;
+
+                // Parcelas vencendo nos próximos 30 dias
+                const em30 = parcelas.filter(p => {
+                    if (p.status === 'PAID') return false;
+                    const venc = new Date(p.dueDate + 'T12:00:00');
+                    const dias = Math.floor((venc - hoje) / 86400000);
+                    return dias >= 0 && dias <= 30;
+                }).length;
+                document.getElementById('kpiParcelas').textContent = em30;
+
+                // Total recebido no mês atual
+                const recMes = pagamentos
+                    .filter(p => {
+                        const d = new Date(p.paymentDate + 'T12:00:00');
+                        return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+                    })
+                    .reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+                document.getElementById('kpiRecebido').textContent = fmt(recMes);
+            } catch(e) {
+                console.error('Erro ao carregar KPIs:', e);
+            }
+        });
+    </script>
+</body>
+</html>

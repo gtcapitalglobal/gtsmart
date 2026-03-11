@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Relatório Fiscal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #283593 0%, #3949ab 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1100px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #283593, #3949ab); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; font-weight: 800; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .btn-print { background: white; color: #283593; border: none; padding: 7px 13px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .content { padding: 15px 20px; }
+        .version { font-size: 10px; opacity: 0.5; text-align: right; padding: 4px 20px 8px; }
+
+        /* Year selector */
+        .year-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+        .year-bar label { font-size: 13px; font-weight: 700; color: #555; }
+        .year-select { padding: 8px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-weight: 700; outline: none; cursor: pointer; }
+        .year-select:focus { border-color: #3949ab; }
+        .btn-gerar { background: #3949ab; color: white; border: none; padding: 9px 20px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .btn-gerar:hover { background: #283593; }
+        .btn-csv { background: #e8f5e9; color: #2e7d32; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+        /* Totals box */
+        .totals-box { background: linear-gradient(135deg, #283593, #3949ab); color: white; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+        .totals-title { font-size: 14px; font-weight: 800; opacity: 0.85; margin-bottom: 10px; }
+        .totals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .total-item { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; text-align: center; }
+        .total-item .tl { font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .total-item .tv { font-size: 18px; font-weight: 800; margin-top: 3px; }
+
+        /* Table */
+        .section-title { font-size: 13px; font-weight: 800; color: #333; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0; }
+        .tbl-wrap { overflow-x: auto; margin-bottom: 20px; }
+        .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .tbl th { background: #283593; color: white; padding: 9px 10px; text-align: right; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
+        .tbl th:first-child, .tbl th:nth-child(2), .tbl th:nth-child(3) { text-align: left; }
+        .tbl td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; text-align: right; }
+        .tbl td:first-child, .tbl td:nth-child(2), .tbl td:nth-child(3) { text-align: left; }
+        .tbl tr:hover td { background: #f5f5f5; }
+        .tbl tfoot td { background: #e8eaf6; font-weight: 800; color: #283593; border-top: 2px solid #283593; padding: 10px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+        .badge-green { background: #e8f5e9; color: #2e7d32; }
+        .badge-red { background: #fdecea; color: #c62828; }
+        .badge-blue { background: #e3f2fd; color: #1565c0; }
+        .badge-grey { background: #f5f5f5; color: #555; }
+
+        /* Pre-Deed section */
+        .predeed-alert { background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; }
+        .predeed-alert strong { color: #e65100; }
+        .predeed-alert p { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.5; }
+
+        /* Monthly breakdown */
+        .month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .month-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; text-align: center; }
+        .month-card .m-name { font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; }
+        .month-card .m-val { font-size: 16px; font-weight: 800; color: #283593; margin-top: 4px; }
+        .month-card .m-cnt { font-size: 10px; color: #999; margin-top: 2px; }
+        .month-card.has-data { border-color: #3949ab; background: #f3e5f5; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; padding: 0 !important; }
+            .container { box-shadow: none !important; border-radius: 0 !important; }
+            .totals-box { background: #283593 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        @media (max-width: 600px) {
+            .totals-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .month-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📋 Relatório Fiscal — Ledgerlands</h2>
+        <div class="header-right no-print">
+            <button onclick="window.print()" class="btn-print">🖨️ Imprimir</button>
+            <a href="LL_Menu.html" class="btn-back">← Voltar</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Year selector -->
+        <div class="year-bar no-print">
+            <label>Ano fiscal:</label>
+            <select id="yearSelect" class="year-select"></select>
+            <button onclick="gerarRelatorio()" class="btn-gerar">📊 Gerar Relatório</button>
+            <button onclick="exportarCSV()" class="btn-csv">⬇️ CSV</button>
+        </div>
+
+        <div id="relContent">
+            <div style="text-align:center;padding:30px;color:#aaa;font-size:14px;" id="placeholder">
+                Selecione o ano e clique em "Gerar Relatório"
+            </div>
+        </div>
+    </div>
+    <div class="version">Basic 1.0 | 11/03/2026</div>
+</div>
+
+<a href="LL_Menu.html" class="no-print" style="position:fixed;bottom:20px;right:20px;background:#3949ab;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+<script type="module">
+    import { auth, onAuthStateChanged, getLLContracts, getLLPayments } from './firebase-config.js';
+
+    const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const MESES_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    let contratos = [], pagamentos = [], anoSel = new Date().getFullYear();
+    let dadosRelatorio = [];
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        [contratos, pagamentos] = await Promise.all([getLLContracts(), getLLPayments()]);
+
+        // Populate year selector
+        const anos = new Set([new Date().getFullYear()]);
+        pagamentos.forEach(p => {
+            if (p.paymentDate) anos.add(parseInt(p.paymentDate.substring(0, 4)));
+        });
+        const sortedAnos = [...anos].sort((a, b) => b - a);
+        const sel = document.getElementById('yearSelect');
+        sortedAnos.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a; opt.textContent = a;
+            sel.appendChild(opt);
+        });
+        sel.value = anoSel;
+
+        // Auto-generate for current year
+        gerarRelatorio();
+    });
+
+    window.gerarRelatorio = function() {
+        anoSel = parseInt(document.getElementById('yearSelect').value);
+        const pgAno = pagamentos.filter(p => p.paymentDate && p.paymentDate.startsWith(String(anoSel)));
+
+        // Monthly breakdown
+        const meses = Array.from({length: 12}, (_, i) => ({ idx: i, total: 0, count: 0 }));
+        pgAno.forEach(p => {
+            const m = parseInt(p.paymentDate.substring(5, 7)) - 1;
+            meses[m].total += parseFloat(p.amountTotal || 0);
+            meses[m].count++;
+        });
+
+        // Per contract
+        dadosRelatorio = [];
+        const contratosComPag = new Set(pgAno.map(p => p.contractId));
+
+        contratos.forEach(c => {
+            const pgContrato = pgAno.filter(p => p.contractId === c.id);
+            if (pgContrato.length === 0 && !contratosComPag.has(c.id)) return;
+
+            const totalRecebido = pgContrato.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+            const principal = pgContrato.reduce((s, p) => s + parseFloat(p.principalAmount || p.amountTotal || 0), 0);
+            const lateFee = pgContrato.reduce((s, p) => s + parseFloat(p.lateFeeAmount || 0), 0);
+            const nPag = pgContrato.length;
+
+            dadosRelatorio.push({
+                propertyId: c.propertyId,
+                buyerName: c.buyerName,
+                saleType: c.saleType,
+                originType: c.originType,
+                status: c.status,
+                contractPrice: parseFloat(c.contractPrice || 0),
+                costBasis: parseFloat(c.costBasis || 0),
+                downPayment: parseFloat(c.downPayment || 0),
+                totalRecebido,
+                principal,
+                lateFee,
+                nPag,
+                contractDate: c.contractDate,
+            });
+        });
+
+        dadosRelatorio.sort((a, b) => a.propertyId > b.propertyId ? 1 : -1);
+
+        // Totals
+        const totRec = dadosRelatorio.reduce((s, r) => s + r.totalRecebido, 0);
+        const totPrinc = dadosRelatorio.reduce((s, r) => s + r.principal, 0);
+        const totLateFee = dadosRelatorio.reduce((s, r) => s + r.lateFee, 0);
+        const totCusto = dadosRelatorio.reduce((s, r) => s + r.costBasis, 0);
+
+        // Render
+        const relContent = document.getElementById('relContent');
+        document.getElementById('placeholder') && (document.getElementById('placeholder').style.display = 'none');
+
+        let html = `
+        <div style="text-align:center;font-size:11px;color:#888;margin-bottom:12px;" id="reportHeader">
+            Entidade: <strong>GT Real Assets LLC</strong> · Ano Fiscal: <strong>${anoSel}</strong> · Gerado em: <strong>${new Date().toLocaleDateString('pt-BR')}</strong>
+        </div>
+
+        <!-- Totals box -->
+        <div class="totals-box">
+            <div class="totals-title">📊 Resumo Fiscal ${anoSel}</div>
+            <div class="totals-grid">
+                <div class="total-item">
+                    <div class="tl">Total Recebido</div>
+                    <div class="tv">${fmt2(totRec)}</div>
+                </div>
+                <div class="total-item">
+                    <div class="tl">Principal</div>
+                    <div class="tv">${fmt2(totPrinc)}</div>
+                </div>
+                <div class="total-item">
+                    <div class="tl">Late Fees</div>
+                    <div class="tv">${fmt2(totLateFee)}</div>
+                </div>
+                <div class="total-item">
+                    <div class="tl">Contratos</div>
+                    <div class="tv">${dadosRelatorio.length}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly breakdown -->
+        <div class="section-title">📅 Recebimentos por Mês — ${anoSel}</div>
+        <div class="month-grid">
+            ${meses.map(m => `
+                <div class="month-card ${m.total > 0 ? 'has-data' : ''}">
+                    <div class="m-name">${MESES_PT[m.idx]}</div>
+                    <div class="m-val">${m.total > 0 ? fmt2(m.total) : '—'}</div>
+                    <div class="m-cnt">${m.count > 0 ? m.count + ' pag.' : ''}</div>
+                </div>
+            `).join('')}
+        </div>
+
+        <!-- Per-contract table -->
+        <div class="section-title">📄 Detalhe por Contrato</div>
+        <div class="tbl-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Imóvel</th>
+                    <th>Comprador</th>
+                    <th>Tipo</th>
+                    <th>Preço Contrato</th>
+                    <th>Custo Base</th>
+                    <th>Down Payment</th>
+                    <th>Recebido ${anoSel}</th>
+                    <th>Principal</th>
+                    <th>Late Fee</th>
+                    <th>Pag.</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${dadosRelatorio.map(r => {
+                    const stBadge = r.status === 'Active' ? 'green' : r.status === 'PaidOff' ? 'blue' : r.status === 'Default' ? 'red' : 'grey';
+                    return `<tr>
+                        <td><strong>${r.propertyId}</strong></td>
+                        <td style="font-size:12px;">${r.buyerName}</td>
+                        <td><span class="badge badge-blue">${r.saleType}</span></td>
+                        <td>${fmt2(r.contractPrice)}</td>
+                        <td>${fmt2(r.costBasis)}</td>
+                        <td>${fmt2(r.downPayment)}</td>
+                        <td style="font-weight:800;color:${r.totalRecebido > 0 ? '#2e7d32' : '#aaa'}">${r.totalRecebido > 0 ? fmt2(r.totalRecebido) : '—'}</td>
+                        <td>${r.principal > 0 ? fmt2(r.principal) : '—'}</td>
+                        <td>${r.lateFee > 0 ? fmt2(r.lateFee) : '—'}</td>
+                        <td style="color:#555;">${r.nPag}</td>
+                        <td><span class="badge badge-${stBadge}">${r.status}</span></td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6">TOTAL</td>
+                    <td>${fmt2(totRec)}</td>
+                    <td>${fmt2(totPrinc)}</td>
+                    <td>${fmt2(totLateFee)}</td>
+                    <td>${dadosRelatorio.reduce((s,r)=>s+r.nPag,0)}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        </div>
+
+        <!-- Pre-deed note -->
+        <div class="predeed-alert">
+            <strong>⚠️ Nota Fiscal (Pre-Deed)</strong>
+            <p>Contratos onde o escritório (deed) ainda não foi registrado podem requerer tratamento diferente. Pagamentos recebidos antes do registro podem ser classificados como "Customer Deposits — Pre-Deed" e não como receita. Consulte seu CPA para a classificação correta conforme as regras do IRS para installment sales (IRC §453).</p>
+        </div>
+        `;
+
+        relContent.innerHTML = html;
+    };
+
+    window.exportarCSV = function() {
+        if (dadosRelatorio.length === 0) { alert('Gere o relatório primeiro.'); return; }
+
+        const headers = ['Property ID','Buyer','Sale Type','Origin','Contract Price','Cost Basis','Down Payment','Received ' + anoSel,'Principal','Late Fee','Payments','Status','Contract Date'];
+        const rows = dadosRelatorio.map(r => [
+            r.propertyId, r.buyerName, r.saleType, r.originType,
+            r.contractPrice.toFixed(2), r.costBasis.toFixed(2), r.downPayment.toFixed(2),
+            r.totalRecebido.toFixed(2), r.principal.toFixed(2), r.lateFee.toFixed(2),
+            r.nPag, r.status, r.contractDate || ''
+        ]);
+
+        const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `LedgerLands_TaxReport_${anoSel}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+    };
+</script>
+</body>
+</html>
