@@ -877,7 +877,7 @@
                 </div>
             </div>
 
-            <div style="text-align:center;margin:6px 0;font-size:18px;color:#7C4DFF;">⇅</div>
+            <div style="text-align:center;margin:6px 0;font-size:18px;color:#7C4DFF;cursor:pointer;" onclick="trocarCampos()" title="Inverter valores">⇅</div>
 
             <!-- BRL → USD -->
             <div style="margin-bottom:18px;">
@@ -941,6 +941,14 @@
                 cotacaoUSD = 0;
             }
         }
+
+        window.trocarCampos = function() {
+            const usd = document.getElementById('inputUSD').value;
+            const brl = document.getElementById('inputBRL').value;
+            document.getElementById('inputUSD').value = brl ? (parseFloat(brl) / cotacaoUSD).toFixed(2) : '';
+            document.getElementById('inputBRL').value = usd ? (parseFloat(usd) * cotacaoUSD).toFixed(2) : '';
+            converterDe('usd');
+        };
 
         window.converterDe = function(origem) {
             if (!cotacaoUSD) return;
