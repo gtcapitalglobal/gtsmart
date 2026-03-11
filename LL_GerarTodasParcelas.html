@@ -120,7 +120,9 @@ function extractInstNum(memo) {
 
 // ─── Main logic per contract ──────────────────────────────────────────────────
 async function processContract(contract) {
-    const cid        = contract.contractId;  // numeric e.g. 210001
+    // contractId pode ser um campo no documento OU o próprio ID do documento
+    // Usa o que estiver disponível: campo contractId > campo id > doc ID
+    const cid        = contract.contractId || contract.id || contract._docId;
     const pid        = (contract.propertyId || '').replace('#', ''); // "25"
     const buyer      = contract.buyerName || '?';
     const count      = parseInt(contract.installmentCount || 0);
@@ -143,23 +145,33 @@ async function processContract(contract) {
         return { ok: 0, err: 0 };
     }
 
-    // 1. Apagar parcelas existentes deste contrato
+    // 1. Apagar parcelas existentes — usa propertyId (mais confiável)
     try {
-        const snap = await getDocs(query(colInst, where('contractId', '==', cid)));
-        if (snap.size > 0) {
-            await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
-            log(`   🗑️  ${snap.size} parcelas antigas removidas`, 'dim');
+        const propId = `#${pid}`;
+        const snapDel = await getDocs(query(colInst, where('propertyId', '==', propId)));
+        if (snapDel.size > 0) {
+            await Promise.all(snapDel.docs.map(d => deleteDoc(d.ref)));
+            log(`   🗑️  ${snapDel.size} parcelas antigas removidas`, 'dim');
+        } else {
+            log(`   🗑️  Nenhuma parcela existente`, 'dim');
         }
     } catch(e) {
         log(`   ❌ Erro ao limpar: ${e.message}`, 'err');
         return { ok: 0, err: 1 };
     }
 
-    // 2. Buscar pagamentos deste contrato
+    // 2. Buscar pagamentos — tenta contractId numérico, depois propertyId
     let payments = [];
     try {
-        const pSnap = await getDocs(query(colPay, where('contractId', '==', cid)));
-        payments = pSnap.docs.map(d => d.data());
+        const cidNum = parseInt(cid);
+        if (!isNaN(cidNum)) {
+            const pSnap = await getDocs(query(colPay, where('contractId', '==', cidNum)));
+            payments = pSnap.docs.map(d => d.data());
+        }
+        if (payments.length === 0) {
+            const pSnap2 = await getDocs(query(colPay, where('propertyId', '==', `#${pid}`)));
+            payments = pSnap2.docs.map(d => d.data());
+        }
     } catch(e) {
         log(`   ⚠️  Não foi possível buscar pagamentos: ${e.message}`, 'warn');
     }
@@ -288,7 +300,7 @@ window.executar = async function() {
         // Load all contracts
         const colContracts = collection(db, 'users', uid, 'll_contracts');
         const snap = await getDocs(colContracts);
-        const contracts = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+        const contracts = snap.docs.map(d => ({ ...d.data(), id: d.id, _docId: d.id }));
 
         log(`🔍 ${contracts.length} contratos encontrados`, 'info');
 
