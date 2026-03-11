@@ -281,7 +281,7 @@
     let pagamentos = [];
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const fmtData = d => { if (!d) return '—'; const s = d.includes('T') ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? '—' : dt.toLocaleDateString('pt-BR'); };
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
@@ -398,21 +398,33 @@
                     💰 Pagamentos Recebidos
                     <button class="btn-pag-novo" onclick="abrirPagamento()">+ Novo</button>
                 </div>
-                ${pagamentos.length === 0 ? '<div class="empty">Nenhum pagamento registrado ainda.</div>' : pagamentos.map(p => `
-                    <div class="pagamento-item">
-                        <div class="pag-left">
-                            <div class="pag-valor">${fmt2(p.amountTotal)}</div>
-                            <div class="pag-info">
-                                ${fmtData(p.paymentDate)} &nbsp;·&nbsp;
-                                <span class="canal-badge">${p.channel || '—'}</span>
-                                <span class="canal-badge">${p.receivedBy === 'GT_REAL' ? 'GT Real' : p.receivedBy === 'LEGACY' ? 'Legacy' : 'Personal'}</span>
-                                ${p.memo ? '&nbsp;·&nbsp; ' + p.memo : ''}
-                                ${parseFloat(p.lateFeeAmount) > 0 ? `&nbsp;·&nbsp; Late fee: ${fmt2(p.lateFeeAmount)}` : ''}
+                ${(() => {
+                    const dpVal = parseFloat(contrato.downPayment || 0);
+                    const dpDate = contrato.contractDate || '';
+                    const dpRow = dpVal > 0 ? `
+                        <div class="pagamento-item" style="background:#f0fdf4;border-left:3px solid #22c55e;">
+                            <div class="pag-left">
+                                <div class="pag-valor" style="color:#166534;">${fmt2(dpVal)}</div>
+                                <div class="pag-info">${fmtData(dpDate)} &nbsp;·&nbsp; <span class="canal-badge" style="background:#dcfce7;color:#166534;">DOWN PAYMENT</span></div>
                             </div>
+                        </div>` : '';
+                    const pagsHtml = pagamentos.length === 0 ? '' : pagamentos.map(p => `
+                        <div class="pagamento-item">
+                            <div class="pag-left">
+                                <div class="pag-valor">${fmt2(p.amountTotal)}</div>
+                                <div class="pag-info">
+                                    ${fmtData(p.paymentDate)} &nbsp;·&nbsp;
+                                    <span class="canal-badge">${p.channel || '—'}</span>
+                                    <span class="canal-badge">${p.receivedBy === 'GT_REAL' ? 'GT Real' : p.receivedBy === 'LEGACY' ? 'Legacy' : 'Personal'}</span>
+                                    ${p.memo ? '&nbsp;·&nbsp; ' + p.memo : ''}
+                                    ${parseFloat(p.lateFeeAmount) > 0 ? `&nbsp;·&nbsp; Late fee: ${fmt2(p.lateFeeAmount)}` : ''}
+                                </div>
+                            </div>
+                            <button class="btn-sm btn-despagar" onclick="excluirPagamento('${p.id}')">🗑️</button>
                         </div>
-                        <button class="btn-sm btn-despagar" onclick="excluirPagamento('${p.id}')">🗑️</button>
-                    </div>
-                `).join('')}
+                    `).join('');
+                    return dpRow + pagsHtml || '<div class="empty">Nenhum pagamento registrado ainda.</div>';
+                })()}
             </div>
         `;
     }
