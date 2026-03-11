@@ -134,28 +134,7 @@
         </div>
         <div class="empty" id="emptyMsg" style="display:none;">Nenhuma parcela encontrada.</div>
     </div>
-    <div class="version">Basic 8.1 | 11/03/2026</div>
-</div>
-
-<!-- Modal Editar Parcela -->
-<div class="modal" id="modalEditar">
-    <div class="modal-box">
-        <div class="modal-title">✏️ Editar Parcela</div>
-        <div id="modalInfoEditar" style="background:#f5f5f5;border-radius:8px;padding:10px;margin-bottom:14px;font-size:13px;color:#555;"></div>
-        <input type="hidden" id="meId">
-        <div class="form-group">
-            <label>Data de Vencimento</label>
-            <input type="date" id="meData">
-        </div>
-        <div class="form-group">
-            <label>Valor ($)</label>
-            <input type="number" id="meValor" step="0.01" placeholder="0.00">
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancelar" onclick="fecharModalEditar()">Cancelar</button>
-            <button class="btn-salvar" onclick="confirmarEditar()">💾 Salvar</button>
-        </div>
-    </div>
+    <div class="version">Basic 1.0 | 11/03/2026</div>
 </div>
 
 <!-- Modal Pagar -->
@@ -308,17 +287,15 @@
                 ? `<button class="btn-despagar" onclick="desfazerPagamento('${p.id}')">↩️ Desfazer</button>`
                 : `<button class="btn-pagar" onclick="abrirPagar('${p.id}')">💰 Pagar</button>`;
 
-            const btnEditar = `<button onclick="abrirEditar('${p.id}')" style="background:#e3f2fd;color:#1565c0;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-left:4px;">✏️</button>`;
-
             return `<tr class="${rowClass}">
                 <td style="color:#999;font-size:12px;">${p.installmentNumber || '—'}</td>
-                <td><a href="LL_Detalhe_Contrato.html?id=${p.contractId}" style="font-weight:700;color:#1565c0;text-decoration:none;">${p.propertyId || c.propertyId || '—'}</a></td>
+                <td><strong>${p.propertyId || c.propertyId || '—'}</strong></td>
                 <td style="font-size:12px;">${c.buyerName || '—'}</td>
                 <td>${tipoBadge}</td>
                 <td>${fmtData(p.dueDate)}</td>
                 <td style="font-weight:700;">${fmt2(p.amount)}</td>
                 <td><span class="badge badge-${badge}">${statusLabel}</span></td>
-                <td>${btnAcao}${btnEditar}</td>
+                <td>${btnAcao}</td>
             </tr>`;
         }).join('');
     }
@@ -363,40 +340,6 @@
             renderTabela();
         }
     };
-
-    window.abrirEditar = function(id) {
-        const p = parcelas.find(x => x.id === id);
-        if (!p) return;
-        const c = contratos.find(x => x.id === p.contractId) || {};
-        document.getElementById('meId').value = id;
-        document.getElementById('meData').value = p.dueDate || '';
-        document.getElementById('meValor').value = parseFloat(p.amount || 0).toFixed(2);
-        document.getElementById('modalInfoEditar').innerHTML = `<strong>${p.propertyId || c.propertyId}</strong> — Parcela #${p.installmentNumber || '—'} · ${c.buyerName || '—'}`;
-        document.getElementById('modalEditar').classList.add('open');
-    };
-
-    window.fecharModalEditar = function() {
-        document.getElementById('modalEditar').classList.remove('open');
-    };
-
-    window.confirmarEditar = async function() {
-        const id = document.getElementById('meId').value;
-        const dueDate = document.getElementById('meData').value;
-        const amount = parseFloat(document.getElementById('meValor').value) || 0;
-        if (!dueDate || amount <= 0) { alert('❌ Data e valor são obrigatórios!'); return; }
-        const ok = await updateLLInstallment(id, { dueDate, amount });
-        if (ok) {
-            const idx = parcelas.findIndex(x => x.id === id);
-            if (idx >= 0) { parcelas[idx].dueDate = dueDate; parcelas[idx].amount = amount; }
-            fecharModalEditar();
-            renderSummary();
-            renderTabela();
-        }
-    };
-
-    document.getElementById('modalEditar').addEventListener('click', e => {
-        if (e.target === document.getElementById('modalEditar')) fecharModalEditar();
-    });
 
     window.fecharModal = function() {
         document.getElementById('modalPagar').classList.remove('open');

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Pagamentos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; font-weight: 800; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .btn-add { background: white; color: #1565c0; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .content { padding: 15px 20px; }
+
+        /* Summary */
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+        .sum-card { border-radius: 10px; padding: 12px; text-align: center; }
+        .sum-card .lbl { font-size: 10px; font-weight: 700; opacity: 0.8; margin-bottom: 3px; }
+        .sum-card .val { font-size: 18px; font-weight: 800; }
+        .sc-green { background: #e8f5e9; color: #2e7d32; }
+        .sc-blue { background: #e3f2fd; color: #1565c0; }
+        .sc-orange { background: #fff3e0; color: #e65100; }
+        .sc-grey { background: #f5f5f5; color: #555; }
+
+        /* Filtros */
+        .filtros { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .search-box { flex: 1; min-width: 180px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; }
+        .search-box:focus { border-color: #1565c0; }
+        .filter-select { padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; background: white; cursor: pointer; }
+        .filter-month { padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; }
+
+        /* Tabela */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f5f5f5; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        tr:hover td { background: #f9f9f9; }
+
+        .canal-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #e3f2fd; color: #1565c0; font-size: 10px; font-weight: 700; }
+        .recv-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #e8f5e9; color: #2e7d32; font-size: 10px; font-weight: 700; margin-left: 3px; }
+
+        .btn-sm { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+        .btn-del { background: #fdecea; color: #c62828; }
+        .btn-view { background: #e3f2fd; color: #1565c0; }
+
+        .empty { text-align: center; padding: 40px; color: #aaa; }
+        .empty .big { font-size: 40px; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 500px; position: relative; }
+        .modal h3 { font-size: 17px; font-weight: 800; margin-bottom: 16px; color: #1565c0; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 4px; }
+        .form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { border-color: #1565c0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-save { background: #1565c0; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; margin-top: 8px; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+            .header { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>💰 Pagamentos Recebidos</h2>
+        <div class="header-right">
+            <button class="btn-add" onclick="abrirNovo()">+ Registrar Pagamento</button>
+            <a href="LL_Menu.html" class="btn-back">← Menu</a>
+        </div>
+    </div>
+    <div class="content">
+
+        <div class="summary-grid">
+            <div class="sum-card sc-green"><div class="lbl">Total Geral</div><div class="val" id="sTotal">$0</div></div>
+            <div class="sum-card sc-blue"><div class="lbl">Este Mês</div><div class="val" id="sMes">$0</div></div>
+            <div class="sum-card sc-orange"><div class="lbl">Qtd. Pagamentos</div><div class="val" id="sQtd">0</div></div>
+            <div class="sum-card sc-grey"><div class="lbl">Late Fees</div><div class="val" id="sFees">$0</div></div>
+        </div>
+
+        <div class="filtros">
+            <input class="search-box" id="searchInput" type="text" placeholder="🔍 Buscar por Property ID ou memo..." oninput="renderTabela()">
+            <input class="filter-month" type="month" id="fMes" onchange="renderTabela()">
+            <select class="filter-select" id="fCanal" onchange="renderTabela()">
+                <option value="">Todos canais</option>
+                <option>Zelle</option>
+                <option>ACH</option>
+                <option>Cash</option>
+                <option>Check</option>
+                <option>Wire</option>
+                <option>Other</option>
+            </select>
+            <select class="filter-select" id="fRecv" onchange="renderTabela()">
+                <option value="">Todas contas</option>
+                <option value="GT_REAL">GT Real Assets</option>
+                <option value="LEGACY">Legacy</option>
+                <option value="PERSONAL">Personal</option>
+            </select>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Property ID</th>
+                        <th>Total</th>
+                        <th>Principal</th>
+                        <th>Late Fee</th>
+                        <th>Canal</th>
+                        <th>Conta</th>
+                        <th>Memo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaBody">
+                    <tr><td colspan="9" class="empty"><div class="big">⏳</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo Pagamento -->
+<div class="modal-overlay" id="modalPagamento">
+    <div class="modal">
+        <button class="modal-close" onclick="fecharModal()">✕</button>
+        <h3>Registrar Pagamento</h3>
+        <div class="form-group">
+            <label>Contrato / Property ID *</label>
+            <select id="pContratoId" onchange="preencherPropertyId()">
+                <option value="">Selecione um contrato...</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Data do Pagamento *</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Total Recebido (USD) *</label>
+                <input type="number" id="pTotal" placeholder="220.00" oninput="splitPagamento()">
+            </div>
+            <div class="form-group">
+                <label>Late Fee (USD)</label>
+                <input type="number" id="pLateFee" placeholder="0" oninput="splitPagamento()">
+            </div>
+        </div>
+        <div class="form-group" style="background:#f5f5f5;border-radius:8px;padding:8px 12px;font-size:12px;color:#555;" id="pSplitInfo">
+            Principal = Total − Late Fee
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Canal</label>
+                <select id="pChannel">
+                    <option>Zelle</option><option>ACH</option><option>Cash</option>
+                    <option>Check</option><option>Wire</option><option>Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Recebido por</label>
+                <select id="pReceivedBy">
+                    <option value="GT_REAL">GT Real Assets</option>
+                    <option value="LEGACY">Legacy</option>
+                    <option value="PERSONAL">Personal</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Memo</label>
+            <input type="text" id="pMemo" placeholder="ex: parcela #5">
+        </div>
+        <button class="btn-save" onclick="salvarPagamento()">💾 Salvar</button>
+    </div>
+</div>
+
+<a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏡 Menu</a>
+
+<script type="module">
+    import { auth, onAuthStateChanged, getLLPayments, getLLContracts, saveLLPayment, deleteLLPayment } from './firebase-config.js';
+
+    let pagamentos = [];
+    let contratos = [];
+
+    const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+
+    // Mês atual
+    const hoje = new Date();
+    document.getElementById('fMes').value = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        [pagamentos, contratos] = await Promise.all([getLLPayments(), getLLContracts()]);
+        preencherSelectContratos();
+        renderSummary();
+        renderTabela();
+    });
+
+    function preencherSelectContratos() {
+        const sel = document.getElementById('pContratoId');
+        sel.innerHTML = '<option value="">Selecione um contrato...</option>' +
+            contratos.filter(c => c.status === 'Active').map(c =>
+                `<option value="${c.id}" data-prop="${c.propertyId}">${c.propertyId} — ${c.buyerName}</option>`
+            ).join('');
+    }
+
+    window.preencherPropertyId = function() {};
+
+    function renderSummary() {
+        const mesStr = document.getElementById('fMes').value;
+        const [anoF, mesF] = mesStr ? mesStr.split('-').map(Number) : [0, 0];
+
+        const total = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+        const mes = pagamentos.filter(p => {
+            const d = new Date(p.paymentDate + 'T12:00:00');
+            return d.getFullYear() === anoF && d.getMonth() + 1 === mesF;
+        }).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+        const fees = pagamentos.reduce((s, p) => s + parseFloat(p.lateFeeAmount || 0), 0);
+
+        document.getElementById('sTotal').textContent = fmt2(total);
+        document.getElementById('sMes').textContent = fmt2(mes);
+        document.getElementById('sQtd').textContent = pagamentos.length;
+        document.getElementById('sFees').textContent = fmt2(fees);
+    }
+
+    window.renderTabela = function() {
+        const q = (document.getElementById('searchInput').value || '').toLowerCase();
+        const mesStr = document.getElementById('fMes').value;
+        const canal = document.getElementById('fCanal').value;
+        const recv = document.getElementById('fRecv').value;
+        const [anoF, mesF] = mesStr ? mesStr.split('-').map(Number) : [0, 0];
+
+        const lista = pagamentos.filter(p => {
+            const mq = !q || (p.propertyId || '').toLowerCase().includes(q) || (p.memo || '').toLowerCase().includes(q);
+            const mmes = !mesStr || (() => {
+                const d = new Date(p.paymentDate + 'T12:00:00');
+                return d.getFullYear() === anoF && d.getMonth() + 1 === mesF;
+            })();
+            const mcanal = !canal || p.channel === canal;
+            const mrecv = !recv || p.receivedBy === recv;
+            return mq && mmes && mcanal && mrecv;
+        }).sort((a, b) => b.paymentDate?.localeCompare(a.paymentDate));
+
+        renderSummary();
+
+        const tb = document.getElementById('tabelaBody');
+        if (!lista.length) {
+            tb.innerHTML = `<tr><td colspan="9" class="empty"><div class="big">🔍</div><p>Nenhum pagamento encontrado</p></td></tr>`;
+            return;
+        }
+
+        const recvLabel = { GT_REAL: 'GT Real', LEGACY: 'Legacy', PERSONAL: 'Personal' };
+
+        tb.innerHTML = lista.map(p => `
+            <tr>
+                <td style="white-space:nowrap;">${fmtData(p.paymentDate)}</td>
+                <td><strong>${p.propertyId || '—'}</strong></td>
+                <td style="font-weight:800;color:#2e7d32;">${fmt2(p.amountTotal)}</td>
+                <td>${fmt2(p.principalAmount)}</td>
+                <td>${parseFloat(p.lateFeeAmount) > 0 ? `<span style="color:#c62828;font-weight:700;">${fmt2(p.lateFeeAmount)}</span>` : '—'}</td>
+                <td><span class="canal-badge">${p.channel || '—'}</span></td>
+                <td><span class="recv-badge">${recvLabel[p.receivedBy] || p.receivedBy || '—'}</span></td>
+                <td style="font-size:11px;color:#888;">${p.memo || '—'}</td>
+                <td>
+                    <div style="display:flex;gap:4px;">
+                        ${p.contractId ? `<a href="LL_Detalhe_Contrato.html?id=${p.contractId}" class="btn-sm btn-view">Ver contrato</a>` : ''}
+                        <button class="btn-sm btn-del" onclick="excluir('${p.id}')">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.splitPagamento = function() {
+        const total = parseFloat(document.getElementById('pTotal').value) || 0;
+        const fee = parseFloat(document.getElementById('pLateFee').value) || 0;
+        document.getElementById('pSplitInfo').textContent = `Principal: $${(total - fee).toFixed(2)} | Late Fee: $${fee.toFixed(2)} | Total: $${total.toFixed(2)}`;
+    };
+
+    window.abrirNovo = function() {
+        document.getElementById('pDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('pTotal').value = '';
+        document.getElementById('pLateFee').value = '';
+        document.getElementById('pMemo').value = '';
+        document.getElementById('pSplitInfo').textContent = 'Principal = Total − Late Fee';
+        document.getElementById('modalPagamento').classList.add('open');
+    };
+
+    window.fecharModal = function() {
+        document.getElementById('modalPagamento').classList.remove('open');
+    };
+
+    window.salvarPagamento = async function() {
+        const contratoId = document.getElementById('pContratoId').value;
+        const paymentDate = document.getElementById('pDate').value;
+        const amountTotal = document.getElementById('pTotal').value;
+        if (!paymentDate || !amountTotal) { alert('❌ Data e valor são obrigatórios!'); return; }
+
+        const contrato = contratos.find(c => c.id === contratoId);
+        const lateFee = parseFloat(document.getElementById('pLateFee').value) || 0;
+        const principal = Math.max(0, parseFloat(amountTotal) - lateFee);
+
+        const data = {
+            contractId: contratoId || '',
+            propertyId: contrato?.propertyId || '',
+            paymentDate,
+            amountTotal: parseFloat(amountTotal),
+            principalAmount: principal,
+            lateFeeAmount: lateFee,
+            channel: document.getElementById('pChannel').value,
+            receivedBy: document.getElementById('pReceivedBy').value,
+            memo: document.getElementById('pMemo').value.trim(),
+        };
+
+        const newId = await saveLLPayment(data);
+        if (newId) {
+            pagamentos.unshift({ ...data, id: newId });
+            fecharModal();
+            renderSummary();
+            renderTabela();
+        }
+    };
+
+    window.excluir = async function(id) {
+        if (!confirm('Excluir este pagamento?')) return;
+        await deleteLLPayment(id);
+        pagamentos = pagamentos.filter(p => p.id !== id);
+        renderSummary();
+        renderTabela();
+    };
+
+    document.getElementById('modalPagamento').addEventListener('click', e => {
+        if (e.target === document.getElementById('modalPagamento')) fecharModal();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Contratos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1100px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; font-weight: 800; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .btn-add { background: white; color: #1565c0; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .content { padding: 15px 20px; }
+
+        /* Summary */
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+        .sum-card { border-radius: 10px; padding: 12px; text-align: center; }
+        .sum-card .lbl { font-size: 10px; font-weight: 700; opacity: 0.8; margin-bottom: 3px; }
+        .sum-card .val { font-size: 20px; font-weight: 800; }
+        .sc-blue { background: #e3f2fd; color: #1565c0; }
+        .sc-green { background: #e8f5e9; color: #2e7d32; }
+        .sc-orange { background: #fff3e0; color: #e65100; }
+        .sc-grey { background: #f5f5f5; color: #555; }
+
+        /* Filtros */
+        .filtros { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .search-box { flex: 1; min-width: 180px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; }
+        .search-box:focus { border-color: #1565c0; }
+        .filter-select { padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; background: white; cursor: pointer; }
+
+        /* Tabela */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f5f5f5; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        tr:hover td { background: #f9f9f9; }
+
+        .status { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+        .s-Active { background: #e8f5e9; color: #2e7d32; }
+        .s-PaidOff { background: #e3f2fd; color: #1565c0; }
+        .s-Default { background: #fdecea; color: #c62828; }
+        .s-Repossessed { background: #f5f5f5; color: #757575; }
+
+        .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        .t-CFD { background: #e8f5e9; color: #2e7d32; }
+        .t-CASH { background: #fff3e0; color: #e65100; }
+
+        .btn-sm { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+        .btn-view { background: #e3f2fd; color: #1565c0; }
+        .btn-del { background: #fdecea; color: #c62828; }
+
+        .empty { text-align: center; padding: 40px; color: #aaa; }
+        .empty .big { font-size: 40px; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 620px; position: relative; margin: auto; }
+        .modal h3 { font-size: 17px; font-weight: 800; margin-bottom: 16px; color: #1565c0; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { border-color: #1565c0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .section-title { font-size: 12px; font-weight: 800; color: #1565c0; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #e3f2fd; }
+        .cfd-fields { display: block; }
+        .btn-save { background: #1565c0; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; margin-top: 8px; }
+        .btn-save:hover { background: #0d47a1; }
+
+        /* Calculado */
+        .calc-box { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 13px; }
+        .calc-box strong { color: #2e7d32; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            .header { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📋 Contratos</h2>
+        <div class="header-right">
+            <button class="btn-add" onclick="abrirNovo()">+ Novo Contrato</button>
+            <a href="LL_Menu.html" class="btn-back">← Menu</a>
+        </div>
+    </div>
+    <div class="content">
+
+        <!-- Summary -->
+        <div class="summary-grid">
+            <div class="sum-card sc-blue"><div class="lbl">Total</div><div class="val" id="sTotal">0</div></div>
+            <div class="sum-card sc-green"><div class="lbl">Ativos</div><div class="val" id="sAtivos">0</div></div>
+            <div class="sum-card sc-orange"><div class="lbl">Volume Total</div><div class="val" id="sVolume">$0</div></div>
+            <div class="sum-card sc-grey"><div class="lbl">Quitados</div><div class="val" id="sQuitados">0</div></div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros">
+            <input class="search-box" id="searchInput" type="text" placeholder="🔍 Buscar por Property ID, comprador ou county..." oninput="renderTabela()">
+            <select class="filter-select" id="fStatus" onchange="renderTabela()">
+                <option value="">Todos status</option>
+                <option value="Active">Ativo</option>
+                <option value="PaidOff">Quitado</option>
+                <option value="Default">Inadimplente</option>
+                <option value="Repossessed">Recuperado</option>
+            </select>
+            <select class="filter-select" id="fType" onchange="renderTabela()">
+                <option value="">CFD + CASH</option>
+                <option value="CFD">Só CFD</option>
+                <option value="CASH">Só CASH</option>
+            </select>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property ID</th>
+                        <th>Comprador</th>
+                        <th>County / Estado</th>
+                        <th>Tipo</th>
+                        <th>Preço</th>
+                        <th>Down Payment</th>
+                        <th>Parcela</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaBody">
+                    <tr><td colspan="10" class="empty"><div class="big">⏳</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo/Editar -->
+<div class="modal-overlay" id="modalContrato">
+    <div class="modal">
+        <button class="modal-close" onclick="fecharModal()">✕</button>
+        <h3 id="modalTitulo">Novo Contrato</h3>
+        <input type="hidden" id="cId">
+
+        <div class="section-title">Identificação</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Property ID * (ex: #33)</label>
+                <input type="text" id="cPropertyId" placeholder="#33">
+            </div>
+            <div class="form-group">
+                <label>Tipo de Venda *</label>
+                <select id="cSaleType" onchange="toggleCFD()">
+                    <option value="CFD">CFD (Parcelado)</option>
+                    <option value="CASH">CASH (À Vista)</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Nome do Comprador *</label>
+            <input type="text" id="cBuyerName" placeholder="John Smith">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>County *</label>
+                <input type="text" id="cCounty" placeholder="Putnam" value="Putnam">
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <input type="text" id="cState" placeholder="FL" value="FL" maxlength="2">
+            </div>
+        </div>
+
+        <div class="section-title">Dados Financeiros</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Preço de Venda (USD) *</label>
+                <input type="number" id="cPrice" placeholder="12000" oninput="calcularResumo()">
+            </div>
+            <div class="form-group">
+                <label>Cost Basis (USD) *</label>
+                <input type="number" id="cCostBasis" placeholder="3500" oninput="calcularResumo()">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Down Payment (USD) *</label>
+                <input type="number" id="cDownPayment" placeholder="499" oninput="calcularResumo()">
+            </div>
+            <div class="form-group" id="grpOriginType">
+                <label>Origem</label>
+                <select id="cOriginType">
+                    <option value="DIRECT">Direto (GT Real)</option>
+                    <option value="ASSUMED">Assumido (G&T)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- CFD fields -->
+        <div id="cfdFields">
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>Valor da Parcela (USD)</label>
+                    <input type="number" id="cInstAmount" placeholder="220" oninput="calcularResumo()">
+                </div>
+                <div class="form-group">
+                    <label>Qtd. Parcelas</label>
+                    <input type="number" id="cInstCount" placeholder="48" oninput="calcularResumo()">
+                </div>
+                <div class="form-group">
+                    <label>Balloon (USD)</label>
+                    <input type="number" id="cBalloon" placeholder="0">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Data 1ª Parcela</label>
+                    <input type="date" id="cFirstInst">
+                </div>
+                <div class="form-group">
+                    <label>Data Balloon</label>
+                    <input type="date" id="cBalloonDate">
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculado -->
+        <div class="calc-box" id="calcBox" style="display:none;">
+            <div id="calcResumo"></div>
+        </div>
+
+        <div class="section-title">Datas</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Data do Contrato *</label>
+                <input type="date" id="cContractDate">
+            </div>
+            <div class="form-group">
+                <label>Data de Fechamento</label>
+                <input type="date" id="cCloseDate">
+            </div>
+        </div>
+
+        <div class="section-title">Documentos</div>
+        <div class="form-group">
+            <label>Link Google Drive (pasta de documentos)</label>
+            <input type="url" id="cDocLink" placeholder="https://drive.google.com/drive/folders/...">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Status</label>
+                <select id="cStatus">
+                    <option value="Active">Ativo</option>
+                    <option value="PaidOff">Quitado</option>
+                    <option value="Default">Inadimplente</option>
+                    <option value="Repossessed">Recuperado</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Observações</label>
+            <textarea id="cNotes" rows="2" style="resize:vertical;"></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn-save" onclick="salvar()">💾 Salvar Contrato</button>
+            <button class="btn-save" id="btnGerarParcelas" style="background:#2e7d32;display:none;" onclick="salvarEGerarParcelas()">💾 Salvar + Gerar Parcelas</button>
+        </div>
+    </div>
+</div>
+
+<a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏡 Menu</a>
+
+<script type="module">
+    import { auth, onAuthStateChanged, getLLContracts, saveLLContract, updateLLContract, deleteLLContract, getLLInstallments, saveLLInstallment, deleteLLInstallmentsByContract } from './firebase-config.js';
+
+    let contratos = [];
+    const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+    const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        contratos = await getLLContracts();
+        renderSummary();
+        renderTabela();
+    });
+
+    function renderSummary() {
+        document.getElementById('sTotal').textContent = contratos.length;
+        document.getElementById('sAtivos').textContent = contratos.filter(c => c.status === 'Active').length;
+        document.getElementById('sQuitados').textContent = contratos.filter(c => c.status === 'PaidOff').length;
+        const vol = contratos.filter(c => c.status === 'Active').reduce((s, c) => s + parseFloat(c.contractPrice || 0), 0);
+        document.getElementById('sVolume').textContent = fmt(vol);
+    }
+
+    window.renderTabela = function() {
+        const q = (document.getElementById('searchInput').value || '').toLowerCase();
+        const fs = document.getElementById('fStatus').value;
+        const ft = document.getElementById('fType').value;
+        const lista = contratos.filter(c => {
+            const mq = !q || (c.propertyId || '').toLowerCase().includes(q) || (c.buyerName || '').toLowerCase().includes(q) || (c.county || '').toLowerCase().includes(q);
+            const ms = !fs || c.status === fs;
+            const mt = !ft || c.saleType === ft;
+            return mq && ms && mt;
+        });
+
+        const tb = document.getElementById('tabelaBody');
+        if (!lista.length) { tb.innerHTML = `<tr><td colspan="10" class="empty"><div class="big">🔍</div><p>Nenhum contrato encontrado</p></td></tr>`; return; }
+
+        tb.innerHTML = lista.map(c => `
+            <tr>
+                <td><strong>${c.propertyId || '—'}</strong></td>
+                <td>${c.buyerName || '—'}</td>
+                <td>${c.county || '—'}${c.state ? ', ' + c.state : ''}</td>
+                <td><span class="type-badge t-${c.saleType}">${c.saleType || '—'}</span></td>
+                <td>${fmt(c.contractPrice)}</td>
+                <td>${fmt(c.downPayment)}</td>
+                <td>${c.saleType === 'CFD' ? fmt(c.installmentAmount) + ' × ' + (c.installmentCount || 0) : '—'}</td>
+                <td><span class="status s-${c.status}">${c.status === 'Active' ? 'Ativo' : c.status === 'PaidOff' ? 'Quitado' : c.status === 'Default' ? 'Inadimplente' : 'Recuperado'}</span></td>
+                <td style="font-size:11px;color:#888;">${fmtData(c.contractDate)}</td>
+                <td>
+                    <div style="display:flex;gap:4px;">
+                        <a href="LL_Detalhe_Contrato.html?id=${c.id}" class="btn-sm btn-view">Ver</a>
+                        <button class="btn-sm" style="background:#fff8e1;color:#f57f17;" onclick="abrirEditar('${c.id}')">Editar</button>
+                        <button class="btn-sm btn-del" onclick="excluir('${c.id}')">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.abrirNovo = function() {
+        document.getElementById('modalTitulo').textContent = 'Novo Contrato';
+        document.getElementById('cId').value = '';
+        ['cPropertyId','cBuyerName','cCounty','cState','cPrice','cCostBasis','cDownPayment',
+         'cInstAmount','cInstCount','cBalloon','cContractDate','cCloseDate','cFirstInst',
+         'cBalloonDate','cDocLink','cNotes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('cCounty').value = 'Putnam';
+        document.getElementById('cState').value = 'FL';
+        document.getElementById('cSaleType').value = 'CFD';
+        document.getElementById('cStatus').value = 'Active';
+        document.getElementById('cOriginType').value = 'DIRECT';
+        document.getElementById('cContractDate').value = new Date().toISOString().split('T')[0];
+        toggleCFD();
+        document.getElementById('calcBox').style.display = 'none';
+        document.getElementById('modalContrato').classList.add('open');
+    };
+
+    window.abrirEditar = function(id) {
+        const c = contratos.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('modalTitulo').textContent = 'Editar Contrato — ' + c.propertyId;
+        document.getElementById('cId').value = c.id;
+        document.getElementById('cPropertyId').value = c.propertyId || '';
+        document.getElementById('cBuyerName').value = c.buyerName || '';
+        document.getElementById('cCounty').value = c.county || '';
+        document.getElementById('cState').value = c.state || 'FL';
+        document.getElementById('cSaleType').value = c.saleType || 'CFD';
+        document.getElementById('cOriginType').value = c.originType || 'DIRECT';
+        document.getElementById('cPrice').value = c.contractPrice || '';
+        document.getElementById('cCostBasis').value = c.costBasis || '';
+        document.getElementById('cDownPayment').value = c.downPayment || '';
+        document.getElementById('cInstAmount').value = c.installmentAmount || '';
+        document.getElementById('cInstCount').value = c.installmentCount || '';
+        document.getElementById('cBalloon').value = c.balloonAmount || '';
+        document.getElementById('cContractDate').value = c.contractDate || '';
+        document.getElementById('cCloseDate').value = c.closeDate || '';
+        document.getElementById('cFirstInst').value = c.firstInstallmentDate || '';
+        document.getElementById('cBalloonDate').value = c.balloonDate || '';
+        document.getElementById('cDocLink').value = c.documentFolderLink || '';
+        document.getElementById('cStatus').value = c.status || 'Active';
+        document.getElementById('cNotes').value = c.notes || '';
+        toggleCFD();
+        calcularResumo();
+        document.getElementById('modalContrato').classList.add('open');
+    };
+
+    window.toggleCFD = function() {
+        const isCFD = document.getElementById('cSaleType').value === 'CFD';
+        document.getElementById('cfdFields').style.display = isCFD ? 'block' : 'none';
+        document.getElementById('btnGerarParcelas').style.display = isCFD ? 'inline-block' : 'none';
+        calcularResumo();
+    };
+
+    window.calcularResumo = function() {
+        const price = parseFloat(document.getElementById('cPrice').value) || 0;
+        const down = parseFloat(document.getElementById('cDownPayment').value) || 0;
+        const inst = parseFloat(document.getElementById('cInstAmount').value) || 0;
+        const count = parseFloat(document.getElementById('cInstCount').value) || 0;
+        const cost = parseFloat(document.getElementById('cCostBasis').value) || 0;
+        const isCFD = document.getElementById('cSaleType').value === 'CFD';
+
+        if (!price && !down) { document.getElementById('calcBox').style.display = 'none'; return; }
+
+        const balance = isCFD ? inst * count : price - down;
+        const lucro = price - cost;
+        const roi = cost > 0 ? ((lucro / cost) * 100).toFixed(1) : '—';
+
+        document.getElementById('calcResumo').innerHTML = `
+            <strong>Preço Total:</strong> ${fmt2(price)} &nbsp;·&nbsp;
+            <strong>Balance (financiado):</strong> ${fmt2(balance)} &nbsp;·&nbsp;
+            <strong>Lucro:</strong> ${fmt2(lucro)} &nbsp;·&nbsp;
+            <strong>ROI:</strong> ${roi}%
+        `;
+        document.getElementById('calcBox').style.display = 'block';
+    };
+
+    function coletarDados() {
+        return {
+            propertyId: document.getElementById('cPropertyId').value.trim(),
+            buyerName: document.getElementById('cBuyerName').value.trim(),
+            county: document.getElementById('cCounty').value.trim(),
+            state: document.getElementById('cState').value.trim().toUpperCase(),
+            saleType: document.getElementById('cSaleType').value,
+            originType: document.getElementById('cOriginType').value,
+            contractPrice: document.getElementById('cPrice').value,
+            costBasis: document.getElementById('cCostBasis').value,
+            downPayment: document.getElementById('cDownPayment').value,
+            installmentAmount: document.getElementById('cInstAmount').value,
+            installmentCount: parseInt(document.getElementById('cInstCount').value) || 0,
+            balloonAmount: document.getElementById('cBalloon').value,
+            contractDate: document.getElementById('cContractDate').value,
+            closeDate: document.getElementById('cCloseDate').value,
+            firstInstallmentDate: document.getElementById('cFirstInst').value,
+            balloonDate: document.getElementById('cBalloonDate').value,
+            documentFolderLink: document.getElementById('cDocLink').value.trim(),
+            status: document.getElementById('cStatus').value,
+            notes: document.getElementById('cNotes').value.trim(),
+        };
+    }
+
+    window.salvar = async function() {
+        const data = coletarDados();
+        if (!data.propertyId || !data.buyerName) { alert('❌ Property ID e nome do comprador são obrigatórios!'); return; }
+        const id = document.getElementById('cId').value;
+        if (id) {
+            await updateLLContract(id, data);
+            const idx = contratos.findIndex(c => c.id === id);
+            if (idx >= 0) contratos[idx] = { ...contratos[idx], ...data };
+        } else {
+            const newId = await saveLLContract(data);
+            if (newId) contratos.push({ ...data, id: newId });
+        }
+        fecharModal();
+        renderSummary();
+        renderTabela();
+    };
+
+    window.salvarEGerarParcelas = async function() {
+        const data = coletarDados();
+        if (!data.propertyId || !data.buyerName) { alert('❌ Property ID e nome obrigatórios!'); return; }
+        if (!data.installmentAmount || !data.installmentCount || !data.firstInstallmentDate) {
+            alert('❌ Para gerar parcelas: preencha valor da parcela, quantidade e data da 1ª parcela.'); return;
+        }
+
+        const existingId = document.getElementById('cId').value;
+        let contractId = existingId;
+
+        if (existingId) {
+            await updateLLContract(existingId, data);
+            const idx = contratos.findIndex(c => c.id === existingId);
+            if (idx >= 0) contratos[idx] = { ...contratos[idx], ...data };
+            // Limpar parcelas antigas
+            await deleteLLInstallmentsByContract(existingId);
+        } else {
+            contractId = await saveLLContract(data);
+            if (contractId) contratos.push({ ...data, id: contractId });
+        }
+
+        if (!contractId) { alert('Erro ao salvar contrato.'); return; }
+
+        // Gerar parcelas
+        const firstDate = new Date(data.firstInstallmentDate + 'T12:00:00');
+        const count = parseInt(data.installmentCount);
+        const amount = parseFloat(data.installmentAmount);
+        const instPromises = [];
+
+        for (let i = 1; i <= count; i++) {
+            const dueDate = new Date(firstDate);
+            dueDate.setMonth(firstDate.getMonth() + (i - 1));
+            const dueDateStr = dueDate.toISOString().split('T')[0];
+            instPromises.push(saveLLInstallment({
+                contractId,
+                propertyId: data.propertyId,
+                installmentNumber: i,
+                dueDate: dueDateStr,
+                amount,
+                type: 'REGULAR',
+                status: 'PENDING',
+            }));
+        }
+
+        // Balloon?
+        if (parseFloat(data.balloonAmount) > 0 && data.balloonDate) {
+            instPromises.push(saveLLInstallment({
+                contractId,
+                propertyId: data.propertyId,
+                installmentNumber: count + 1,
+                dueDate: data.balloonDate,
+                amount: parseFloat(data.balloonAmount),
+                type: 'BALLOON',
+                status: 'PENDING',
+            }));
+        }
+
+        await Promise.all(instPromises);
+        alert(`✅ Contrato salvo + ${count} parcelas geradas!`);
+        fecharModal();
+        renderSummary();
+        renderTabela();
+    };
+
+    window.excluir = async function(id) {
+        const c = contratos.find(x => x.id === id);
+        if (!confirm(`Excluir contrato ${c?.propertyId || id}? As parcelas associadas também serão removidas.`)) return;
+        await deleteLLContract(id);
+        await deleteLLInstallmentsByContract(id);
+        contratos = contratos.filter(x => x.id !== id);
+        renderSummary();
+        renderTabela();
+    };
+
+    window.fecharModal = function() {
+        document.getElementById('modalContrato').classList.remove('open');
+    };
+
+    document.getElementById('modalContrato').addEventListener('click', e => {
+        if (e.target === document.getElementById('modalContrato')) fecharModal();
+    });
+</script>
+</body>
+</html>

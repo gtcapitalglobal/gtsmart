@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Revisar Submissões</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; font-weight: 800; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .badge-count { background: white; color: #1565c0; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; }
+        .content { padding: 16px 20px; }
+
+        /* Filtros */
+        .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .f-btn { padding: 6px 16px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; }
+        .f-btn.active { background: #1565c0; color: white; border-color: #1565c0; }
+
+        /* Cards */
+        .sub-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: all 0.2s; }
+        .sub-card.status-NEW { border-left: 4px solid #1565c0; }
+        .sub-card.status-REVIEWED { border-left: 4px solid #f57f17; }
+        .sub-card.status-APPROVED { border-left: 4px solid #2e7d32; opacity: 0.7; }
+        .sub-card.status-REJECTED { border-left: 4px solid #c62828; opacity: 0.6; }
+
+        .sub-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+        .sub-nome { font-size: 16px; font-weight: 800; color: #222; }
+        .sub-data { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .sb-NEW { background: #e3f2fd; color: #1565c0; }
+        .sb-REVIEWED { background: #fff8e1; color: #f57f17; }
+        .sb-APPROVED { background: #e8f5e9; color: #2e7d32; }
+        .sb-REJECTED { background: #fdecea; color: #c62828; }
+
+        .sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .sub-field { background: #f9f9f9; border-radius: 8px; padding: 8px 10px; }
+        .sub-field .lbl { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+        .sub-field .val { font-size: 12px; font-weight: 700; color: #333; word-break: break-word; }
+
+        .sub-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-aprovar { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .btn-aprovar:hover { background: #2e7d32; color: white; }
+        .btn-rejeitar { background: #fdecea; color: #c62828; border: 2px solid #ef9a9a; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .btn-rejeitar:hover { background: #c62828; color: white; }
+        .btn-ver { background: #e3f2fd; color: #1565c0; border: 2px solid #90caf9; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .btn-ver:hover { background: #1565c0; color: white; }
+
+        /* Modal aprovar */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 480px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; color: #1565c0; }
+        .modal .sub-txt { font-size: 13px; color: #888; margin-bottom: 16px; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 4px; }
+        .form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { border-color: #1565c0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-save { background: #1565c0; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; margin-top: 8px; }
+        .btn-cancel { background: #f5f5f5; color: #555; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; width: 100%; margin-top: 6px; }
+
+        .info-box { background: #e3f2fd; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #1565c0; margin-bottom: 14px; }
+
+        .empty { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+        .loading { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+
+        @media (max-width: 600px) {
+            .sub-grid { grid-template-columns: 1fr 1fr; }
+            .header { flex-direction: column; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📥 Revisar Submissões</h2>
+        <div class="header-right">
+            <span class="badge-count" id="badgeNew">— novas</span>
+            <a href="LL_Buyers.html" class="btn-back">← Compradores</a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="filters">
+            <button class="f-btn active" onclick="filtrar('NEW')" id="fb-NEW">🔵 Novas</button>
+            <button class="f-btn" onclick="filtrar('REVIEWED')" id="fb-REVIEWED">👁️ Vistas</button>
+            <button class="f-btn" onclick="filtrar('APPROVED')" id="fb-APPROVED">✅ Aprovadas</button>
+            <button class="f-btn" onclick="filtrar('REJECTED')" id="fb-REJECTED">❌ Rejeitadas</button>
+            <button class="f-btn" onclick="filtrar('ALL')" id="fb-ALL">Todas</button>
+        </div>
+        <div id="listaSubmissoes">
+            <div class="loading">⏳ Carregando submissões...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Aprovar -->
+<div class="modal-overlay" id="modalAprovar">
+    <div class="modal">
+        <button class="modal-close" onclick="fecharModal()">✕</button>
+        <h3>✅ Aprovar Comprador</h3>
+        <p class="sub-txt">Preencha os campos para salvar em Compradores.</p>
+        <div class="info-box" id="modalInfoBox"></div>
+        <div class="form-group">
+            <label>Nome Completo</label>
+            <input type="text" id="mNome">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Telefone</label>
+                <input type="text" id="mTelefone">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" id="mEmail">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Property ID (Contrato)</label>
+                <input type="text" id="mPropertyId" placeholder="ex: #27">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="mStatus">
+                    <option value="Active">Ativo</option>
+                    <option value="Prospect">Prospect</option>
+                    <option value="Closed">Fechado</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Endereço</label>
+            <input type="text" id="mEndereco">
+        </div>
+        <div class="form-group">
+            <label>Observações</label>
+            <input type="text" id="mObs" placeholder="ex: co-buyer, business name...">
+        </div>
+        <button class="btn-save" onclick="confirmarAprovacao()">✅ Salvar em Compradores</button>
+        <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+    </div>
+</div>
+
+<a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏡 Menu</a>
+
+<script type="module">
+    import { auth, db, onAuthStateChanged, saveLLBuyer } from './firebase-config.js';
+    import { collection, getDocs, doc, updateDoc, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    let submissoes = [];
+    let filtroAtual = 'NEW';
+    let submissaoAtiva = null;
+
+    const fmtData = d => d ? new Date(d).toLocaleString('pt-BR') : '—';
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        await carregarSubmissoes();
+    });
+
+    async function carregarSubmissoes() {
+        try {
+            const q = query(collection(db, 'public_buyer_submissions'), orderBy('criadoEm', 'desc'));
+            const snap = await getDocs(q);
+            submissoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const novas = submissoes.filter(s => s.status === 'NEW').length;
+            document.getElementById('badgeNew').textContent = novas + (novas === 1 ? ' nova' : ' novas');
+            renderLista();
+        } catch(e) {
+            console.error('Erro ao carregar:', e);
+            document.getElementById('listaSubmissoes').innerHTML = '<div class="empty">❌ Erro ao carregar. Verifique as permissões do Firestore.</div>';
+        }
+    }
+
+    function renderLista() {
+        const lista = filtroAtual === 'ALL' ? submissoes : submissoes.filter(s => s.status === filtroAtual);
+        const el = document.getElementById('listaSubmissoes');
+        if (lista.length === 0) {
+            el.innerHTML = '<div class="empty">Nenhuma submissão encontrada.</div>';
+            return;
+        }
+        el.innerHTML = lista.map(s => {
+            const isBiz = s.personalOrBusiness === 'Business';
+            const hasCoBuyer = s.hasCoBuyer === '1';
+            const addr = [s.streetAddress, s.city, s.state, s.zipCode].filter(Boolean).join(', ');
+            const jaAprovada = s.status === 'APPROVED' || s.status === 'REJECTED';
+            return `
+            <div class="sub-card status-${s.status}" id="card-${s.id}">
+                <div class="sub-top">
+                    <div>
+                        <div class="sub-nome">${s.fullName || '—'}</div>
+                        <div class="sub-data">Enviado em ${fmtData(s.criadoEm)}</div>
+                    </div>
+                    <span class="status-badge sb-${s.status}">${s.status === 'NEW' ? '🔵 Nova' : s.status === 'REVIEWED' ? '👁️ Vista' : s.status === 'APPROVED' ? '✅ Aprovada' : '❌ Rejeitada'}</span>
+                </div>
+                <div class="sub-grid">
+                    <div class="sub-field"><div class="lbl">Telefone</div><div class="val">${s.phone || '—'}</div></div>
+                    <div class="sub-field"><div class="lbl">Email</div><div class="val">${s.email || '—'}</div></div>
+                    <div class="sub-field"><div class="lbl">Pagamento Preferido</div><div class="val">${s.preferredPayment || '—'}</div></div>
+                    <div class="sub-field"><div class="lbl">Tipo</div><div class="val">${isBiz ? '🏢 ' + (s.businessName || 'Business') : '👤 Pessoal'}</div></div>
+                    ${hasCoBuyer ? `<div class="sub-field"><div class="lbl">Co-Buyer</div><div class="val">${s.coBuyerName || '—'}</div></div>` : ''}
+                    <div class="sub-field"><div class="lbl">Endereço</div><div class="val">${addr || '—'}</div></div>
+                    ${s.driverLicenseUrl ? `<div class="sub-field" style="grid-column:span 3;"><div class="lbl">Driver's License URL</div><div class="val"><a href="${s.driverLicenseUrl}" target="_blank" style="color:#1565c0;">${s.driverLicenseUrl}</a></div></div>` : ''}
+                </div>
+                <div class="sub-actions">
+                    ${!jaAprovada ? `
+                        <button class="btn-aprovar" onclick="abrirAprovar('${s.id}')">✅ Aprovar</button>
+                        <button class="btn-rejeitar" onclick="rejeitar('${s.id}')">❌ Rejeitar</button>
+                        ${s.status === 'NEW' ? `<button class="btn-ver" onclick="marcarVisto('${s.id}')">👁️ Marcar como visto</button>` : ''}
+                    ` : `<span style="font-size:12px;color:#aaa;">Ação já realizada</span>`}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    window.filtrar = function(f) {
+        filtroAtual = f;
+        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('fb-' + f).classList.add('active');
+        renderLista();
+    };
+
+    window.marcarVisto = async function(id) {
+        const ref = doc(db, 'public_buyer_submissions', id);
+        await updateDoc(ref, { status: 'REVIEWED', atualizadoEm: new Date().toISOString() });
+        const s = submissoes.find(x => x.id === id);
+        if (s) s.status = 'REVIEWED';
+        renderLista();
+    };
+
+    window.rejeitar = async function(id) {
+        if (!confirm('Rejeitar esta submissão?')) return;
+        const ref = doc(db, 'public_buyer_submissions', id);
+        await updateDoc(ref, { status: 'REJECTED', atualizadoEm: new Date().toISOString() });
+        const s = submissoes.find(x => x.id === id);
+        if (s) s.status = 'REJECTED';
+        const novas = submissoes.filter(x => x.status === 'NEW').length;
+        document.getElementById('badgeNew').textContent = novas + (novas === 1 ? ' nova' : ' novas');
+        renderLista();
+    };
+
+    window.abrirAprovar = function(id) {
+        submissaoAtiva = submissoes.find(x => x.id === id);
+        if (!submissaoAtiva) return;
+        const s = submissaoAtiva;
+        const addr = [s.streetAddress, s.city, s.state, s.zipCode].filter(Boolean).join(', ');
+        const obs = [
+            s.personalOrBusiness === 'Business' ? ('Business: ' + s.businessName) : '',
+            s.hasCoBuyer === '1' ? ('Co-buyer: ' + s.coBuyerName) : '',
+            s.coBuyerEmail ? ('Co-email: ' + s.coBuyerEmail) : '',
+            s.driverLicenseUrl ? ('License: ' + s.driverLicenseUrl) : '',
+        ].filter(Boolean).join(' | ');
+        document.getElementById('modalInfoBox').textContent = '👤 ' + s.fullName + ' — ' + s.phone;
+        document.getElementById('mNome').value = s.fullName || '';
+        document.getElementById('mTelefone').value = s.phone || '';
+        document.getElementById('mEmail').value = s.email || '';
+        document.getElementById('mEndereco').value = addr;
+        document.getElementById('mObs').value = obs;
+        document.getElementById('mPropertyId').value = '';
+        document.getElementById('modalAprovar').classList.add('open');
+    };
+
+    window.fecharModal = function() {
+        document.getElementById('modalAprovar').classList.remove('open');
+        submissaoAtiva = null;
+    };
+
+    window.confirmarAprovacao = async function() {
+        const nome = document.getElementById('mNome').value.trim();
+        const telefone = document.getElementById('mTelefone').value.trim();
+        if (!nome || !telefone) { alert('Nome e telefone são obrigatórios!'); return; }
+
+        const buyerData = {
+            fullName: nome,
+            phone: telefone,
+            email: document.getElementById('mEmail').value.trim(),
+            propertyId: document.getElementById('mPropertyId').value.trim(),
+            address: document.getElementById('mEndereco').value.trim(),
+            status: document.getElementById('mStatus').value,
+            notes: document.getElementById('mObs').value.trim(),
+            source: 'public_form',
+            preferredPayment: submissaoAtiva?.preferredPayment || '',
+        };
+
+        const newId = await saveLLBuyer(buyerData);
+        if (newId) {
+            // Atualiza status da submissão para APPROVED
+            const ref = doc(db, 'public_buyer_submissions', submissaoAtiva.id);
+            await updateDoc(ref, { status: 'APPROVED', approvedBuyerId: newId, atualizadoEm: new Date().toISOString() });
+            submissaoAtiva.status = 'APPROVED';
+            const novas = submissoes.filter(x => x.status === 'NEW').length;
+            document.getElementById('badgeNew').textContent = novas + (novas === 1 ? ' nova' : ' novas');
+            fecharModal();
+            renderLista();
+            alert('✅ Comprador salvo com sucesso!');
+        }
+    };
+
+    document.getElementById('modalAprovar').addEventListener('click', e => {
+        if (e.target === document.getElementById('modalAprovar')) fecharModal();
+    });
+</script>
+</body>
+</html>

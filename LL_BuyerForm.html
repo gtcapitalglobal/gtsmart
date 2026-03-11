@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Lands — Buyer Information Form</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(180deg, #e8f5e9 0%, #ffffff 100%); min-height: 100vh; }
+
+        /* Header */
+        .top-bar { background: white; border-bottom: 1px solid #e0e0e0; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+        .top-bar .brand { display: flex; flex-direction: column; }
+        .top-bar .brand-name { font-size: 22px; font-weight: 800; color: #1b5e20; }
+        .top-bar .brand-sub { font-size: 12px; color: #888; }
+        .logo-circle { width: 50px; height: 50px; background: linear-gradient(135deg, #1b5e20, #2e7d32); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+
+        /* Form */
+        .form-wrap { max-width: 620px; margin: 0 auto; padding: 24px 16px; }
+
+        .card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+        .card h2 { font-size: 17px; font-weight: 800; color: #333; margin-bottom: 4px; }
+        .card .sub { font-size: 13px; color: #888; margin-bottom: 20px; }
+
+        .section-sep { border: none; border-top: 1px solid #f0f0f0; margin: 20px 0; }
+        .section-label { font-size: 13px; font-weight: 800; color: #1b5e20; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 5px; }
+        .form-group label .req { color: #c62828; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 9px;
+            font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: #2e7d32; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+
+        /* Box especial */
+        .box-info { background: #f1f8e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+        .box-info .box-label { font-size: 12px; font-weight: 700; color: #2e7d32; margin-bottom: 4px; }
+        .box-blue { background: #e3f2fd; border-color: #bbdefb; }
+        .box-blue .box-label { color: #1565c0; }
+
+        /* Submit */
+        .btn-submit { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Success */
+        .success-screen { display: none; text-align: center; padding: 60px 20px; }
+        .success-screen .check { font-size: 72px; margin-bottom: 16px; }
+        .success-screen h2 { font-size: 26px; font-weight: 800; color: #1b5e20; margin-bottom: 10px; }
+        .success-screen p { font-size: 15px; color: #666; line-height: 1.6; }
+        .success-contact { background: #f1f8e9; border-radius: 10px; padding: 14px 20px; margin-top: 20px; font-size: 13px; color: #2e7d32; font-weight: 600; }
+
+        /* Footer */
+        .footer-note { text-align: center; font-size: 11px; color: #bbb; margin-top: 20px; padding-bottom: 30px; }
+
+        @media (max-width: 480px) {
+            .form-row { grid-template-columns: 1fr; }
+            .form-row-3 { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="top-bar">
+        <div class="logo-circle">🏡</div>
+        <div class="brand">
+            <div class="brand-name">GT Lands</div>
+            <div class="brand-sub">GT Real Assets LLC</div>
+        </div>
+    </div>
+
+    <!-- Success screen -->
+    <div class="success-screen" id="successScreen">
+        <div class="check">✅</div>
+        <h2>Thank you!</h2>
+        <p>Your information has been submitted successfully.<br>We will contact you shortly to proceed with the next steps.</p>
+        <div class="success-contact">
+            <strong>GT Real Assets LLC (GT Lands)</strong><br>
+            📧 gustavo@gtlands.com &nbsp;·&nbsp; 📱 (754) 302-2072
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-wrap" id="formWrap">
+        <div class="card">
+            <h2>Buyer Information</h2>
+            <p class="sub">Please fill out this form with your information. Fields marked with <span style="color:#c62828">*</span> are required.</p>
+
+            <!-- Contract type -->
+            <div class="form-group">
+                <label>Will the contract be in your personal name or Business / LLC? <span class="req">*</span></label>
+                <select id="fPersonalBusiness" onchange="toggleBiz()">
+                    <option value="Personal">Personal</option>
+                    <option value="Business">Business / LLC</option>
+                </select>
+            </div>
+
+            <!-- Personal info -->
+            <div class="form-group">
+                <label>Full Name <span class="req">*</span></label>
+                <input type="text" id="fFullName" placeholder="John Smith">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Mobile Phone Number <span class="req">*</span></label>
+                    <input type="tel" id="fPhone" placeholder="(305) 555-0001">
+                </div>
+                <div class="form-group">
+                    <label>Email <span class="req">*</span></label>
+                    <input type="email" id="fEmail" placeholder="john@email.com">
+                </div>
+            </div>
+
+            <!-- Business fields -->
+            <div id="bizFields" style="display:none;">
+                <hr class="section-sep">
+                <div class="section-label">Business Information</div>
+                <div class="form-group">
+                    <label>Business / LLC Name <span class="req">*</span></label>
+                    <input type="text" id="fBizName" placeholder="Company Name LLC">
+                </div>
+                <div class="form-group">
+                    <label>Representative Name <span class="req">*</span></label>
+                    <input type="text" id="fRepName" placeholder="Full name of authorized representative">
+                </div>
+            </div>
+
+            <!-- Co-buyer -->
+            <hr class="section-sep">
+            <div class="form-group">
+                <label>Will there be a co-buyer (spouse / partner)?</label>
+                <select id="fHasCoBuyer" onchange="toggleCoBuyer()">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+            <div id="coBuyerFields" style="display:none;">
+                <div class="box-info box-blue">
+                    <div class="box-label">Co-Buyer Information</div>
+                    <div class="form-row" style="margin-top:10px;">
+                        <div class="form-group">
+                            <label>Co-Buyer Full Name <span class="req">*</span></label>
+                            <input type="text" id="fCoBuyerName" placeholder="Co-Buyer Full Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Co-Buyer Email <span class="req">*</span></label>
+                            <input type="email" id="fCoBuyerEmail" placeholder="cobuyer@email.com">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <hr class="section-sep">
+            <div class="section-label">Mailing Address</div>
+            <div class="form-group">
+                <label>Street Address <span class="req">*</span></label>
+                <input type="text" id="fStreet" placeholder="1234 Main Street, Apt 100">
+            </div>
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>City <span class="req">*</span></label>
+                    <input type="text" id="fCity" placeholder="Miami">
+                </div>
+                <div class="form-group">
+                    <label>State <span class="req">*</span></label>
+                    <select id="fState">
+                        <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+                        <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+                        <option selected>FL</option><option>GA</option><option>HI</option><option>ID</option>
+                        <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+                        <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+                        <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+                        <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+                        <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+                        <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+                        <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+                        <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+                        <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+                        <option>WI</option><option>WY</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ZIP Code <span class="req">*</span></label>
+                    <input type="text" id="fZip" placeholder="33028" maxlength="10">
+                </div>
+            </div>
+
+            <!-- Driver License -->
+            <hr class="section-sep">
+            <div class="form-group">
+                <label>Driver License (Google Drive link — front side only)</label>
+                <input type="url" id="fLicense" placeholder="https://drive.google.com/...">
+                <div style="font-size:11px;color:#aaa;margin-top:4px;">Upload a photo of your driver license to Google Drive and paste the sharing link here.</div>
+            </div>
+
+            <!-- Payment -->
+            <hr class="section-sep">
+            <div class="form-group">
+                <label>Preferred method of payment for down payment <span class="req">*</span></label>
+                <select id="fPayment">
+                    <option>Zelle</option>
+                    <option>Cash App</option>
+                    <option>Venmo</option>
+                    <option>Credit or Debit Card</option>
+                    <option>Wire Transfer</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <!-- Submit -->
+            <button class="btn-submit" id="btnSubmit" onclick="submitForm()">Submit</button>
+            <div style="font-size:11px;text-align:center;color:#aaa;margin-top:10px;">GT Real Assets LLC (GT Lands) · Pembroke Pines, FL</div>
+        </div>
+    </div>
+
+    <div class="footer-note" id="footerNote">Powered by GT Smart Equity</div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        window.toggleBiz = function() {
+            const isBiz = document.getElementById('fPersonalBusiness').value === 'Business';
+            document.getElementById('bizFields').style.display = isBiz ? 'block' : 'none';
+        };
+
+        window.toggleCoBuyer = function() {
+            const has = document.getElementById('fHasCoBuyer').value === '1';
+            document.getElementById('coBuyerFields').style.display = has ? 'block' : 'none';
+        };
+
+        window.submitForm = async function() {
+            const fullName = document.getElementById('fFullName').value.trim();
+            const phone = document.getElementById('fPhone').value.trim();
+            const email = document.getElementById('fEmail').value.trim();
+            const street = document.getElementById('fStreet').value.trim();
+            const city = document.getElementById('fCity').value.trim();
+            const zip = document.getElementById('fZip').value.trim();
+            const personalOrBusiness = document.getElementById('fPersonalBusiness').value;
+            const hasCoBuyer = document.getElementById('fHasCoBuyer').value;
+
+            if (!fullName || !phone || !email || !street || !city || !zip) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            if (personalOrBusiness === 'Business' && !document.getElementById('fBizName').value.trim()) {
+                alert('Please enter the Business / LLC name.');
+                return;
+            }
+            if (hasCoBuyer === '1' && !document.getElementById('fCoBuyerName').value.trim()) {
+                alert('Please enter the co-buyer name.');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            const data = {
+                fullName, phone, email,
+                personalOrBusiness,
+                businessName: document.getElementById('fBizName').value.trim(),
+                representativeName: document.getElementById('fRepName').value.trim(),
+                hasCoBuyer,
+                coBuyerName: document.getElementById('fCoBuyerName').value.trim(),
+                coBuyerEmail: document.getElementById('fCoBuyerEmail').value.trim(),
+                streetAddress: street,
+                city,
+                state: document.getElementById('fState').value,
+                zipCode: zip,
+                driverLicenseUrl: document.getElementById('fLicense').value.trim(),
+                preferredPayment: document.getElementById('fPayment').value,
+                status: 'NEW',
+                criadoEm: new Date().toISOString(),
+                atualizadoEm: new Date().toISOString(),
+                source: 'public_form'
+            };
+
+            try {
+                // Salva em uma coleção pública temporária (sem autenticação)
+                // O admin depois move para ll_buyers do usuário correto
+                await addDoc(collection(db, 'public_buyer_submissions'), data);
+                document.getElementById('formWrap').style.display = 'none';
+                document.getElementById('footerNote').style.display = 'none';
+                document.getElementById('successScreen').style.display = 'block';
+            } catch(e) {
+                console.error(e);
+                alert('Error submitting form. Please try again or contact us directly.\n📧 gustavo@gtlands.com\n📱 (754) 302-2072');
+                btn.disabled = false;
+                btn.textContent = 'Submit';
+            }
+        };
+    </script>
+</body>
+</html>

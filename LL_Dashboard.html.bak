@@ -194,7 +194,6 @@
                             <th>Parcela</th>
                             <th>Recebido</th>
                             <th>Status</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="contratosBody"></tbody>
@@ -202,7 +201,7 @@
             </div>
         </div>
     </div>
-    <div class="version">Basic 8.1 | 11/03/2026</div>
+    <div class="version">Basic 1.0 | 11/03/2026</div>
 </div>
 
 <a href="LL_Menu.html" class="no-print" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -388,10 +387,9 @@
                 <td>${c.saleType === 'CFD' ? fmt2(c.installmentAmount) : '—'}</td>
                 <td style="color:#2e7d32;font-weight:700;">${fmt2(recebido)}</td>
                 <td><span class="badge badge-${badges[c.status] || 'grey'}">${c.status}</span></td>
-                <td><a href="LL_Detalhe_Contrato.html?id=${c.id}" class="badge badge-blue" style="text-decoration:none;cursor:pointer;">Ver →</a></td>
             </tr>`;
         }).join('');
-        document.getElementById('contratosBody').innerHTML = bodyHTML || '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px;">Sem contratos ativos</td></tr>';
+        document.getElementById('contratosBody').innerHTML = bodyHTML || '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">Sem contratos ativos</td></tr>';
     }
 </script>
 </body>

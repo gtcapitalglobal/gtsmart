@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Imóveis</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #1976d2); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; font-weight: 800; }
+        .header-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .btn-add { background: white; color: #1565c0; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .content { padding: 16px 20px; }
+
+        /* Summary */
+        .sum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .sum-card { background: #e3f2fd; color: #1565c0; border-radius: 10px; padding: 12px; text-align: center; }
+        .sum-card .lbl { font-size: 10px; font-weight: 700; opacity: 0.8; margin-bottom: 3px; text-transform: uppercase; }
+        .sum-card .val { font-size: 22px; font-weight: 800; }
+
+        /* Search & Filter */
+        .filtros { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+        .search-box { flex: 1; min-width: 180px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; }
+        .search-box:focus { border-color: #1565c0; }
+        .f-btn { padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; }
+        .f-btn.active { background: #1565c0; color: white; border-color: #1565c0; }
+
+        /* Cards grid */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+        .prop-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+        .prop-card:hover { border-color: #1565c0; box-shadow: 0 4px 15px rgba(0,0,0,0.12); transform: translateY(-2px); }
+        .prop-card.status-Available { border-left: 4px solid #2e7d32; }
+        .prop-card.status-UnderContract { border-left: 4px solid #f57f17; }
+        .prop-card.status-Sold { border-left: 4px solid #1565c0; }
+        .prop-card.status-Inactive { border-left: 4px solid #aaa; opacity: 0.7; }
+
+        .prop-id { font-size: 12px; font-weight: 800; color: #1565c0; margin-bottom: 4px; }
+        .prop-endereco { font-size: 14px; font-weight: 800; color: #222; margin-bottom: 2px; }
+        .prop-local { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .prop-info-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #f5f5f5; }
+        .prop-info-row:last-child { border-bottom: none; }
+        .prop-info-row .lbl { color: #aaa; }
+        .prop-info-row .val { font-weight: 700; color: #333; }
+        .prop-footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+        .status-badge { display: inline-block; padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+        .sb-Available { background: #e8f5e9; color: #2e7d32; }
+        .sb-UnderContract { background: #fff3e0; color: #e65100; }
+        .sb-Sold { background: #e3f2fd; color: #1565c0; }
+        .sb-Inactive { background: #f5f5f5; color: #999; }
+
+        .btn-edit { background: #e3f2fd; color: #1565c0; border: none; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .btn-del { background: #fdecea; color: #c62828; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 560px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal h3 { font-size: 17px; font-weight: 800; margin-bottom: 16px; color: #1565c0; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #1565c0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+        .btn-save { background: #1565c0; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; margin-top: 8px; }
+
+        .empty { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+        .version { font-size: 10px; opacity: 0.5; text-align: right; padding: 4px 20px 8px; }
+
+        @media (max-width: 600px) {
+            .sum-grid { grid-template-columns: repeat(2, 1fr); }
+            .cards-grid { grid-template-columns: 1fr; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            .header { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>🏡 Imóveis</h2>
+        <div class="header-right">
+            <button class="btn-add" onclick="abrirNovo()">+ Novo Imóvel</button>
+            <a href="LL_Menu.html" class="btn-back">← Menu</a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="sum-grid">
+            <div class="sum-card" style="background:#e8f5e9;color:#2e7d32;">
+                <div class="lbl">Disponíveis</div>
+                <div class="val" id="sumDisp">—</div>
+            </div>
+            <div class="sum-card" style="background:#fff3e0;color:#e65100;">
+                <div class="lbl">Em Contrato</div>
+                <div class="val" id="sumContrato">—</div>
+            </div>
+            <div class="sum-card">
+                <div class="lbl">Total</div>
+                <div class="val" id="sumTotal">—</div>
+            </div>
+        </div>
+
+        <div class="filtros">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Buscar por endereço, ID, county..." oninput="renderLista()">
+            <button class="f-btn active" onclick="setFiltro('todos')" id="fTodos">Todos</button>
+            <button class="f-btn" onclick="setFiltro('Available')" id="fAvailable">✅ Disponível</button>
+            <button class="f-btn" onclick="setFiltro('UnderContract')" id="fUnderContract">📋 Em Contrato</button>
+            <button class="f-btn" onclick="setFiltro('Sold')" id="fSold">💰 Vendido</button>
+        </div>
+
+        <div class="cards-grid" id="cardsGrid"></div>
+        <div class="empty" id="emptyMsg" style="display:none;">Nenhum imóvel encontrado.</div>
+    </div>
+    <div class="version">Basic 1.0 | 11/03/2026</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalProp">
+    <div class="modal">
+        <button class="modal-close" onclick="fecharModal()">✕</button>
+        <h3 id="modalTitulo">Novo Imóvel</h3>
+        <input type="hidden" id="mId">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Property ID *</label>
+                <input type="text" id="mPropertyId" placeholder="ex: #27">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="mStatus">
+                    <option value="Available">Disponível</option>
+                    <option value="UnderContract">Em Contrato</option>
+                    <option value="Sold">Vendido</option>
+                    <option value="Inactive">Inativo</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Endereço *</label>
+            <input type="text" id="mEndereco" placeholder="123 Main St">
+        </div>
+        <div class="form-row-3">
+            <div class="form-group">
+                <label>Cidade</label>
+                <input type="text" id="mCidade">
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <input type="text" id="mEstado" placeholder="FL">
+            </div>
+            <div class="form-group">
+                <label>ZIP</label>
+                <input type="text" id="mZip">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>County</label>
+                <input type="text" id="mCounty">
+            </div>
+            <div class="form-group">
+                <label>Tipo</label>
+                <select id="mTipo">
+                    <option value="Land">Terreno (Land)</option>
+                    <option value="Residential">Residencial</option>
+                    <option value="Commercial">Comercial</option>
+                    <option value="Mobile Home">Mobile Home</option>
+                    <option value="Other">Outro</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Tamanho (acres)</label>
+                <input type="number" id="mAcres" step="0.01" placeholder="1.25">
+            </div>
+            <div class="form-group">
+                <label>Parcel ID</label>
+                <input type="text" id="mParcelId" placeholder="00-00-00-0000-000">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Preço de Compra ($)</label>
+                <input type="number" id="mCostBasis" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Preço de Venda ($)</label>
+                <input type="number" id="mSalePrice" placeholder="0.00">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Data de Compra</label>
+                <input type="date" id="mDataCompra">
+            </div>
+            <div class="form-group">
+                <label>Contrato ID (se vendido)</label>
+                <input type="text" id="mContractId" placeholder="ex: ll_contract_27">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Link do Drive (documentos)</label>
+            <input type="text" id="mDriveLink" placeholder="https://drive.google.com/...">
+        </div>
+        <div class="form-group">
+            <label>Observações</label>
+            <textarea id="mNotes" rows="2" placeholder="Informações adicionais..."></textarea>
+        </div>
+        <button class="btn-save" onclick="salvar()">💾 Salvar Imóvel</button>
+    </div>
+</div>
+
+<a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏡 Menu</a>
+
+<script type="module">
+    import { auth, onAuthStateChanged, getLLProperties, saveLLProperty, updateLLProperty, deleteLLProperty } from './firebase-config.js';
+
+    const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+
+    let imoveis = [];
+    let filtroAtivo = 'todos';
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        imoveis = await getLLProperties();
+        renderSummary();
+        renderLista();
+    });
+
+    function renderSummary() {
+        document.getElementById('sumDisp').textContent = imoveis.filter(p => p.status === 'Available').length;
+        document.getElementById('sumContrato').textContent = imoveis.filter(p => p.status === 'UnderContract').length;
+        document.getElementById('sumTotal').textContent = imoveis.length;
+    }
+
+    window.setFiltro = function(f) {
+        filtroAtivo = f;
+        ['fTodos','fAvailable','fUnderContract','fSold'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+        const map = { todos:'fTodos', Available:'fAvailable', UnderContract:'fUnderContract', Sold:'fSold' };
+        if (map[f]) document.getElementById(map[f]).classList.add('active');
+        renderLista();
+    };
+
+    window.renderLista = function() {
+        const search = document.getElementById('searchBox').value.toLowerCase();
+        let lista = [...imoveis];
+        if (filtroAtivo !== 'todos') lista = lista.filter(p => p.status === filtroAtivo);
+        if (search) {
+            lista = lista.filter(p =>
+                (p.propertyId || '').toLowerCase().includes(search) ||
+                (p.address || '').toLowerCase().includes(search) ||
+                (p.county || '').toLowerCase().includes(search) ||
+                (p.city || '').toLowerCase().includes(search)
+            );
+        }
+
+        const grid = document.getElementById('cardsGrid');
+        const empty = document.getElementById('emptyMsg');
+        if (lista.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+        empty.style.display = 'none';
+
+        const statusLabel = { Available: '✅ Disponível', UnderContract: '📋 Em Contrato', Sold: '💰 Vendido', Inactive: '⏸️ Inativo' };
+        grid.innerHTML = lista.map(p => {
+            const lucro = (parseFloat(p.salePrice || 0) - parseFloat(p.costBasis || 0));
+            return `
+            <div class="prop-card status-${p.status}">
+                <div class="prop-id">${p.propertyId || '—'}</div>
+                <div class="prop-endereco">${p.address || '—'}</div>
+                <div class="prop-local">${[p.city, p.state, p.zipCode].filter(Boolean).join(', ') || (p.county || '—')}</div>
+                <div class="prop-info-row"><span class="lbl">Tipo</span><span class="val">${p.tipo || '—'}</span></div>
+                ${p.acres ? `<div class="prop-info-row"><span class="lbl">Tamanho</span><span class="val">${p.acres} acres</span></div>` : ''}
+                ${p.costBasis ? `<div class="prop-info-row"><span class="lbl">Comprado por</span><span class="val">${fmt2(p.costBasis)}</span></div>` : ''}
+                ${p.salePrice ? `<div class="prop-info-row"><span class="lbl">Vendido por</span><span class="val">${fmt2(p.salePrice)}</span></div>` : ''}
+                ${p.salePrice && p.costBasis ? `<div class="prop-info-row"><span class="lbl">Lucro</span><span class="val" style="color:${lucro >= 0 ? '#2e7d32' : '#c62828'}">${fmt2(lucro)}</span></div>` : ''}
+                ${p.county ? `<div class="prop-info-row"><span class="lbl">County</span><span class="val">${p.county}</span></div>` : ''}
+                ${p.driveLink ? `<div class="prop-info-row"><span class="lbl">Documentos</span><span class="val"><a href="${p.driveLink}" target="_blank" style="color:#1565c0;">Abrir Drive ↗</a></span></div>` : ''}
+                <div class="prop-footer">
+                    <span class="status-badge sb-${p.status}">${statusLabel[p.status] || p.status}</span>
+                    <div style="display:flex;gap:5px;">
+                        <button class="btn-edit" onclick="abrirEditar('${p.id}')">✏️ Editar</button>
+                        <button class="btn-del" onclick="excluir('${p.id}')">🗑️</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    };
+
+    window.abrirNovo = function() {
+        document.getElementById('modalTitulo').textContent = 'Novo Imóvel';
+        document.getElementById('mId').value = '';
+        ['mPropertyId','mEndereco','mCidade','mEstado','mZip','mCounty','mAcres','mParcelId','mCostBasis','mSalePrice','mDataCompra','mContractId','mDriveLink','mNotes'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        document.getElementById('mStatus').value = 'Available';
+        document.getElementById('mTipo').value = 'Land';
+        document.getElementById('modalProp').classList.add('open');
+    };
+
+    window.abrirEditar = function(id) {
+        const p = imoveis.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('modalTitulo').textContent = 'Editar Imóvel';
+        document.getElementById('mId').value = p.id;
+        document.getElementById('mPropertyId').value = p.propertyId || '';
+        document.getElementById('mStatus').value = p.status || 'Available';
+        document.getElementById('mEndereco').value = p.address || '';
+        document.getElementById('mCidade').value = p.city || '';
+        document.getElementById('mEstado').value = p.state || '';
+        document.getElementById('mZip').value = p.zipCode || '';
+        document.getElementById('mCounty').value = p.county || '';
+        document.getElementById('mTipo').value = p.tipo || 'Land';
+        document.getElementById('mAcres').value = p.acres || '';
+        document.getElementById('mParcelId').value = p.parcelId || '';
+        document.getElementById('mCostBasis').value = p.costBasis || '';
+        document.getElementById('mSalePrice').value = p.salePrice || '';
+        document.getElementById('mDataCompra').value = p.purchaseDate || '';
+        document.getElementById('mContractId').value = p.contractId || '';
+        document.getElementById('mDriveLink').value = p.driveLink || '';
+        document.getElementById('mNotes').value = p.notes || '';
+        document.getElementById('modalProp').classList.add('open');
+    };
+
+    window.fecharModal = function() {
+        document.getElementById('modalProp').classList.remove('open');
+    };
+
+    window.salvar = async function() {
+        const propertyId = document.getElementById('mPropertyId').value.trim();
+        const address = document.getElementById('mEndereco').value.trim();
+        if (!propertyId || !address) { alert('Property ID e Endereço são obrigatórios!'); return; }
+
+        const id = document.getElementById('mId').value;
+        const data = {
+            propertyId,
+            address,
+            status: document.getElementById('mStatus').value,
+            city: document.getElementById('mCidade').value.trim(),
+            state: document.getElementById('mEstado').value.trim(),
+            zipCode: document.getElementById('mZip').value.trim(),
+            county: document.getElementById('mCounty').value.trim(),
+            tipo: document.getElementById('mTipo').value,
+            acres: parseFloat(document.getElementById('mAcres').value) || null,
+            parcelId: document.getElementById('mParcelId').value.trim(),
+            costBasis: parseFloat(document.getElementById('mCostBasis').value) || null,
+            salePrice: parseFloat(document.getElementById('mSalePrice').value) || null,
+            purchaseDate: document.getElementById('mDataCompra').value || null,
+            contractId: document.getElementById('mContractId').value.trim(),
+            driveLink: document.getElementById('mDriveLink').value.trim(),
+            notes: document.getElementById('mNotes').value.trim(),
+        };
+
+        if (id) {
+            await updateLLProperty(id, data);
+            const idx = imoveis.findIndex(x => x.id === id);
+            if (idx >= 0) imoveis[idx] = { ...imoveis[idx], ...data };
+        } else {
+            const newId = await saveLLProperty(data);
+            if (newId) imoveis.push({ ...data, id: newId });
+        }
+
+        fecharModal();
+        renderSummary();
+        renderLista();
+    };
+
+    window.excluir = async function(id) {
+        const p = imoveis.find(x => x.id === id);
+        if (!confirm(`Excluir imóvel ${p?.propertyId || id}? Esta ação não pode ser desfeita.`)) return;
+        await deleteLLProperty(id);
+        imoveis = imoveis.filter(x => x.id !== id);
+        renderSummary();
+        renderLista();
+    };
+
+    document.getElementById('modalProp').addEventListener('click', e => {
+        if (e.target === document.getElementById('modalProp')) fecharModal();
+    });
+</script>
+</body>
+</html>

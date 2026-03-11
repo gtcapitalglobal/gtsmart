@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Detalhe do Contrato</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; font-weight: 800; }
+        .header-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .btn-act { background: white; color: #1565c0; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .content { padding: 20px; }
+
+        /* Grid 2 colunas */
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+        /* Card de info */
+        .info-card { border: 2px solid #e0e0e0; border-radius: 12px; padding: 16px; }
+        .info-card .card-title { font-size: 12px; font-weight: 800; color: #1565c0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid #e3f2fd; padding-bottom: 6px; }
+        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-lbl { color: #888; font-weight: 600; }
+        .info-val { font-weight: 700; text-align: right; }
+        .info-val.green { color: #2e7d32; }
+        .info-val.red { color: #c62828; }
+        .info-val.blue { color: #1565c0; }
+
+        /* Status badge */
+        .status { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .s-Active { background: #e8f5e9; color: #2e7d32; }
+        .s-PaidOff { background: #e3f2fd; color: #1565c0; }
+        .s-Default { background: #fdecea; color: #c62828; }
+        .s-Repossessed { background: #f5f5f5; color: #757575; }
+
+        /* Progress bar */
+        .progress-wrap { margin: 6px 0 2px; }
+        .progress-bar { background: #f0f0f0; border-radius: 10px; height: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #1565c0, #42a5f5); transition: width 0.5s; }
+        .progress-pct { font-size: 11px; color: #888; margin-top: 3px; text-align: right; }
+
+        /* Parcelas section */
+        .section-title { font-size: 15px; font-weight: 800; color: #333; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f5f5f5; padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; }
+        td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        tr.pago td { color: #aaa; }
+        tr.vencida td:first-child { border-left: 3px solid #c62828; }
+        tr.vencendo td:first-child { border-left: 3px solid #f57f17; }
+
+        .inst-status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+        .is-PAID { background: #e8f5e9; color: #2e7d32; }
+        .is-PENDING { background: #fff8e1; color: #f57f17; }
+        .is-OVERDUE { background: #fdecea; color: #c62828; }
+        .is-BALLOON { background: #e3f2fd; color: #1565c0; }
+
+        .btn-sm { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+        .btn-pagar { background: #e8f5e9; color: #2e7d32; }
+        .btn-despagar { background: #fdecea; color: #c62828; }
+
+        /* Pagamentos */
+        .pagamento-item { background: #f9f9f9; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .pagamento-item .pag-left { flex: 1; }
+        .pagamento-item .pag-valor { font-size: 16px; font-weight: 800; color: #2e7d32; }
+        .pagamento-item .pag-info { font-size: 11px; color: #888; margin-top: 2px; }
+        .canal-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; background: #e3f2fd; color: #1565c0; font-size: 10px; font-weight: 700; margin-left: 4px; }
+
+        .btn-pag-novo { background: #1565c0; color: white; border: none; padding: 8px 16px; border-radius: 7px; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+        /* Modal pagamento */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 480px; position: relative; }
+        .modal h3 { font-size: 17px; font-weight: 800; margin-bottom: 16px; color: #1565c0; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { border-color: #1565c0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-save { background: #1565c0; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; margin-top: 8px; }
+
+        .empty { text-align: center; padding: 30px; color: #aaa; font-size: 13px; }
+
+        @media (max-width: 600px) {
+            .grid2 { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .header { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📋 <span id="headerTitulo">Contrato</span></h2>
+        <div class="header-right">
+            <button class="btn-act" onclick="abrirEditar()">✏️ Editar</button>
+            <button class="btn-act" onclick="abrirPagamento()">+ Pagamento</button>
+            <a href="LL_Contracts.html" class="btn-back">← Contratos</a>
+        </div>
+    </div>
+    <div class="content" id="mainContent">
+        <div style="text-align:center;padding:40px;color:#aaa;">⏳ Carregando...</div>
+    </div>
+</div>
+
+<!-- Modal Editar Contrato -->
+<div class="modal-overlay" id="modalEditar">
+    <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto;">
+        <button class="modal-close" onclick="fecharModalEditar()">✕</button>
+        <h3>✏️ Editar Contrato</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group">
+                <label>Property ID</label>
+                <input type="text" id="ePropertyId">
+            </div>
+            <div class="form-group">
+                <label>Nome do Comprador</label>
+                <input type="text" id="eBuyerName">
+            </div>
+            <div class="form-group">
+                <label>Tipo de Venda</label>
+                <select id="eSaleType">
+                    <option value="CFD">CFD</option>
+                    <option value="CASH">Cash</option>
+                    <option value="Finance">Finance</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="eStatus">
+                    <option value="Active">Ativo</option>
+                    <option value="PaidOff">Pago</option>
+                    <option value="Default">Inadimplente</option>
+                    <option value="Repossessed">Reintegrado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>County</label>
+                <input type="text" id="eCounty">
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <input type="text" id="eState">
+            </div>
+            <div class="form-group">
+                <label>Data do Contrato</label>
+                <input type="date" id="eContractDate">
+            </div>
+            <div class="form-group">
+                <label>Preço de Venda ($)</label>
+                <input type="number" id="eContractPrice">
+            </div>
+            <div class="form-group">
+                <label>Down Payment ($)</label>
+                <input type="number" id="eDownPayment">
+            </div>
+            <div class="form-group">
+                <label>Cost Basis ($)</label>
+                <input type="number" id="eCostBasis">
+            </div>
+            <div class="form-group">
+                <label>Parcela Mensal ($)</label>
+                <input type="number" id="eInstallmentAmount">
+            </div>
+            <div class="form-group">
+                <label>Nº de Parcelas</label>
+                <input type="number" id="eInstallmentCount">
+            </div>
+            <div class="form-group">
+                <label>1ª Parcela (data)</label>
+                <input type="date" id="eFirstInstallmentDate">
+            </div>
+            <div class="form-group">
+                <label>Parcelas pagas por transferência</label>
+                <input type="number" id="eInstallmentsPaidByTransfer" min="0" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Balloon ($)</label>
+                <input type="number" id="eBalloonAmount">
+            </div>
+            <div class="form-group">
+                <label>Data do Balloon</label>
+                <input type="date" id="eBalloonDate">
+            </div>
+            <div class="form-group">
+                <label>Status Escritura (Deed)</label>
+                <select id="eDeedStatus">
+                    <option value="">—</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Filed">Filed</option>
+                    <option value="Transferred">Transferred</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Origin Type</label>
+                <select id="eOriginType">
+                    <option value="Acquisition">Acquisition</option>
+                    <option value="Referral">Referral</option>
+                    <option value="Direct">Direct</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Link da Pasta (Google Drive)</label>
+            <input type="text" id="eDocumentFolderLink" placeholder="https://drive.google.com/...">
+        </div>
+        <div class="form-group">
+            <label>Observações</label>
+            <input type="text" id="eNotes">
+        </div>
+        <button class="btn-save" onclick="salvarEdicao()">💾 Salvar Alterações</button>
+    </div>
+</div>
+
+<!-- Modal Pagamento -->
+<div class="modal-overlay" id="modalPagamento">
+    <div class="modal">
+        <button class="modal-close" onclick="fecharModal()">✕</button>
+        <h3>Registrar Pagamento</h3>
+        <div class="form-group">
+            <label>Data do Pagamento *</label>
+            <input type="date" id="pDate">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Total Recebido (USD) *</label>
+                <input type="number" id="pTotal" placeholder="220.00" oninput="splitPagamento()">
+            </div>
+            <div class="form-group">
+                <label>Late Fee (USD)</label>
+                <input type="number" id="pLateFee" placeholder="0" oninput="splitPagamento()">
+            </div>
+        </div>
+        <div class="form-group" style="background:#f5f5f5;border-radius:8px;padding:8px 12px;font-size:12px;color:#555;" id="pSplitInfo">
+            Principal = Total − Late Fee
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Canal</label>
+                <select id="pChannel">
+                    <option>Zelle</option>
+                    <option>ACH</option>
+                    <option>Cash</option>
+                    <option>Check</option>
+                    <option>Wire</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Recebido por</label>
+                <select id="pReceivedBy">
+                    <option value="GT_REAL">GT Real Assets Bank</option>
+                    <option value="LEGACY">Legacy Account</option>
+                    <option value="PERSONAL">Personal</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Memo / Observação</label>
+            <input type="text" id="pMemo" placeholder="ex: parcela #5, novembro">
+        </div>
+        <button class="btn-save" onclick="salvarPagamento()">💾 Salvar Pagamento</button>
+    </div>
+</div>
+
+<a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏡 Menu</a>
+
+<script type="module">
+    import { auth, onAuthStateChanged, getLLContracts, getLLInstallments, getLLPayments, saveLLPayment, deleteLLPayment, updateLLInstallment, updateLLContract } from './firebase-config.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const contratoId = params.get('id');
+
+    let contrato = null;
+    let parcelas = [];
+    let pagamentos = [];
+
+    const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        if (!contratoId) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ ID do contrato não encontrado.</div>'; return; }
+
+        const [todos, allParcelas, allPags] = await Promise.all([
+            getLLContracts(), getLLInstallments(), getLLPayments()
+        ]);
+
+        contrato = todos.find(c => c.id === contratoId);
+        if (!contrato) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ Contrato não encontrado.</div>'; return; }
+
+        parcelas = allParcelas.filter(p => p.contractId === contratoId).sort((a,b) => a.installmentNumber - b.installmentNumber);
+        pagamentos = allPags.filter(p => p.contractId === contratoId).sort((a,b) => b.paymentDate?.localeCompare(a.paymentDate));
+
+        document.getElementById('headerTitulo').textContent = contrato.propertyId + ' — ' + contrato.buyerName;
+        document.getElementById('pDate').value = new Date().toISOString().split('T')[0];
+
+        renderTudo();
+    });
+
+    function renderTudo() {
+        const hoje = new Date();
+        const pagas = parcelas.filter(p => p.status === 'PAID').length;
+        const total = parcelas.filter(p => p.type !== 'BALLOON').length;
+        const pct = total > 0 ? Math.round((pagas / total) * 100) : 0;
+
+        const totalRecebido = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+        const balance = parseFloat(contrato.installmentAmount || 0) * parseInt(contrato.installmentCount || 0);
+        const lucro = parseFloat(contrato.contractPrice || 0) - parseFloat(contrato.costBasis || 0);
+
+        // Marcar vencidas
+        parcelas.forEach(p => {
+            if (p.status !== 'PAID') {
+                const d = new Date(p.dueDate + 'T12:00:00');
+                if (d < hoje) p._overdue = true;
+            }
+        });
+
+        document.getElementById('mainContent').innerHTML = `
+            <div class="grid2">
+                <div class="info-card">
+                    <div class="card-title">📋 Contrato</div>
+                    <div class="info-row"><span class="info-lbl">Property ID</span><span class="info-val blue">${contrato.propertyId || '—'}</span></div>
+                    <div class="info-row"><span class="info-lbl">Comprador</span><span class="info-val">${contrato.buyerName || '—'}</span></div>
+                    <div class="info-row"><span class="info-lbl">Tipo</span><span class="info-val">${contrato.saleType || '—'}</span></div>
+                    <div class="info-row"><span class="info-lbl">County / Estado</span><span class="info-val">${contrato.county || '—'}${contrato.state ? ', ' + contrato.state : ''}</span></div>
+                    <div class="info-row"><span class="info-lbl">Data do Contrato</span><span class="info-val">${fmtData(contrato.contractDate)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Status</span><span class="info-val"><span class="status s-${contrato.status}">${contrato.status === 'Active' ? 'Ativo' : contrato.status}</span></span></div>
+                    ${contrato.documentFolderLink ? `<div class="info-row"><span class="info-lbl">Documentos</span><span class="info-val"><a href="${contrato.documentFolderLink}" target="_blank" style="color:#1565c0;">Abrir Drive ↗</a></span></div>` : ''}
+                    ${contrato.notes ? `<div class="info-row"><span class="info-lbl">Obs.</span><span class="info-val">${contrato.notes}</span></div>` : ''}
+                </div>
+
+                <div class="info-card">
+                    <div class="card-title">💰 Financeiro</div>
+                    <div class="info-row"><span class="info-lbl">Preço de Venda</span><span class="info-val">${fmt2(contrato.contractPrice)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Down Payment</span><span class="info-val">${fmt2(contrato.downPayment)}</span></div>
+                    ${contrato.saleType === 'CFD' ? `
+                    <div class="info-row"><span class="info-lbl">Parcela Mensal</span><span class="info-val">${fmt2(contrato.installmentAmount)} × ${contrato.installmentCount}</span></div>
+                    <div class="info-row"><span class="info-lbl">Balance Total</span><span class="info-val">${fmt2(balance)}</span></div>
+                    ` : ''}
+                    ${contrato.balloonAmount > 0 ? `<div class="info-row"><span class="info-lbl">Balloon</span><span class="info-val">${fmt2(contrato.balloonAmount)} em ${fmtData(contrato.balloonDate)}</span></div>` : ''}
+                    <div class="info-row"><span class="info-lbl">Cost Basis</span><span class="info-val">${fmt2(contrato.costBasis)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Lucro Estimado</span><span class="info-val green">${fmt2(lucro)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Total Recebido</span><span class="info-val green">${fmt2(totalRecebido)}</span></div>
+                    ${contrato.saleType === 'CFD' && total > 0 ? `
+                    <div style="margin-top:10px;">
+                        <div style="font-size:11px;color:#888;margin-bottom:4px;">Progresso: ${pagas}/${total} parcelas pagas</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                        <div class="progress-pct">${pct}%</div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <!-- Parcelas -->
+            ${contrato.saleType === 'CFD' ? `
+            <div style="margin-bottom:20px;">
+                <div class="section-title">
+                    📅 Parcelas (${pagas}/${total} pagas)
+                    <span style="font-size:12px;font-weight:400;color:#888;">${parcelas.filter(p => p._overdue).length} em atraso</span>
+                </div>
+                ${parcelas.length === 0 ? '<div class="empty">Nenhuma parcela cadastrada. Edite o contrato e clique em "Salvar + Gerar Parcelas".</div>' : `
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Vencimento</th><th>Valor</th><th>Tipo</th><th>Status</th><th>Pago em</th><th>Ação</th></tr></thead>
+                        <tbody>
+                            ${parcelas.map(p => `
+                                <tr class="${p.status === 'PAID' ? 'pago' : p._overdue ? 'vencida' : ''}">
+                                    <td>${p.installmentNumber}</td>
+                                    <td>${fmtData(p.dueDate)}${p._overdue && p.status !== 'PAID' ? ' <span style="color:#c62828;font-size:10px;font-weight:700;">ATRASADA</span>' : ''}</td>
+                                    <td>${fmt2(p.amount)}</td>
+                                    <td><span class="inst-status is-${p.type === 'BALLOON' ? 'BALLOON' : p.status}">${p.type === 'BALLOON' ? 'Balloon' : p.type === 'REGULAR' ? 'Regular' : p.type}</span></td>
+                                    <td><span class="inst-status is-${p.status}">${p.status === 'PAID' ? 'Pago' : p._overdue ? 'Atrasado' : 'Pendente'}</span></td>
+                                    <td style="font-size:11px;color:#aaa;">${p.status === 'PAID' ? fmtData(p.paidDate) : '—'}</td>
+                                    <td>
+                                        ${p.status !== 'PAID' 
+                                            ? `<button class="btn-sm btn-pagar" onclick="marcarPago('${p.id}')">✅ Marcar pago</button>` 
+                                            : `<button class="btn-sm btn-despagar" onclick="marcarPendente('${p.id}')">↩️ Desfazer</button>`
+                                        }
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                `}
+            </div>
+            ` : ''}
+
+            <!-- Pagamentos -->
+            <div>
+                <div class="section-title">
+                    💰 Pagamentos Recebidos
+                    <button class="btn-pag-novo" onclick="abrirPagamento()">+ Novo</button>
+                </div>
+                ${pagamentos.length === 0 ? '<div class="empty">Nenhum pagamento registrado ainda.</div>' : pagamentos.map(p => `
+                    <div class="pagamento-item">
+                        <div class="pag-left">
+                            <div class="pag-valor">${fmt2(p.amountTotal)}</div>
+                            <div class="pag-info">
+                                ${fmtData(p.paymentDate)} &nbsp;·&nbsp;
+                                <span class="canal-badge">${p.channel || '—'}</span>
+                                <span class="canal-badge">${p.receivedBy === 'GT_REAL' ? 'GT Real' : p.receivedBy === 'LEGACY' ? 'Legacy' : 'Personal'}</span>
+                                ${p.memo ? '&nbsp;·&nbsp; ' + p.memo : ''}
+                                ${parseFloat(p.lateFeeAmount) > 0 ? `&nbsp;·&nbsp; Late fee: ${fmt2(p.lateFeeAmount)}` : ''}
+                            </div>
+                        </div>
+                        <button class="btn-sm btn-despagar" onclick="excluirPagamento('${p.id}')">🗑️</button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    window.marcarPago = async function(id) {
+        const hoje = new Date().toISOString().split('T')[0];
+        await updateLLInstallment(id, { status: 'PAID', paidDate: hoje });
+        const p = parcelas.find(x => x.id === id);
+        if (p) { p.status = 'PAID'; p.paidDate = hoje; }
+        renderTudo();
+    };
+
+    window.marcarPendente = async function(id) {
+        await updateLLInstallment(id, { status: 'PENDING', paidDate: '' });
+        const p = parcelas.find(x => x.id === id);
+        if (p) { p.status = 'PENDING'; p.paidDate = ''; }
+        renderTudo();
+    };
+
+    window.abrirEditar = function() {
+        if (!contrato) return;
+        const c = contrato;
+        document.getElementById('ePropertyId').value = c.propertyId || '';
+        document.getElementById('eBuyerName').value = c.buyerName || '';
+        document.getElementById('eSaleType').value = c.saleType || 'CFD';
+        document.getElementById('eStatus').value = c.status || 'Active';
+        document.getElementById('eCounty').value = c.county || '';
+        document.getElementById('eState').value = c.state || '';
+        document.getElementById('eContractDate').value = c.contractDate || '';
+        document.getElementById('eContractPrice').value = c.contractPrice || '';
+        document.getElementById('eDownPayment').value = c.downPayment || '';
+        document.getElementById('eCostBasis').value = c.costBasis || '';
+        document.getElementById('eInstallmentAmount').value = c.installmentAmount || '';
+        document.getElementById('eInstallmentCount').value = c.installmentCount || '';
+        document.getElementById('eFirstInstallmentDate').value = c.firstInstallmentDate || '';
+        document.getElementById('eInstallmentsPaidByTransfer').value = c.installmentsPaidByTransfer || 0;
+        document.getElementById('eBalloonAmount').value = c.balloonAmount || '';
+        document.getElementById('eBalloonDate').value = c.balloonDate || '';
+        document.getElementById('eDeedStatus').value = c.deedStatus || '';
+        document.getElementById('eOriginType').value = c.originType || 'Acquisition';
+        document.getElementById('eDocumentFolderLink').value = c.documentFolderLink || '';
+        document.getElementById('eNotes').value = c.notes || '';
+        document.getElementById('modalEditar').classList.add('open');
+    };
+
+    window.fecharModalEditar = function() {
+        document.getElementById('modalEditar').classList.remove('open');
+    };
+
+    window.salvarEdicao = async function() {
+        const dados = {
+            propertyId: document.getElementById('ePropertyId').value.trim(),
+            buyerName: document.getElementById('eBuyerName').value.trim(),
+            saleType: document.getElementById('eSaleType').value,
+            status: document.getElementById('eStatus').value,
+            county: document.getElementById('eCounty').value.trim(),
+            state: document.getElementById('eState').value.trim(),
+            contractDate: document.getElementById('eContractDate').value,
+            contractPrice: parseFloat(document.getElementById('eContractPrice').value) || 0,
+            downPayment: parseFloat(document.getElementById('eDownPayment').value) || 0,
+            costBasis: parseFloat(document.getElementById('eCostBasis').value) || 0,
+            installmentAmount: parseFloat(document.getElementById('eInstallmentAmount').value) || 0,
+            installmentCount: parseInt(document.getElementById('eInstallmentCount').value) || 0,
+            firstInstallmentDate: document.getElementById('eFirstInstallmentDate').value,
+            installmentsPaidByTransfer: parseInt(document.getElementById('eInstallmentsPaidByTransfer').value) || 0,
+            balloonAmount: parseFloat(document.getElementById('eBalloonAmount').value) || 0,
+            balloonDate: document.getElementById('eBalloonDate').value,
+            deedStatus: document.getElementById('eDeedStatus').value,
+            originType: document.getElementById('eOriginType').value,
+            documentFolderLink: document.getElementById('eDocumentFolderLink').value.trim(),
+            notes: document.getElementById('eNotes').value.trim(),
+        };
+        if (!dados.propertyId || !dados.buyerName) { alert('Property ID e Nome do Comprador são obrigatórios!'); return; }
+        const ok = await updateLLContract(contratoId, dados);
+        if (ok !== false) {
+            Object.assign(contrato, dados);
+            document.getElementById('headerTitulo').textContent = contrato.propertyId + ' — ' + contrato.buyerName;
+            fecharModalEditar();
+            renderTudo();
+        }
+    };
+
+    window.splitPagamento = function() {
+        const total = parseFloat(document.getElementById('pTotal').value) || 0;
+        const fee = parseFloat(document.getElementById('pLateFee').value) || 0;
+        const principal = Math.max(0, total - fee);
+        document.getElementById('pSplitInfo').textContent = `Principal: $${principal.toFixed(2)} | Late Fee: $${fee.toFixed(2)} | Total: $${total.toFixed(2)}`;
+    };
+
+    window.abrirPagamento = function() {
+        document.getElementById('modalPagamento').classList.add('open');
+    };
+
+    window.fecharModal = function() {
+        document.getElementById('modalPagamento').classList.remove('open');
+    };
+
+    window.salvarPagamento = async function() {
+        const paymentDate = document.getElementById('pDate').value;
+        const amountTotal = document.getElementById('pTotal').value;
+        if (!paymentDate || !amountTotal) { alert('❌ Data e valor são obrigatórios!'); return; }
+
+        const lateFee = parseFloat(document.getElementById('pLateFee').value) || 0;
+        const principal = Math.max(0, parseFloat(amountTotal) - lateFee);
+
+        const data = {
+            contractId: contratoId,
+            propertyId: contrato.propertyId,
+            paymentDate,
+            amountTotal: parseFloat(amountTotal),
+            principalAmount: principal,
+            lateFeeAmount: lateFee,
+            channel: document.getElementById('pChannel').value,
+            receivedBy: document.getElementById('pReceivedBy').value,
+            memo: document.getElementById('pMemo').value.trim(),
+        };
+
+        const newId = await saveLLPayment(data);
+        if (newId) {
+            pagamentos.unshift({ ...data, id: newId });
+            fecharModal();
+            renderTudo();
+        }
+    };
+
+    window.excluirPagamento = async function(id) {
+        if (!confirm('Excluir este pagamento?')) return;
+        const { deleteLLPayment: del } = await import('./firebase-config.js');
+        await del(id);
+        pagamentos = pagamentos.filter(p => p.id !== id);
+        renderTudo();
+    };
+
+    document.getElementById('modalEditar').addEventListener('click', e => {
+        if (e.target === document.getElementById('modalEditar')) fecharModalEditar();
+    });
+
+    document.getElementById('modalPagamento').addEventListener('click', e => {
+        if (e.target === document.getElementById('modalPagamento')) fecharModal();
+    });
+</script>
+</body>
+</html>
