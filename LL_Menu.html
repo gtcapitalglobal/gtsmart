@@ -124,11 +124,6 @@
                 <div class="name">Formulário Público</div>
                 <div class="desc">Link para o cliente preencher</div>
             </a>
-            <a href="LL_ImportarDados.html" class="mod-card" style="border:2px dashed #e53935;">
-                <div class="icon">📥</div>
-                <div class="name">Importar Dados</div>
-                <div class="desc">Migração do sistema antigo (usar só uma vez)</div>
-            </a>
         </div>
 
         <div class="back-bar">
@@ -142,6 +137,7 @@
         import { auth, onAuthStateChanged, getLLContracts, getLLBuyers, getLLPayments, getLLInstallments } from './firebase-config.js';
 
         const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+        const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
@@ -166,7 +162,7 @@
                 // Parcelas vencendo nos próximos 30 dias
                 const em30 = parcelas.filter(p => {
                     if (p.status === 'PAID') return false;
-                    const venc = new Date(p.dueDate + 'T12:00:00');
+                    const venc = safeDate(p.dueDate);
                     const dias = Math.floor((venc - hoje) / 86400000);
                     return dias >= 0 && dias <= 30;
                 }).length;
@@ -175,7 +171,7 @@
                 // Total recebido no mês atual
                 const recMes = pagamentos
                     .filter(p => {
-                        const d = new Date(p.paymentDate + 'T12:00:00');
+                        const d = safeDate(p.paymentDate);
                         return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
                     })
                     .reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);

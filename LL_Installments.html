@@ -185,7 +185,8 @@
     import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment } from './firebase-config.js';
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
+    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('pt-BR') : '—'; };
 
     let parcelas = [], contratos = [], filtroAtivo = 'todas', searchTerm = '';
 
@@ -198,10 +199,10 @@
 
     function renderSummary() {
         const hoje = new Date();
-        const vencidas = parcelas.filter(p => p.status !== 'PAID' && new Date((p.dueDate || '') + 'T12:00:00') < hoje).length;
+        const vencidas = parcelas.filter(p => p.status !== 'PAID' && safeDate(p.dueDate) < hoje).length;
         const prox30 = parcelas.filter(p => {
             if (p.status === 'PAID') return false;
-            const d = new Date((p.dueDate || '') + 'T12:00:00');
+            const d = safeDate(p.dueDate);
             const dias = Math.floor((d - hoje) / 86400000);
             return dias >= 0 && dias <= 30;
         }).length;
@@ -231,8 +232,8 @@
 
         let lista = [...parcelas].sort((a, b) => {
             // Sort: overdue first, then by dueDate
-            const da = new Date((a.dueDate || '') + 'T12:00:00');
-            const db = new Date((b.dueDate || '') + 'T12:00:00');
+            const da = safeDate(a.dueDate) || new Date(0);
+            const db = safeDate(b.dueDate) || new Date(0);
             if (a.status !== 'PAID' && b.status === 'PAID') return -1;
             if (a.status === 'PAID' && b.status !== 'PAID') return 1;
             return da - db;
@@ -240,18 +241,18 @@
 
         // Apply filter
         if (filtroAtivo === 'vencidas') {
-            lista = lista.filter(p => p.status !== 'PAID' && new Date((p.dueDate || '') + 'T12:00:00') < hoje);
+            lista = lista.filter(p => p.status !== 'PAID' && safeDate(p.dueDate) < hoje);
         } else if (filtroAtivo === 'prox30') {
             lista = lista.filter(p => {
                 if (p.status === 'PAID') return false;
-                const d = new Date((p.dueDate || '') + 'T12:00:00');
+                const d = safeDate(p.dueDate);
                 const dias = Math.floor((d - hoje) / 86400000);
                 return dias >= 0 && dias <= 30;
             });
         } else if (filtroAtivo === 'prox90') {
             lista = lista.filter(p => {
                 if (p.status === 'PAID') return false;
-                const d = new Date((p.dueDate || '') + 'T12:00:00');
+                const d = safeDate(p.dueDate);
                 const dias = Math.floor((d - hoje) / 86400000);
                 return dias >= 0 && dias <= 90;
             });
@@ -280,7 +281,7 @@
 
         tbody.innerHTML = lista.map(p => {
             const c = contratos.find(x => x.id === p.contractId) || {};
-            const dVenc = new Date((p.dueDate || '') + 'T12:00:00');
+            const dVenc = safeDate(p.dueDate);
             const isOverdue = p.status !== 'PAID' && dVenc < hoje;
             const diasDiff = Math.floor((dVenc - hoje) / 86400000);
             const rowClass = isOverdue ? 'row-overdue' : (p.status === 'PAID' ? 'row-paid' : '');

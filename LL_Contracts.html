@@ -288,7 +288,8 @@
     let contratos = [];
     const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
+    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('pt-BR') : '—'; };
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
@@ -375,10 +376,11 @@
         document.getElementById('cInstAmount').value = c.installmentAmount || '';
         document.getElementById('cInstCount').value = c.installmentCount || '';
         document.getElementById('cBalloon').value = c.balloonAmount || '';
-        document.getElementById('cContractDate').value = c.contractDate || '';
-        document.getElementById('cCloseDate').value = c.closeDate || '';
-        document.getElementById('cFirstInst').value = c.firstInstallmentDate || '';
-        document.getElementById('cBalloonDate').value = c.balloonDate || '';
+        const toDateInput = d => { if (!d) return ''; if (typeof d === 'string' && d.includes('T')) return d.split('T')[0]; return d; };
+        document.getElementById('cContractDate').value = toDateInput(c.contractDate);
+        document.getElementById('cCloseDate').value = toDateInput(c.closeDate);
+        document.getElementById('cFirstInst').value = toDateInput(c.firstInstallmentDate);
+        document.getElementById('cBalloonDate').value = toDateInput(c.balloonDate);
         document.getElementById('cDocLink').value = c.documentFolderLink || '';
         document.getElementById('cStatus').value = c.status || 'Active';
         document.getElementById('cNotes').value = c.notes || '';
@@ -482,7 +484,7 @@
         if (!contractId) { alert('Erro ao salvar contrato.'); return; }
 
         // Gerar parcelas
-        const firstDate = new Date(data.firstInstallmentDate + 'T12:00:00');
+        const firstDate = safeDate(data.firstInstallmentDate);
         const count = parseInt(data.installmentCount);
         const amount = parseFloat(data.installmentAmount);
         const instPromises = [];

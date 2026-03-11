@@ -192,7 +192,8 @@
     let contratos = [];
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
+    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('pt-BR') : '—'; };
 
     // Mês atual
     const hoje = new Date();
@@ -222,7 +223,7 @@
 
         const total = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
         const mes = pagamentos.filter(p => {
-            const d = new Date(p.paymentDate + 'T12:00:00');
+            const d = safeDate(p.paymentDate);
             return d.getFullYear() === anoF && d.getMonth() + 1 === mesF;
         }).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
         const fees = pagamentos.reduce((s, p) => s + parseFloat(p.lateFeeAmount || 0), 0);
@@ -243,11 +244,12 @@
         const lista = pagamentos.filter(p => {
             const mq = !q || (p.propertyId || '').toLowerCase().includes(q) || (p.memo || '').toLowerCase().includes(q);
             const mmes = !mesStr || (() => {
-                const d = new Date(p.paymentDate + 'T12:00:00');
+                const d = safeDate(p.paymentDate);
                 return d.getFullYear() === anoF && d.getMonth() + 1 === mesF;
             })();
             const mcanal = !canal || p.channel === canal;
-            const mrecv = !recv || p.receivedBy === recv;
+            const normalRecv = r => (r === 'GT_REAL_BANK' ? 'GT_REAL' : r);
+            const mrecv = !recv || normalRecv(p.receivedBy) === recv;
             return mq && mmes && mcanal && mrecv;
         }).sort((a, b) => b.paymentDate?.localeCompare(a.paymentDate));
 
@@ -259,7 +261,7 @@
             return;
         }
 
-        const recvLabel = { GT_REAL: 'GT Real', LEGACY: 'Legacy', PERSONAL: 'Personal' };
+        const recvLabel = { GT_REAL: 'GT Real', GT_REAL_BANK: 'GT Real', LEGACY: 'Legacy', PERSONAL: 'Personal' };
 
         tb.innerHTML = lista.map(p => `
             <tr>

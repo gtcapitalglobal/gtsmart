@@ -212,7 +212,8 @@
 
     const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
+    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('pt-BR') : '—'; };
     const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
     onAuthStateChanged(auth, async (user) => {
@@ -261,19 +262,19 @@
 
         const mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
         const recMes = pagamentos.filter(p => {
-            const d = new Date(p.paymentDate + 'T12:00:00');
+            const d = safeDate(p.paymentDate);
             return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
         }).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
         document.getElementById('kpiMes').textContent = fmt(recMes);
         const pgsMes = pagamentos.filter(p => {
-            const d = new Date(p.paymentDate + 'T12:00:00');
+            const d = safeDate(p.paymentDate);
             return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
         }).length;
         document.getElementById('kpiMesSub').textContent = pgsMes + ' pagamentos';
 
         const prox30 = parcelas.filter(p => {
             if (p.status === 'PAID') return false;
-            const d = new Date((p.dueDate || '') + 'T12:00:00');
+            const d = safeDate(p.dueDate);
             const dias = Math.floor((d - hoje) / 86400000);
             return dias >= 0 && dias <= 30;
         });
@@ -283,7 +284,7 @@
 
         const vencidas = parcelas.filter(p => {
             if (p.status === 'PAID') return false;
-            const d = new Date((p.dueDate || '') + 'T12:00:00');
+            const d = safeDate(p.dueDate);
             return d < hoje;
         });
         document.getElementById('kpiVencidas').textContent = vencidas.length;
@@ -297,7 +298,7 @@
             meses12.push({ mes: d.getMonth(), ano: d.getFullYear(), label: MESES[d.getMonth()], total: 0 });
         }
         pagamentos.forEach(p => {
-            const d = new Date(p.paymentDate + 'T12:00:00');
+            const d = safeDate(p.paymentDate);
             const item = meses12.find(m => m.mes === d.getMonth() && m.ano === d.getFullYear());
             if (item) item.total += parseFloat(p.amountTotal || 0);
         });
@@ -340,7 +341,7 @@
         const sortedProx = prox30.sort((a, b) => a.dueDate > b.dueDate ? 1 : -1).slice(0, 8);
         const upHTML = sortedProx.map(p => {
             const c = contratos.find(x => x.id === p.contractId) || {};
-            const d = new Date((p.dueDate || '') + 'T12:00:00');
+            const d = safeDate(p.dueDate);
             const dias = Math.floor((d - hoje) / 86400000);
             const cls = dias <= 5 ? 'soon' : 'ok';
             return `<div class="inst-item ${cls}">
@@ -360,7 +361,7 @@
         const sortedOvd = vencidas.sort((a, b) => a.dueDate < b.dueDate ? 1 : -1).slice(0, 8);
         const ovdHTML = sortedOvd.map(p => {
             const c = contratos.find(x => x.id === p.contractId) || {};
-            const d = new Date((p.dueDate || '') + 'T12:00:00');
+            const d = safeDate(p.dueDate);
             const dias = Math.floor((hoje - d) / 86400000);
             return `<div class="inst-item overdue">
                 <div class="inst-left">

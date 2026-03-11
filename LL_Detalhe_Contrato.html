@@ -316,7 +316,7 @@
         // Marcar vencidas
         parcelas.forEach(p => {
             if (p.status !== 'PAID') {
-                const d = new Date(p.dueDate + 'T12:00:00');
+                const d = safeDate(p.dueDate);
                 if (d < hoje) p._overdue = true;
             }
         });
@@ -415,7 +415,7 @@
                                 <div class="pag-info">
                                     ${fmtData(p.paymentDate)} &nbsp;·&nbsp;
                                     <span class="canal-badge">${p.channel || '—'}</span>
-                                    <span class="canal-badge">${p.receivedBy === 'GT_REAL' ? 'GT Real' : p.receivedBy === 'LEGACY' ? 'Legacy' : 'Personal'}</span>
+                                    <span class="canal-badge">${(p.receivedBy === 'GT_REAL' || p.receivedBy === 'GT_REAL_BANK') ? 'GT Real' : p.receivedBy === 'LEGACY' ? 'Legacy' : p.receivedBy || 'Personal'}</span>
                                     ${p.memo ? '&nbsp;·&nbsp; ' + p.memo : ''}
                                     ${parseFloat(p.lateFeeAmount) > 0 ? `&nbsp;·&nbsp; Late fee: ${fmt2(p.lateFeeAmount)}` : ''}
                                 </div>

@@ -99,7 +99,8 @@ function log(msg, tipo = '') {
 
 // Adiciona meses a uma data sem problemas de timezone
 function addMonths(dateStr, months) {
-    const d = new Date(dateStr + 'T12:00:00');
+    const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
+    const d = safeDate(dateStr);
     d.setMonth(d.getMonth() + months);
     return d.toISOString().split('T')[0];
 }
@@ -183,7 +184,7 @@ window.gerarParcelas = async function() {
                 const dueDate = addMonths(firstDate, i);
                 const num = i + 1;
                 const jaFoi = num <= totalPagasEsteContrato;
-                const venceu = new Date(dueDate + 'T12:00:00') < hoje;
+                const venceu = safeDate(dueDate) < hoje;
 
                 let status;
                 if (jaFoi) {
@@ -230,7 +231,7 @@ window.gerarParcelas = async function() {
             if (contrato.balloonAmount && contrato.balloonDate) {
                 const balloonDate = toDateStr(contrato.balloonDate);
                 const balloonAmount = parseFloat(contrato.balloonAmount);
-                const balloonVenceu = new Date(balloonDate + 'T12:00:00') < hoje;
+                const balloonVenceu = safeDate(balloonDate) < hoje;
 
                 // Checar se balloon foi pago (buscar nos pagamentos com valor próximo)
                 const balloonPg = (pgPorContrato[cid] || []).find(p => {
