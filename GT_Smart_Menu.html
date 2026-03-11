@@ -620,6 +620,40 @@
     carregarCotacao();
     setInterval(carregarCotacao, 300000);
 
+    // ===== COTAÇÃO DO BITCOIN =====
+    async function carregarBitcoin() {
+        const el = document.getElementById('cotacaoBTC');
+        if (!el) return;
+        try {
+            // Tenta awesomeapi (mesmo servidor do dólar)
+            const r = await fetch('https://economia.awesomeapi.com.br/json/last/BTC-USD');
+            if (!r.ok) throw new Error('awesomeapi falhou');
+            const d = await r.json();
+            const price = parseFloat(d.BTCUSD.bid);
+            if (!price || price < 1000) throw new Error('Preço inválido');
+            const pct = parseFloat(d.BTCUSD.pctChange);
+            const seta = pct >= 0 ? '▲' : '▼';
+            const cor = pct >= 0 ? '#FF5252' : '#00C853';
+            el.innerHTML = '₿ $' + price.toLocaleString('en-US', {maximumFractionDigits:0}) + ' <span style="color:' + cor + ';font-size:10px;">' + seta + ' ' + Math.abs(pct).toFixed(2) + '%</span>';
+        } catch(e) {
+            try {
+                // Fallback: CoinGecko
+                const r2 = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+                if (!r2.ok) throw new Error('coingecko falhou');
+                const d2 = await r2.json();
+                const price = d2.bitcoin.usd;
+                const pct = d2.bitcoin.usd_24h_change;
+                const seta = pct >= 0 ? '▲' : '▼';
+                const cor = pct >= 0 ? '#FF5252' : '#00C853';
+                el.innerHTML = '₿ $' + price.toLocaleString('en-US', {maximumFractionDigits:0}) + ' <span style="color:' + cor + ';font-size:10px;">' + seta + ' ' + Math.abs(pct).toFixed(2) + '%</span>';
+            } catch(e2) {
+                el.textContent = '₿ BTC —';
+            }
+        }
+    }
+    carregarBitcoin();
+    setInterval(carregarBitcoin, 300000);
+
     // ===== AUTH =====
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
