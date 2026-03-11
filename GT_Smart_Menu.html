@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,775 +7,786 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="GT Smart">
     <link rel="manifest" href="manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <title>GT Smart - Menu Principal</title>
     <style>
+        /* ===========================
+           TOKENS DE TEMA
+        =========================== */
         :root {
-            --bg: #0f0f0f;
-            --surface: #1a1a1a;
-            --surface2: #222222;
-            --border: #2a2a2a;
-            --orange: #FF6D00;
-            --orange-light: #FF8F00;
-            --amber: #FFC400;
-            --text: #f0f0f0;
-            --text-muted: #888;
-            --text-dim: #555;
-            --green: #00C853;
-            --red: #FF3D00;
-            --yellow: #FFD600;
+            --transition: 0.25s ease;
         }
+
+        /* MODO ESCURO */
+        [data-theme="dark"] {
+            --bg:           #0a0a0a;
+            --bg2:          #111111;
+            --surface:      #1a1a1a;
+            --surface2:     #242424;
+            --border:       #2e2e2e;
+            --border2:      #3a3a3a;
+            --text:         #f2f2f2;
+            --text2:        #aaaaaa;
+            --text3:        #666666;
+            --orange:       #FF6D00;
+            --orange-glow:  rgba(255,109,0,0.20);
+            --amber:        #FFC400;
+            --green:        #00E676;
+            --red:          #FF5252;
+            --yellow:       #FFD600;
+            --shadow:       0 4px 24px rgba(0,0,0,0.5);
+            --shadow-sm:    0 2px 8px rgba(0,0,0,0.4);
+            --icon-bg:      linear-gradient(135deg, #FF6D00, #FFC400);
+            --toggle-bg:    #1a1a1a;
+            --toggle-border:#3a3a3a;
+            --toggle-icon:  '☀️';
+        }
+
+        /* MODO CLARO */
+        [data-theme="light"] {
+            --bg:           #ffffff;
+            --bg2:          #f7f7f7;
+            --surface:      #ffffff;
+            --surface2:     #f5f0ea;
+            --border:       #e8e3dc;
+            --border2:      #d4cec5;
+            --text:         #0d0d0d;
+            --text2:        #555555;
+            --text3:        #aaaaaa;
+            --orange:       #E65100;
+            --orange-glow:  rgba(230,81,0,0.10);
+            --amber:        #F57C00;
+            --green:        #2E7D32;
+            --red:          #C62828;
+            --yellow:       #F9A825;
+            --shadow:       0 4px 24px rgba(0,0,0,0.08);
+            --shadow-sm:    0 2px 8px rgba(0,0,0,0.06);
+            --icon-bg:      linear-gradient(135deg, #E65100, #F57C00);
+            --toggle-bg:    #f0ece6;
+            --toggle-border:#e0dbd3;
+            --toggle-icon:  '🌙';
+        }
+
+        /* ===========================
+           BASE
+        =========================== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg);
             min-height: 100vh;
             color: var(--text);
-            padding: 20px 16px 60px;
+            padding: 20px 16px 80px;
+            transition: background var(--transition), color var(--transition);
         }
+
         .container { max-width: 960px; margin: 0 auto; }
 
-        /* ===== HEADER ===== */
+        /* ===========================
+           HEADER
+        =========================== */
         .header {
-            padding: 32px 0 28px;
+            padding: 28px 0 24px;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            transition: border-color var(--transition);
         }
         .header-top {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
+            align-items: center;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
         .brand-icon {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, var(--orange), var(--amber));
-            border-radius: 12px;
+            width: 46px;
+            height: 46px;
+            background: var(--icon-bg);
+            border-radius: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 22px;
-            box-shadow: 0 0 20px rgba(255,109,0,0.35);
+            box-shadow: 0 0 24px var(--orange-glow);
+            flex-shrink: 0;
         }
         .brand-name {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff 30%, var(--amber));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.8px;
+            color: var(--text);
         }
         .brand-sub {
             font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 1px;
+            color: var(--text3);
+            margin-top: 2px;
             font-weight: 500;
-        }
-        .header-meta {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-        }
-        .version-badge {
-            font-size: 11px;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-        .cotacao-pill {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 5px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
         }
 
-        /* ===== USER BAR ===== */
+        /* Controles do header */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .cotacao-pill {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 13px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text2);
+            transition: all var(--transition);
+        }
+        .version-text {
+            font-size: 11px;
+            color: var(--text3);
+            font-weight: 500;
+        }
+
+        /* TOGGLE MODO CLARO/ESCURO */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text2);
+            font-family: inherit;
+            transition: all var(--transition);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .theme-toggle:hover {
+            border-color: var(--orange);
+            color: var(--text);
+            box-shadow: 0 0 0 3px var(--orange-glow);
+        }
+        .theme-toggle .t-icon { font-size: 16px; }
+        [data-theme="dark"] .icon-sun  { display: flex; align-items: center; gap: 7px; }
+        [data-theme="dark"] .icon-moon { display: none; }
+        [data-theme="light"] .icon-sun  { display: none; }
+        [data-theme="light"] .icon-moon { display: flex; align-items: center; gap: 7px; }
+
+        /* ===========================
+           USER BAR
+        =========================== */
         .user-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             padding: 12px 16px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
             flex-wrap: wrap;
+            transition: all var(--transition);
         }
-        .user-email {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        .user-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        .user-email { font-size: 13px; color: var(--text2); font-weight: 500; }
+        .user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn-action {
             background: var(--surface2);
-            color: var(--text-muted);
+            color: var(--text2);
             border: 1px solid var(--border);
-            padding: 7px 14px;
+            padding: 7px 13px;
             border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
-            transition: all 0.2s;
+            transition: all var(--transition);
         }
-        .btn-action:hover {
-            background: var(--border);
-            color: var(--text);
-        }
-        .btn-action.sair {
-            border-color: rgba(255,61,0,0.3);
-            color: #ff6b6b;
-        }
-        .btn-action.sair:hover { background: rgba(255,61,0,0.1); }
+        .btn-action:hover { border-color: var(--orange); color: var(--text); }
+        .btn-action.sair { border-color: rgba(255,82,82,0.25); color: var(--red); }
+        .btn-action.sair:hover { background: rgba(255,82,82,0.08); }
 
-        /* ===== DASHBOARD CARDS ===== */
+        /* ===========================
+           DASHBOARD
+        =========================== */
         .dash-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 12px;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
         }
         .dash-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 18px;
+            padding: 20px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition);
             position: relative;
             overflow: hidden;
         }
-        .dash-card::before {
+        .dash-card::after {
             content: '';
             position: absolute;
-            top: 0; left: 0;
-            right: 0; height: 2px;
-            background: var(--border);
-            transition: background 0.2s;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--border2);
+            transition: background var(--transition);
         }
-        .dash-card:hover { border-color: #3a3a3a; transform: translateY(-2px); }
-        .dash-card.verde::before { background: var(--green); }
-        .dash-card.vermelho::before { background: var(--red); }
-        .dash-card.amarelo::before { background: var(--yellow); }
-        .dash-card.verde { border-color: rgba(0,200,83,0.2); }
-        .dash-card.vermelho { border-color: rgba(255,61,0,0.2); }
-        .dash-card.amarelo { border-color: rgba(255,214,0,0.2); }
-        .dash-icon { font-size: 22px; margin-bottom: 10px; }
-        .dash-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-        .dash-value { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.5; }
+        .dash-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .dash-card.verde::after  { background: var(--green); }
+        .dash-card.vermelho::after { background: var(--red); }
+        .dash-card.amarelo::after  { background: var(--yellow); }
+        .dash-card.verde  { border-color: rgba(0,230,118,0.2); }
+        .dash-card.vermelho { border-color: rgba(255,82,82,0.2); }
+        .dash-card.amarelo  { border-color: rgba(255,214,0,0.2); }
+        .dash-icon { font-size: 24px; margin-bottom: 12px; }
+        .dash-label { font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .dash-value { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.6; }
 
-        /* ===== SECTION HEADER ===== */
+        /* ===========================
+           SEÇÕES
+        =========================== */
+        .section-wrap { margin-top: 28px; }
+        .section-wrap:first-of-type { margin-top: 0; }
         .section-header {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 12px;
-            margin-top: 28px;
         }
-        .section-header:first-of-type { margin-top: 0; }
         .section-dot {
-            width: 8px; height: 8px;
+            width: 7px; height: 7px;
             border-radius: 50%;
             background: var(--orange);
             flex-shrink: 0;
         }
         .section-title {
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
+            letter-spacing: 2px;
+            color: var(--text3);
+            white-space: nowrap;
         }
-        .section-line {
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
+        .section-line { flex: 1; height: 1px; background: var(--border); }
 
-        /* ===== MENU GRID ===== */
+        /* ===========================
+           MENU GRID
+        =========================== */
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
             gap: 10px;
-            margin-bottom: 8px;
         }
         .menu-btn {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px 14px;
+            border-radius: 14px;
+            padding: 22px 12px;
             color: var(--text);
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             text-decoration: none;
-            transition: all 0.2s;
-            min-height: 110px;
+            transition: all var(--transition);
+            min-height: 108px;
             justify-content: center;
             font-family: inherit;
             position: relative;
+            box-shadow: var(--shadow-sm);
         }
-        .menu-btn .icon { font-size: 28px; }
-        .menu-btn span:last-child { line-height: 1.3; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+        .menu-btn .icon { font-size: 28px; line-height: 1; }
+        .menu-btn .label { line-height: 1.35; color: var(--text2); font-size: 11.5px; font-weight: 600; }
         .menu-btn:hover {
             background: var(--surface2);
             border-color: var(--orange);
-            box-shadow: 0 0 0 1px var(--orange), 0 4px 20px rgba(255,109,0,0.15);
-            transform: translateY(-2px);
-            color: var(--text);
+            box-shadow: 0 0 0 1px var(--orange), 0 6px 24px var(--orange-glow);
+            transform: translateY(-3px);
         }
-        .menu-btn:hover span:last-child { color: #ccc; }
+        .menu-btn:hover .label { color: var(--text); }
 
-        /* Soon badge */
+        /* Soon */
         .menu-btn-soon {
-            opacity: 0.4;
+            opacity: 0.35;
             cursor: default;
             border-style: dashed;
+            box-shadow: none;
         }
         .menu-btn-soon:hover {
             transform: none !important;
             box-shadow: none !important;
             border-color: var(--border) !important;
             border-style: dashed;
+            background: var(--surface) !important;
         }
         .soon-badge {
-            position: absolute;
-            top: 7px; right: 7px;
-            background: var(--orange);
-            color: #fff;
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            position: absolute; top: 8px; right: 8px;
+            background: var(--orange); color: #fff;
+            font-size: 8px; padding: 2px 6px; border-radius: 8px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px;
         }
 
-        /* ===== MIGRATE BANNER ===== */
+        /* ===========================
+           MIGRATE BANNER
+        =========================== */
         .migrate-banner {
-            background: rgba(255,214,0,0.05);
-            border: 1px solid rgba(255,214,0,0.2);
+            background: rgba(255,214,0,0.06);
+            border: 1px solid rgba(255,214,0,0.25);
             border-radius: 12px;
             padding: 14px 16px;
-            margin-bottom: 20px;
-            color: #FFD600;
+            margin-bottom: 18px;
+            color: var(--yellow);
             font-size: 13px;
             display: none;
+            transition: all var(--transition);
         }
         .migrate-banner button {
-            background: rgba(255,214,0,0.15);
-            color: #FFD600;
+            background: rgba(255,214,0,0.12);
+            color: var(--yellow);
             border: 1px solid rgba(255,214,0,0.3);
-            padding: 7px 14px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 8px;
-            font-family: inherit;
-            font-size: 12px;
+            padding: 7px 14px; border-radius: 8px;
+            font-weight: 700; cursor: pointer;
+            margin-top: 8px; font-family: inherit; font-size: 12px;
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* ===========================
+           RESPONSIVE
+        =========================== */
         @media (max-width: 600px) {
-            .header-top { flex-direction: column; }
-            .header-meta { align-items: flex-start; }
             .menu-grid { grid-template-columns: repeat(3, 1fr); }
             .dash-grid { grid-template-columns: 1fr 1fr; }
+            .header-top { gap: 16px; }
+            .header-controls { gap: 8px; }
+            .version-text { display: none; }
         }
-        @media (max-width: 380px) {
+        @media (max-width: 400px) {
             .menu-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="container">
 
-        <!-- HEADER -->
-        <div class="header">
-            <div class="header-top">
-                <div class="brand">
-                    <div class="brand-icon">💼</div>
-                    <div>
-                        <div class="brand-name">GT Smart</div>
-                        <div class="brand-sub">Sistema de Gestão Financeira</div>
-                    </div>
-                </div>
-                <div class="header-meta">
-                    <span class="version-badge">Basic 7.0 · 10/03/2026</span>
-                    <span class="cotacao-pill" id="cotacaoDolar">💵 USD/BRL ...</span>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-top">
+            <div class="brand">
+                <div class="brand-icon">💼</div>
+                <div>
+                    <div class="brand-name">GT Smart</div>
+                    <div class="brand-sub">Sistema de Gestão Financeira</div>
                 </div>
             </div>
-        </div>
-
-        <!-- BANNER MIGRAÇÃO -->
-        <div class="migrate-banner" id="migrateBanner">
-            ⚠️ <strong>Dados locais encontrados!</strong> Migre seus dados para o Firebase para acessar de qualquer celular.
-            <br><button onclick="migrarDados()">☁️ Migrar para Firebase agora</button>
-        </div>
-
-        <!-- USER BAR -->
-        <div class="user-bar">
-            <span class="user-email" id="userEmail">🔄 Carregando...</span>
-            <div class="user-actions">
-                <button class="btn-action" id="btnBackup" onclick="fazerBackup()">☁️ Backup</button>
-                <button class="btn-action" onclick="document.getElementById('inputImport').click()">📥 Importar</button>
-                <button class="btn-action sair" onclick="sair()">🚪 Sair</button>
-                <input type="file" id="inputImport" accept=".json" style="display:none;" onchange="importarBackup(this)">
+            <div class="header-controls">
+                <span class="version-text">Basic 7.0 · 10/03/2026</span>
+                <span class="cotacao-pill" id="cotacaoDolar">💵 USD/BRL ...</span>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+                    <span class="icon-sun">☀️ <span>Claro</span></span>
+                    <span class="icon-moon">🌙 <span>Escuro</span></span>
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- DASHBOARD -->
-        <div class="dash-grid" id="dashboard">
-            <div class="dash-card" id="dashPagarHoje" onclick="window.location.href='GT_Smart_Cartoes.html'">
-                <div class="dash-icon">💰</div>
-                <div class="dash-label">Vence Hoje</div>
-                <div class="dash-value" id="totalPagar">⏳ Carregando...</div>
-            </div>
-            <div class="dash-card" id="dashAlertas">
-                <div class="dash-icon">⚠️</div>
-                <div class="dash-label">Atenção</div>
-                <div class="dash-value" id="totalAlertas">⏳ Carregando...</div>
-            </div>
+    <!-- BANNER MIGRAÇÃO -->
+    <div class="migrate-banner" id="migrateBanner">
+        ⚠️ <strong>Dados locais encontrados!</strong> Migre seus dados para o Firebase para acessar de qualquer celular.
+        <br><button onclick="migrarDados()">☁️ Migrar para Firebase agora</button>
+    </div>
+
+    <!-- USER BAR -->
+    <div class="user-bar">
+        <span class="user-email" id="userEmail">🔄 Carregando...</span>
+        <div class="user-actions">
+            <button class="btn-action" id="btnBackup" onclick="fazerBackup()">☁️ Backup</button>
+            <button class="btn-action" onclick="document.getElementById('inputImport').click()">📥 Importar</button>
+            <button class="btn-action sair" onclick="sair()">🚪 Sair</button>
+            <input type="file" id="inputImport" accept=".json" style="display:none;" onchange="importarBackup(this)">
         </div>
+    </div>
 
-        <!-- EMPRÉSTIMOS & DÍVIDAS -->
+    <!-- DASHBOARD -->
+    <div class="dash-grid">
+        <div class="dash-card" id="dashPagarHoje" onclick="window.location.href='GT_Smart_Cartoes.html'">
+            <div class="dash-icon">💰</div>
+            <div class="dash-label">Vence Hoje</div>
+            <div class="dash-value" id="totalPagar">⏳ Carregando...</div>
+        </div>
+        <div class="dash-card" id="dashAlertas">
+            <div class="dash-icon">⚠️</div>
+            <div class="dash-label">Atenção</div>
+            <div class="dash-value" id="totalAlertas">⏳ Carregando...</div>
+        </div>
+    </div>
+
+    <!-- EMPRÉSTIMOS & DÍVIDAS -->
+    <div class="section-wrap">
         <div class="section-header">
-            <div class="section-dot"></div>
+            <div class="section-dot" style="background:#FF6D00;"></div>
             <span class="section-title">Empréstimos & Dívidas</span>
             <div class="section-line"></div>
         </div>
         <div class="menu-grid">
-            <a href="GT_Smart_Gestao.html" class="menu-btn">
-                <span class="icon">💼</span><span>Gestão de Empréstimos</span>
-            </a>
-            <a href="GT_Smart_Minhas_Dividas.html" class="menu-btn">
-                <span class="icon">💸</span><span>Gestão de Dívidas</span>
-            </a>
-            <a href="GT_Smart_Calculadora_Nova.html" class="menu-btn">
-                <span class="icon">🧮</span><span>Calcular Empréstimos</span>
-            </a>
-            <a href="GT_Smart_Gerador_Contrato.html" class="menu-btn">
-                <span class="icon">📄</span><span>Gerar Contrato</span>
-            </a>
-            <a href="GT_Smart_Historico_Contratos.html" class="menu-btn">
-                <span class="icon">📋</span><span>Histórico de Contratos</span>
-            </a>
+            <a href="GT_Smart_Gestao.html" class="menu-btn"><span class="icon">💼</span><span class="label">Gestão de Empréstimos</span></a>
+            <a href="GT_Smart_Minhas_Dividas.html" class="menu-btn"><span class="icon">💸</span><span class="label">Gestão de Dívidas</span></a>
+            <a href="GT_Smart_Calculadora_Nova.html" class="menu-btn"><span class="icon">🧮</span><span class="label">Calcular Empréstimos</span></a>
+            <a href="GT_Smart_Gerador_Contrato.html" class="menu-btn"><span class="icon">📄</span><span class="label">Gerar Contrato</span></a>
+            <a href="GT_Smart_Historico_Contratos.html" class="menu-btn"><span class="icon">📋</span><span class="label">Histórico de Contratos</span></a>
         </div>
+    </div>
 
-        <!-- CARTÕES -->
+    <!-- CARTÕES -->
+    <div class="section-wrap">
         <div class="section-header">
-            <div class="section-dot" style="background:#00BCD4;"></div>
+            <div class="section-dot" style="background:#00B8D9;"></div>
             <span class="section-title">Cartões de Crédito</span>
             <div class="section-line"></div>
         </div>
         <div class="menu-grid">
-            <a href="GT_Smart_Cartoes.html" class="menu-btn">
-                <span class="icon">💳</span><span>Gestão de Cartões</span>
-            </a>
-            <a href="GT_Smart_Comparar_Cartoes.html" class="menu-btn">
-                <span class="icon">🏆</span><span>Qual Cartão Usar</span>
-            </a>
-            <a href="GT_Smart_Estrategia.html" class="menu-btn">
-                <span class="icon">🎯</span><span>Estratégia AZEO</span>
-            </a>
-            <a href="GT_Smart_Calendario_Cartoes.html" class="menu-btn">
-                <span class="icon">📅</span><span>Calendário Cartões</span>
-            </a>
-            <a href="GT_Smart_Dashboard_Cartoes.html" class="menu-btn">
-                <span class="icon">📊</span><span>Dashboard Cartões</span>
-            </a>
+            <a href="GT_Smart_Cartoes.html" class="menu-btn"><span class="icon">💳</span><span class="label">Gestão de Cartões</span></a>
+            <a href="GT_Smart_Comparar_Cartoes.html" class="menu-btn"><span class="icon">🏆</span><span class="label">Qual Cartão Usar</span></a>
+            <a href="GT_Smart_Estrategia.html" class="menu-btn"><span class="icon">🎯</span><span class="label">Estratégia AZEO</span></a>
+            <a href="GT_Smart_Calendario_Cartoes.html" class="menu-btn"><span class="icon">📅</span><span class="label">Calendário Cartões</span></a>
+            <a href="GT_Smart_Dashboard_Cartoes.html" class="menu-btn"><span class="icon">📊</span><span class="label">Dashboard Cartões</span></a>
         </div>
+    </div>
 
-        <!-- DEFI / CRYPTO -->
+    <!-- DEFI / CRYPTO -->
+    <div class="section-wrap">
         <div class="section-header">
-            <div class="section-dot" style="background:#FF9800;"></div>
+            <div class="section-dot" style="background:#FF9100;"></div>
             <span class="section-title">DeFi / Crypto</span>
             <div class="section-line"></div>
         </div>
         <div class="menu-grid">
-            <a href="GT_Smart_Cripto.html" class="menu-btn">
-                <span class="icon">🪙</span><span>Crypto</span>
-            </a>
-            <a href="GT_Smart_DeFi_Dashboard.html" class="menu-btn">
-                <span class="icon">⛓️</span><span>DeFi Dashboard</span>
-            </a>
-            <a href="GT_Smart_DeFi_Pools.html" class="menu-btn">
-                <span class="icon">🌊</span><span>Pools</span>
-            </a>
-            <a href="GT_Smart_DeFi_Borrows.html" class="menu-btn">
-                <span class="icon">🏦</span><span>Borrows</span>
-            </a>
-            <a href="GT_Smart_DeFi_Colateral.html" class="menu-btn">
-                <span class="icon">🔒</span><span>Colateral</span>
-            </a>
-            <a href="GT_Smart_DeFi_Fees.html" class="menu-btn">
-                <span class="icon">💹</span><span>Fees</span>
-            </a>
+            <a href="GT_Smart_Cripto.html" class="menu-btn"><span class="icon">🪙</span><span class="label">Crypto</span></a>
+            <a href="GT_Smart_DeFi_Dashboard.html" class="menu-btn"><span class="icon">⛓️</span><span class="label">DeFi Dashboard</span></a>
+            <a href="GT_Smart_DeFi_Pools.html" class="menu-btn"><span class="icon">🌊</span><span class="label">Pools</span></a>
+            <a href="GT_Smart_DeFi_Borrows.html" class="menu-btn"><span class="icon">🏦</span><span class="label">Borrows</span></a>
+            <a href="GT_Smart_DeFi_Colateral.html" class="menu-btn"><span class="icon">🔒</span><span class="label">Colateral</span></a>
+            <a href="GT_Smart_DeFi_Fees.html" class="menu-btn"><span class="icon">💹</span><span class="label">Fees</span></a>
         </div>
+    </div>
 
-        <!-- GERAL -->
+    <!-- GERAL -->
+    <div class="section-wrap">
         <div class="section-header">
             <div class="section-dot" style="background:#7C4DFF;"></div>
             <span class="section-title">Geral</span>
             <div class="section-line"></div>
         </div>
         <div class="menu-grid">
-            <a href="GT_Smart_Alertas.html" class="menu-btn">
-                <span class="icon">🚨</span><span>Central de Alertas</span>
-            </a>
-            <a href="GT_Smart_Relatorios.html" class="menu-btn">
-                <span class="icon">📊</span><span>Relatórios</span>
-            </a>
-            <a href="GT_Smart_Empresas.html" class="menu-btn">
-                <span class="icon">🏢</span><span>Empresas</span>
-            </a>
-            <a href="GT_Smart_Calendario.html" class="menu-btn">
-                <span class="icon">📅</span><span>Calendário</span>
-            </a>
-            <a href="GT_Smart_Configuracoes.html" class="menu-btn">
-                <span class="icon">⚙️</span><span>Configurações</span>
-            </a>
+            <a href="GT_Smart_Alertas.html" class="menu-btn"><span class="icon">🚨</span><span class="label">Central de Alertas</span></a>
+            <a href="GT_Smart_Relatorios.html" class="menu-btn"><span class="icon">📊</span><span class="label">Relatórios</span></a>
+            <a href="GT_Smart_Empresas.html" class="menu-btn"><span class="icon">🏢</span><span class="label">Empresas</span></a>
+            <a href="GT_Smart_Calendario.html" class="menu-btn"><span class="icon">📅</span><span class="label">Calendário</span></a>
+            <a href="GT_Smart_Configuracoes.html" class="menu-btn"><span class="icon">⚙️</span><span class="label">Configurações</span></a>
         </div>
+    </div>
 
-        <!-- EM BREVE -->
+    <!-- EM BREVE -->
+    <div class="section-wrap">
         <div class="section-header">
-            <div class="section-dot" style="background:#444;"></div>
+            <div class="section-dot" style="background:var(--text3);"></div>
             <span class="section-title">Em Breve</span>
             <div class="section-line"></div>
         </div>
         <div class="menu-grid">
             <div class="menu-btn menu-btn-soon" onclick="alert('🚧 Ledger Lands em desenvolvimento!')">
-                <span class="icon">🏡</span><span>Ledger Lands</span>
+                <span class="icon">🏡</span><span class="label">Ledger Lands</span>
                 <span class="soon-badge">Breve</span>
             </div>
             <div class="menu-btn menu-btn-soon" onclick="alert('🚧 GT Lands Mensagem em desenvolvimento!')">
-                <span class="icon">💬</span><span>GT Lands Mensagem</span>
+                <span class="icon">💬</span><span class="label">GT Lands Mensagem</span>
                 <span class="soon-badge">Breve</span>
             </div>
         </div>
+    </div>
 
-    </div><!-- /container -->
+</div><!-- /container -->
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module">
-        import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, importFullBackup, getLoans, getDebts, getCards } from './firebase-config.js';
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="module">
+    import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, importFullBackup, getLoans, getDebts, getCards } from './firebase-config.js';
 
-        let getEmpresas = async () => [];
-        let getContracts = async () => [];
+    let getEmpresas = async () => [];
+    let getContracts = async () => [];
+    try {
+        const mod = await import('./firebase-config.js');
+        if (mod.getEmpresas) getEmpresas = mod.getEmpresas;
+        if (mod.getContracts) getContracts = mod.getContracts;
+    } catch(e) {}
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+    // ===== TEMA =====
+    window.toggleTheme = function() {
+        const html = document.documentElement;
+        const novoTema = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', novoTema);
+        localStorage.setItem('gtSmartTheme', novoTema);
+    };
+    // Carregar tema salvo
+    const temaSalvo = localStorage.getItem('gtSmartTheme') || 'dark';
+    document.documentElement.setAttribute('data-theme', temaSalvo);
+
+    // ===== COTAÇÃO DO DÓLAR =====
+    async function carregarCotacao() {
         try {
-            const mod = await import('./firebase-config.js');
-            if (mod.getEmpresas) getEmpresas = mod.getEmpresas;
-            if (mod.getContracts) getContracts = mod.getContracts;
-        } catch(e) { console.log('Extras não disponíveis:', e); }
+            const r = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+            if (!r.ok) return;
+            const d = await r.json();
+            const bid = parseFloat(d.USDBRL.bid);
+            const pct = parseFloat(d.USDBRL.pctChange);
+            const seta = pct >= 0 ? '▲' : '▼';
+            const cor = pct >= 0 ? '#FF5252' : '#00C853';
+            const el = document.getElementById('cotacaoDolar');
+            if (el) el.innerHTML = '💵 R$ ' + bid.toFixed(2) + ' <span style="color:' + cor + ';font-size:10px;">' + seta + ' ' + Math.abs(pct).toFixed(2) + '%</span>';
+        } catch(e) {
+            const el = document.getElementById('cotacaoDolar');
+            if (el) el.textContent = '💵 USD/BRL —';
+        }
+    }
+    carregarCotacao();
+    setInterval(carregarCotacao, 300000);
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW:', e));
+    // ===== AUTH =====
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        document.getElementById('userEmail').textContent = '👤 ' + (user.email || 'Usuário');
+        carregarDashboard();
+
+        const localLoans = JSON.parse(localStorage.getItem('gtSmartLoans') || '[]');
+        const localDebts = JSON.parse(localStorage.getItem('gtSmartDebts') || '[]');
+        const jaMigrou = localStorage.getItem('gtSmartMigrated') === 'true';
+        if (!jaMigrou && (localLoans.length > 0 || localDebts.length > 0)) {
+            document.getElementById('migrateBanner').style.display = 'block';
         }
 
-        // ===== COTAÇÃO DO DÓLAR =====
-        async function carregarCotacao() {
+        const hojeBackup = new Date().toISOString().split('T')[0];
+        if (localStorage.getItem('gtSmartLastDriveBackup') !== hojeBackup) {
             try {
-                const r = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
-                if (!r.ok) return;
-                const d = await r.json();
-                const bid = parseFloat(d.USDBRL.bid);
-                const pct = parseFloat(d.USDBRL.pctChange);
-                const seta = pct >= 0 ? '▲' : '▼';
-                const cor = pct >= 0 ? '#FF6B6B' : '#69DB7C';
-                const el = document.getElementById('cotacaoDolar');
-                if (el) el.innerHTML = '💵 R$ ' + bid.toFixed(2) + ' <span style="color:' + cor + ';font-size:10px;">' + seta + ' ' + Math.abs(pct).toFixed(2) + '%</span>';
-            } catch(e) {
-                const el = document.getElementById('cotacaoDolar');
-                if (el) el.textContent = '💵 USD/BRL —';
-            }
-        }
-        carregarCotacao();
-        setInterval(carregarCotacao, 300000);
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-            document.getElementById('userEmail').textContent = '👤 ' + (user.email || 'Usuário');
-            carregarDashboard();
-
-            const localLoans = JSON.parse(localStorage.getItem('gtSmartLoans') || '[]');
-            const localDebts = JSON.parse(localStorage.getItem('gtSmartDebts') || '[]');
-            const jaMigrou = localStorage.getItem('gtSmartMigrated') === 'true';
-            if (!jaMigrou && (localLoans.length > 0 || localDebts.length > 0)) {
-                document.getElementById('migrateBanner').style.display = 'block';
-            }
-
-            const hojeBackup = new Date().toISOString().split('T')[0];
-            const ultimoBackup = localStorage.getItem('gtSmartLastDriveBackup');
-            if (ultimoBackup !== hojeBackup) {
-                try {
-                    if (typeof google !== 'undefined' && google.accounts) {
-                        await backupParaDrive(true);
-                        localStorage.setItem('gtSmartLastDriveBackup', hojeBackup);
-                    }
-                } catch(e) { console.log('Backup Drive falhou:', e.message); }
-            }
-        });
-
-        async function carregarDashboard() {
-            try {
-                const loans = await getLoans() || [];
-                const debts = await getDebts() || [];
-                const cards = await getCards() || [];
-
-                const hoje = new Date();
-                hoje.setHours(0,0,0,0);
-                const todayDay = hoje.getDate();
-                const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
-                const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
-
-                const parseLocalDate = (ds) => {
-                    if (!ds) return null;
-                    const p = ds.split('T')[0].split('-');
-                    const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
-                    d.setHours(0,0,0,0);
-                    return d;
-                };
-
-                let totalPagarValor = 0;
-                let parcelasEmpHoje = 0, parcelasEmpAtrasadas = 0;
-                loans.forEach(loan => {
-                    if (loan.archived || loan.status === 'finished') return;
-                    const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
-                    if (!proxima) return;
-                    const dt = parseLocalDate(proxima.date);
-                    if (!dt) return;
-                    if (dt.getTime() === hoje.getTime()) { parcelasEmpHoje++; totalPagarValor += proxima.amount || 0; }
-                    else if (dt < hoje) { parcelasEmpAtrasadas++; }
-                });
-
-                let parcelasDivHoje = 0, parcelasDivAtrasadas = 0;
-                debts.forEach(debt => {
-                    if (debt.archived || debt.status === 'finished') return;
-                    const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
-                    if (!proxima) return;
-                    const dt = parseLocalDate(proxima.date);
-                    if (!dt) return;
-                    if (dt.getTime() === hoje.getTime()) { parcelasDivHoje++; totalPagarValor += proxima.amount || 0; }
-                    else if (dt < hoje) { parcelasDivAtrasadas++; }
-                });
-
-                let cartoesHoje = 0, cartoesAtrasados = 0;
-                cards.forEach(c => {
-                    if (c.pagoMes === mesAtual) return;
-                    if (!c.saldoUsado || parseFloat(c.saldoUsado) <= 0) return;
-                    let dataBoa = null;
-                    if (c.tipo === 'Business') {
-                        const venc = parseInt(c.diaVencimento); if (!venc) return;
-                        const dias = c.modoBusiness === 'turbo' ? 13 : 2;
-                        dataBoa = venc - dias; if (dataBoa <= 0) dataBoa += 30;
-                    } else {
-                        const fech = parseInt(c.diaFechamento); if (!fech) return;
-                        dataBoa = fech - 2; if (dataBoa <= 0) dataBoa += 30;
-                    }
-                    if (dataBoa === todayDay) { cartoesHoje++; totalPagarValor += c.saldoUsado || 0; }
-                    else if (dataBoa < todayDay) { cartoesAtrasados++; }
-                });
-
-                const totalHoje = parcelasEmpHoje + parcelasDivHoje + cartoesHoje;
-                const dashPagar = document.getElementById('dashPagarHoje');
-                if (totalHoje === 0) {
-                    document.getElementById('totalPagar').innerHTML = '✅ Nada vence hoje';
-                    dashPagar.className = 'dash-card verde';
-                } else {
-                    let linhas = [];
-                    if (parcelasEmpHoje > 0) linhas.push('📋 ' + parcelasEmpHoje + ' parcela' + (parcelasEmpHoje > 1 ? 's' : '') + ' de empréstimo');
-                    if (parcelasDivHoje > 0) linhas.push('💰 ' + parcelasDivHoje + ' parcela' + (parcelasDivHoje > 1 ? 's' : '') + ' de dívida');
-                    if (cartoesHoje > 0) linhas.push('💳 ' + cartoesHoje + ' cartão(ões)');
-                    if (totalPagarValor > 0) linhas.push('💵 Total: ' + fmt(totalPagarValor));
-                    document.getElementById('totalPagar').innerHTML = linhas.join('<br>');
-                    dashPagar.className = 'dash-card amarelo';
-                }
-
-                let alertas = [];
-                const dashAlertas = document.getElementById('dashAlertas');
-                loans.forEach(loan => {
-                    if (loan.archived || loan.status === 'finished') return;
-                    const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
-                    if (!proxima) return;
-                    const dt = parseLocalDate(proxima.date);
-                    if (dt && dt < hoje) {
-                        const nome = loan.clientName || 'Sem nome';
-                        const dataFmt = proxima.date.split('-').reverse().join('/');
-                        alertas.push('📋 ' + nome + ' — atrasado desde ' + dataFmt);
-                    }
-                });
-                debts.forEach(debt => {
-                    if (debt.archived || debt.status === 'finished') return;
-                    const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
-                    if (!proxima) return;
-                    const dt = parseLocalDate(proxima.date);
-                    if (dt && dt < hoje) {
-                        const nome = debt.creditor || debt.nome || 'Sem nome';
-                        const dataFmt = proxima.date.split('-').reverse().join('/');
-                        alertas.push('💰 ' + nome + ' — atrasado desde ' + dataFmt);
-                    }
-                });
-                if (cartoesAtrasados > 0) alertas.push('💳 ' + cartoesAtrasados + ' cartão(ões) com pagamento atrasado');
-                const bonusVistos = new Set();
-                cards.forEach(c => {
-                    if (!c.bonusPrazo) return;
-                    const chave = (c.nome || '') + '|' + c.bonusPrazo;
-                    if (bonusVistos.has(chave)) return;
-                    bonusVistos.add(chave);
-                    const prazo = parseLocalDate(c.bonusPrazo);
-                    if (!prazo) return;
-                    const diff = Math.round((prazo - hoje) / (1000*60*60*24));
-                    if (diff >= 0 && diff <= 15) alertas.push('⏱️ Bônus ' + (c.nome || '') + ' vence em ' + diff + ' dia' + (diff !== 1 ? 's' : ''));
-                    else if (diff < 0 && diff >= -7) alertas.push('❌ Bônus ' + (c.nome || '') + ' expirou há ' + Math.abs(diff) + ' dia' + (Math.abs(diff) !== 1 ? 's' : ''));
-                });
-                cards.forEach(c => {
-                    if (!c.promo) return;
-                    const match = (c.promo || '').match(/(\d{1,2})\/(\d{4})/);
-                    if (match) {
-                        const promoDate = new Date(parseInt(match[2]), parseInt(match[1]) - 1, 28);
-                        const diff = Math.round((promoDate - hoje) / (1000*60*60*24));
-                        if (diff >= 0 && diff <= 30) alertas.push('🎯 Promo ' + (c.nome || '') + ' acaba em ' + diff + ' dias');
-                    }
-                });
-
-                if (alertas.length === 0) {
-                    document.getElementById('totalAlertas').innerHTML = '✅ Tudo tranquilo';
-                    dashAlertas.className = 'dash-card verde';
-                } else {
-                    document.getElementById('totalAlertas').innerHTML = alertas.join('<br>');
-                    const temCritico = parcelasEmpAtrasadas > 0 || parcelasDivAtrasadas > 0 || cartoesAtrasados > 0;
-                    dashAlertas.className = temCritico ? 'dash-card vermelho' : 'dash-card amarelo';
-                }
-            } catch(e) {
-                console.log('Erro dashboard:', e);
-                document.getElementById('totalPagar').innerHTML = '❌ Erro';
-                document.getElementById('totalAlertas').innerHTML = '❌ Erro';
-            }
-        }
-
-        window.importarBackup = async function(input) {
-            const file = input.files[0];
-            if (!file) return;
-            if (!confirm("⚠️ Isso vai RESTAURAR todos os dados do backup.\n\nTem certeza?")) { input.value = ""; return; }
-            try {
-                const text = await file.text();
-                const data = JSON.parse(text);
-                await importFullBackup(data);
-                alert("✅ Backup importado com sucesso! A página vai recarregar.");
-                window.location.reload();
-            } catch(e) { alert("❌ Erro ao importar: " + e.message); }
-            input.value = "";
-        };
-
-        window.fazerBackup = async function() {
-            const btn = document.getElementById('btnBackup');
-            btn.textContent = '⏳ Baixando...';
-            btn.disabled = true;
-            try {
-                await exportFullBackup();
-                btn.textContent = '✅ Baixado!';
                 if (typeof google !== 'undefined' && google.accounts) {
-                    backupParaDrive(true).catch(e => console.log('Drive backup falhou:', e.message));
+                    await backupParaDrive(true);
+                    localStorage.setItem('gtSmartLastDriveBackup', hojeBackup);
                 }
-                setTimeout(() => { btn.textContent = '☁️ Backup'; btn.disabled = false; }, 3000);
-            } catch(e) {
-                alert('❌ Erro ao baixar backup: ' + e.message);
-                btn.textContent = '☁️ Backup';
-                btn.disabled = false;
-            }
-        };
-
-        const GOOGLE_CLIENT_ID = '870054137437-ftgm5iq8v8c552dib3tbgd3avkipsn5h.apps.googleusercontent.com';
-        const DRIVE_FOLDER_ID = '1yosnY9qeZz0YVbrD8wwLJYJnJQ_mFyC9';
-
-        function getGoogleAccessToken() {
-            return new Promise((resolve, reject) => {
-                const tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: GOOGLE_CLIENT_ID,
-                    scope: 'https://www.googleapis.com/auth/drive',
-                    callback: (response) => { if (response.error) reject(new Error(response.error)); else resolve(response.access_token); },
-                    error_callback: (error) => { reject(new Error('Auth cancelada')); }
-                });
-                tokenClient.requestAccessToken();
-            });
+            } catch(e) { console.log('Backup Drive:', e.message); }
         }
+    });
 
-        async function backupParaDrive(silencioso) {
-            const loans = await getLoans();
-            const debts = await getDebts();
-            const cards = await getCards();
-            const empresas = await getEmpresas();
-            const contracts = await getContracts();
-            const backup = {
-                exportDate: new Date().toISOString(),
-                exportDateFormatted: new Date().toLocaleString('pt-BR'),
-                system: 'GT Smart', version: '7.0',
-                data: { loans, debts, cards, empresas, contracts },
-                statistics: { totalLoans: loans.length, totalDebts: debts.length, totalCards: cards.length, totalEmpresas: empresas.length, totalContracts: contracts.length, activeLoans: loans.filter(l => l.status === 'active').length }
+    // ===== DASHBOARD =====
+    async function carregarDashboard() {
+        try {
+            const loans = await getLoans() || [];
+            const debts = await getDebts() || [];
+            const cards = await getCards() || [];
+
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            const todayDay = hoje.getDate();
+            const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+            const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+            const parseLocalDate = (ds) => {
+                if (!ds) return null;
+                const p = ds.split('T')[0].split('-');
+                const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+                d.setHours(0,0,0,0); return d;
             };
-            const jsonStr = JSON.stringify(backup, null, 2);
-            const blob = new Blob([jsonStr], { type: 'application/json' });
-            const dataHoje = new Date().toISOString().slice(0, 10);
-            const fileName = 'GT_Smart_Backup_' + dataHoje + '.json';
-            const accessToken = await getGoogleAccessToken();
-            const searchUrl = 'https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent("name='" + fileName + "' and '" + DRIVE_FOLDER_ID + "' in parents and trashed=false") + '&fields=files(id,name)';
-            const searchRes = await fetch(searchUrl, { headers: { 'Authorization': 'Bearer ' + accessToken } });
-            const searchData = await searchRes.json();
-            if (searchData.files && searchData.files.length > 0) {
-                for (const file of searchData.files) {
-                    await fetch('https://www.googleapis.com/drive/v3/files/' + file.id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + accessToken } });
+
+            let totalPagarValor = 0;
+            let parcelasEmpHoje = 0, parcelasEmpAtrasadas = 0;
+            loans.forEach(loan => {
+                if (loan.archived || loan.status === 'finished') return;
+                const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
+                if (!proxima) return;
+                const dt = parseLocalDate(proxima.date); if (!dt) return;
+                if (dt.getTime() === hoje.getTime()) { parcelasEmpHoje++; totalPagarValor += proxima.amount || 0; }
+                else if (dt < hoje) parcelasEmpAtrasadas++;
+            });
+
+            let parcelasDivHoje = 0, parcelasDivAtrasadas = 0;
+            debts.forEach(debt => {
+                if (debt.archived || debt.status === 'finished') return;
+                const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
+                if (!proxima) return;
+                const dt = parseLocalDate(proxima.date); if (!dt) return;
+                if (dt.getTime() === hoje.getTime()) { parcelasDivHoje++; totalPagarValor += proxima.amount || 0; }
+                else if (dt < hoje) parcelasDivAtrasadas++;
+            });
+
+            let cartoesHoje = 0, cartoesAtrasados = 0;
+            cards.forEach(c => {
+                if (c.pagoMes === mesAtual) return;
+                if (!c.saldoUsado || parseFloat(c.saldoUsado) <= 0) return;
+                let dataBoa = null;
+                if (c.tipo === 'Business') {
+                    const venc = parseInt(c.diaVencimento); if (!venc) return;
+                    dataBoa = venc - (c.modoBusiness === 'turbo' ? 13 : 2);
+                    if (dataBoa <= 0) dataBoa += 30;
+                } else {
+                    const fech = parseInt(c.diaFechamento); if (!fech) return;
+                    dataBoa = fech - 2; if (dataBoa <= 0) dataBoa += 30;
                 }
-            }
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify({ name: fileName, mimeType: 'application/json', parents: [DRIVE_FOLDER_ID] })], { type: 'application/json' }));
-            form.append('file', blob);
-            const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', { method: 'POST', headers: { 'Authorization': 'Bearer ' + accessToken }, body: form });
-            if (!uploadRes.ok) throw new Error('Upload falhou: ' + uploadRes.status);
-            const result = await uploadRes.json();
-            console.log('☁️ Backup salvo no Drive:', result.name);
-            return result;
-        }
+                if (dataBoa === todayDay) { cartoesHoje++; totalPagarValor += c.saldoUsado || 0; }
+                else if (dataBoa < todayDay) cartoesAtrasados++;
+            });
 
-        window.sair = async function() {
-            if (confirm('Deseja sair do sistema?')) { await signOut(auth); window.location.href = 'GT_Smart_Login.html'; }
-        };
-
-        window.migrarDados = async function() {
-            const btn = document.querySelector('.migrate-banner button');
-            btn.textContent = '⏳ Migrando...'; btn.disabled = true;
-            const resultado = await migrateFromLocalStorage();
-            if (resultado) {
-                alert(`✅ Migração concluída!\n\n📊 ${resultado.loans} empréstimos\n💳 ${resultado.debts} dívidas\n📄 ${resultado.contracts} contratos\n\nSeus dados estão agora na nuvem!`);
-                document.getElementById('migrateBanner').style.display = 'none';
+            const totalHoje = parcelasEmpHoje + parcelasDivHoje + cartoesHoje;
+            const dashPagar = document.getElementById('dashPagarHoje');
+            if (totalHoje === 0) {
+                document.getElementById('totalPagar').innerHTML = '✅ Nada vence hoje';
+                dashPagar.className = 'dash-card verde';
             } else {
-                alert('❌ Erro na migração. Tente novamente.');
-                btn.textContent = '☁️ Migrar para Firebase agora'; btn.disabled = false;
+                let linhas = [];
+                if (parcelasEmpHoje > 0) linhas.push('📋 ' + parcelasEmpHoje + ' parcela' + (parcelasEmpHoje > 1 ? 's' : '') + ' de empréstimo');
+                if (parcelasDivHoje > 0) linhas.push('💰 ' + parcelasDivHoje + ' parcela' + (parcelasDivHoje > 1 ? 's' : '') + ' de dívida');
+                if (cartoesHoje > 0) linhas.push('💳 ' + cartoesHoje + ' cartão(ões)');
+                if (totalPagarValor > 0) linhas.push('💵 Total: ' + fmt(totalPagarValor));
+                document.getElementById('totalPagar').innerHTML = linhas.join('<br>');
+                dashPagar.className = 'dash-card amarelo';
             }
-        };
-    </script>
+
+            let alertas = [];
+            const dashAlertas = document.getElementById('dashAlertas');
+            loans.forEach(loan => {
+                if (loan.archived || loan.status === 'finished') return;
+                const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
+                if (!proxima) return;
+                const dt = parseLocalDate(proxima.date);
+                if (dt && dt < hoje) alertas.push('📋 ' + (loan.clientName || 'Sem nome') + ' — atrasado desde ' + proxima.date.split('-').reverse().join('/'));
+            });
+            debts.forEach(debt => {
+                if (debt.archived || debt.status === 'finished') return;
+                const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
+                if (!proxima) return;
+                const dt = parseLocalDate(proxima.date);
+                if (dt && dt < hoje) alertas.push('💰 ' + (debt.creditor || debt.nome || 'Sem nome') + ' — atrasado desde ' + proxima.date.split('-').reverse().join('/'));
+            });
+            if (cartoesAtrasados > 0) alertas.push('💳 ' + cartoesAtrasados + ' cartão(ões) com pagamento atrasado');
+            const bonusVistos = new Set();
+            cards.forEach(c => {
+                if (!c.bonusPrazo) return;
+                const chave = (c.nome || '') + '|' + c.bonusPrazo;
+                if (bonusVistos.has(chave)) return; bonusVistos.add(chave);
+                const prazo = parseLocalDate(c.bonusPrazo); if (!prazo) return;
+                const diff = Math.round((prazo - hoje) / (1000*60*60*24));
+                if (diff >= 0 && diff <= 15) alertas.push('⏱️ Bônus ' + (c.nome || '') + ' vence em ' + diff + ' dia' + (diff !== 1 ? 's' : ''));
+                else if (diff < 0 && diff >= -7) alertas.push('❌ Bônus ' + (c.nome || '') + ' expirou há ' + Math.abs(diff) + ' dia' + (Math.abs(diff) !== 1 ? 's' : ''));
+            });
+            cards.forEach(c => {
+                if (!c.promo) return;
+                const match = (c.promo || '').match(/(\d{1,2})\/(\d{4})/);
+                if (match) {
+                    const promoDate = new Date(parseInt(match[2]), parseInt(match[1]) - 1, 28);
+                    const diff = Math.round((promoDate - hoje) / (1000*60*60*24));
+                    if (diff >= 0 && diff <= 30) alertas.push('🎯 Promo ' + (c.nome || '') + ' acaba em ' + diff + ' dias');
+                }
+            });
+
+            if (alertas.length === 0) {
+                document.getElementById('totalAlertas').innerHTML = '✅ Tudo tranquilo';
+                dashAlertas.className = 'dash-card verde';
+            } else {
+                document.getElementById('totalAlertas').innerHTML = alertas.join('<br>');
+                const temCritico = parcelasEmpAtrasadas > 0 || parcelasDivAtrasadas > 0 || cartoesAtrasados > 0;
+                dashAlertas.className = temCritico ? 'dash-card vermelho' : 'dash-card amarelo';
+            }
+        } catch(e) {
+            document.getElementById('totalPagar').innerHTML = '❌ Erro';
+            document.getElementById('totalAlertas').innerHTML = '❌ Erro';
+        }
+    }
+
+    // ===== BACKUP / IMPORTAR =====
+    window.importarBackup = async function(input) {
+        const file = input.files[0]; if (!file) return;
+        if (!confirm("⚠️ Isso vai RESTAURAR todos os dados do backup.\n\nTem certeza?")) { input.value = ""; return; }
+        try {
+            const text = await file.text();
+            await importFullBackup(JSON.parse(text));
+            alert("✅ Backup importado com sucesso! A página vai recarregar.");
+            window.location.reload();
+        } catch(e) { alert("❌ Erro ao importar: " + e.message); }
+        input.value = "";
+    };
+
+    window.fazerBackup = async function() {
+        const btn = document.getElementById('btnBackup');
+        btn.textContent = '⏳ Baixando...'; btn.disabled = true;
+        try {
+            await exportFullBackup();
+            btn.textContent = '✅ Baixado!';
+            if (typeof google !== 'undefined' && google.accounts) backupParaDrive(true).catch(() => {});
+            setTimeout(() => { btn.textContent = '☁️ Backup'; btn.disabled = false; }, 3000);
+        } catch(e) {
+            alert('❌ Erro ao baixar backup: ' + e.message);
+            btn.textContent = '☁️ Backup'; btn.disabled = false;
+        }
+    };
+
+    const GOOGLE_CLIENT_ID = '870054137437-ftgm5iq8v8c552dib3tbgd3avkipsn5h.apps.googleusercontent.com';
+    const DRIVE_FOLDER_ID  = '1yosnY9qeZz0YVbrD8wwLJYJnJQ_mFyC9';
+
+    function getGoogleAccessToken() {
+        return new Promise((resolve, reject) => {
+            const tc = google.accounts.oauth2.initTokenClient({
+                client_id: GOOGLE_CLIENT_ID, scope: 'https://www.googleapis.com/auth/drive',
+                callback: r => { if (r.error) reject(new Error(r.error)); else resolve(r.access_token); },
+                error_callback: () => reject(new Error('Auth cancelada'))
+            });
+            tc.requestAccessToken();
+        });
+    }
+
+    async function backupParaDrive(silencioso) {
+        const [loans, debts, cards, empresas, contracts] = await Promise.all([getLoans(), getDebts(), getCards(), getEmpresas(), getContracts()]);
+        const backup = { exportDate: new Date().toISOString(), exportDateFormatted: new Date().toLocaleString('pt-BR'), system: 'GT Smart', version: '7.0', data: { loans, debts, cards, empresas, contracts }, statistics: { totalLoans: loans.length, totalDebts: debts.length, totalCards: cards.length, totalEmpresas: empresas.length, totalContracts: contracts.length, activeLoans: loans.filter(l => l.status === 'active').length } };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const fileName = 'GT_Smart_Backup_' + new Date().toISOString().slice(0, 10) + '.json';
+        const accessToken = await getGoogleAccessToken();
+        const searchRes = await fetch('https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent("name='" + fileName + "' and '" + DRIVE_FOLDER_ID + "' in parents and trashed=false") + '&fields=files(id)', { headers: { 'Authorization': 'Bearer ' + accessToken } });
+        const searchData = await searchRes.json();
+        for (const f of (searchData.files || [])) await fetch('https://www.googleapis.com/drive/v3/files/' + f.id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + accessToken } });
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify({ name: fileName, mimeType: 'application/json', parents: [DRIVE_FOLDER_ID] })], { type: 'application/json' }));
+        form.append('file', blob);
+        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', { method: 'POST', headers: { 'Authorization': 'Bearer ' + accessToken }, body: form });
+        if (!res.ok) throw new Error('Upload falhou');
+        return await res.json();
+    }
+
+    window.sair = async function() {
+        if (confirm('Deseja sair do sistema?')) { await signOut(auth); window.location.href = 'GT_Smart_Login.html'; }
+    };
+
+    window.migrarDados = async function() {
+        const btn = document.querySelector('.migrate-banner button');
+        btn.textContent = '⏳ Migrando...'; btn.disabled = true;
+        const resultado = await migrateFromLocalStorage();
+        if (resultado) {
+            alert(`✅ Migração concluída!\n\n📊 ${resultado.loans} empréstimos\n💳 ${resultado.debts} dívidas\n📄 ${resultado.contracts} contratos`);
+            document.getElementById('migrateBanner').style.display = 'none';
+        } else {
+            alert('❌ Erro na migração. Tente novamente.');
+            btn.textContent = '☁️ Migrar para Firebase agora'; btn.disabled = false;
+        }
+    };
+</script>
 </body>
 </html>
