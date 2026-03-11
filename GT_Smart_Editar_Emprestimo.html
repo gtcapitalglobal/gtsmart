@@ -241,7 +241,7 @@
             <button class="btn-save" onclick="saveChanges()">💾 Salvar Todas as Alterações</button>
         </div>
     
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 06/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 11/03/2026</p>
     </div>
     <script type="module">
         // Dark mode
@@ -270,7 +270,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-confi
             document.getElementById('loanDate').value = loan.loanDate || '';
             document.getElementById('firstPaymentDate').value = loan.firstPaymentDate || '';
             document.getElementById('totalAmount').value = loan.totalAmount || 0;
-            document.getElementById('interestRate').value = loan.interestRate || 5;
+            document.getElementById('interestRate').value = loan.interestRate ?? 0;
             document.getElementById('frequency').value = loan.frequency || 'weekly';
             document.getElementById('numPayments').value = loan.numPayments || loan.payments.length;
             document.getElementById('notes').value = loan.notes || '';
@@ -381,7 +381,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-confi
             const newLoanDate = document.getElementById('loanDate').value;
             const newFirstPaymentDate = document.getElementById('firstPaymentDate').value;
             const newTotal = parseFloat(document.getElementById('totalAmount').value) || 0;
-            const newRate = parseFloat(document.getElementById('interestRate').value) || 5;
+            const newRate = parseFloat(document.getElementById('interestRate').value) || 0;
             const newFrequency = document.getElementById('frequency').value;
             const newNotes = document.getElementById('notes').value.trim();
 
