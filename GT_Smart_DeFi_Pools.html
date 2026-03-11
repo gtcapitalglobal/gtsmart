@@ -581,7 +581,7 @@
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
     <script type="module">
-        import { auth, onAuthStateChanged, db, getUserSetting, saveUserSetting } from './firebase-config.js';
+        import { auth, onAuthStateChanged, db, getUserSetting, saveUserSetting, showGTToast } from './firebase-config.js';
         import { doc, setDoc, collection, getDocs, deleteDoc, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 let allCryptos = [];
@@ -1262,8 +1262,8 @@ let allCryptos = [];
             p.currentAmountB = valB !== '' ? parseFloat(valB) : p.currentAmountB;
             p.lastQtyUpdate = new Date().toISOString();
             const ok = await savePoolToFirebase(p);
-            if (ok) { closeQuickUpdate(); await loadPools(); renderPoolList(); }
-            else alert('Erro ao salvar!');
+            if (ok) { showGTToast('✅ Atualizado!', 'sucesso'); closeQuickUpdate(); await loadPools(); renderPoolList(); }
+            else showGTToast('Erro ao salvar!', 'erro');
         };
 
         // ===== QUICK NOTE =====
@@ -1286,8 +1286,8 @@ let allCryptos = [];
             if (!p) return;
             p.quickNote = document.getElementById('quickNoteText').value.trim();
             const ok = await savePoolToFirebase(p);
-            if (ok) { closeQuickNote(); await loadPools(); renderPoolList(); }
-            else alert('Erro ao salvar!');
+            if (ok) { showGTToast('✅ Nota salva!', 'sucesso'); closeQuickNote(); await loadPools(); renderPoolList(); }
+            else showGTToast('Erro ao salvar!', 'erro');
         };
 
 
@@ -1730,8 +1730,8 @@ let allCryptos = [];
                 }
             }
             const ok = await savePoolToFirebase(pool);
-            if (ok) { await loadPools(); renderPoolList(); closePoolModal(); }
-            else alert('Erro ao salvar!');
+            if (ok) { showGTToast('✅ Pool salva!', 'sucesso'); await loadPools(); renderPoolList(); closePoolModal(); }
+            else showGTToast('Erro ao salvar!', 'erro');
         };
 
         window.editPool = function(id) {
@@ -1811,6 +1811,7 @@ let allCryptos = [];
             if (!confirm('🗑️ Deletar pool ' + name + '?')) return;
             await deletePoolFromFirebase(id);
             pools = pools.filter(x => x.id !== id);
+            showGTToast('🗑️ Pool removida', 'aviso');
             renderPoolList();
         };
 
@@ -1860,7 +1861,7 @@ let allCryptos = [];
                 renderPoolList();
                 closeFeeModal();
             } else {
-                alert('Erro ao salvar!');
+                showGTToast('Erro ao salvar!', 'erro');
             }
         };
 

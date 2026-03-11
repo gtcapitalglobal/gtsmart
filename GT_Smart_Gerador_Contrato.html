@@ -355,7 +355,7 @@ import { auth, onAuthStateChanged, saveContract } from "./firebase-config.js";
                 librariesLoaded = true;
                 document.getElementById('loadingLibraries').style.display = 'none';
                 document.getElementById('formContainer').style.display = 'block';
-                console.log('Bibliotecas carregadas com sucesso!');
+                // libs carregadas
             } else {
                 setTimeout(checkLibraries, 100);
             }
@@ -390,7 +390,7 @@ import { auth, onAuthStateChanged, saveContract } from "./firebase-config.js";
                     }
                     window._empresasLista = empresas;
                 });
-            } catch(e) { console.log('Erro ao carregar empresas:', e); }
+            } catch(e) { /* erro ao carregar empresas */ }
 
             const savedData = localStorage.getItem('gtSmartLoanData');
             if (savedData) {
@@ -401,7 +401,7 @@ import { auth, onAuthStateChanged, saveContract } from "./firebase-config.js";
                     if (data.paymentAmount) document.getElementById('paymentAmount').value = data.paymentAmount;
                     if (data.firstPaymentDate) document.getElementById('firstPaymentDate').value = data.firstPaymentDate;
                     localStorage.removeItem('gtSmartLoanData');
-                } catch (e) { console.log('Erro ao carregar dados salvos:', e); }
+                } catch (e) { /* erro ao carregar dados */ }
             }
         });
 
@@ -929,7 +929,7 @@ import { auth, onAuthStateChanged, saveContract } from "./firebase-config.js";
             }
 
             const result = await uploadRes.json();
-            console.log('Arquivo salvo no Drive:', result);
+            // arquivo salvo
             return result;
         }
     </script>

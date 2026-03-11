@@ -922,7 +922,6 @@ window.handleQrUpload = (event) => {
             document.getElementById('empQrPreview').innerHTML = `<img src="${tempQrBase64}">`;
             document.getElementById('btnQrRemove').style.display = 'inline-block';
             alert('✅ QR carregado! Tamanho: ' + sizeKB + 'KB. Agora clique Salvar.');
-            console.log(`✅ QR pronto: ${format}, ${w}x${h}, ${sizeKB}KB`);
         };
         img.src = ev.target.result;
     };
