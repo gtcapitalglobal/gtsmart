@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ledgerlands — Reset Completo v2</title>
+    <title>Ledgerlands — Reset Completo v3</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%); min-height: 100vh; padding: 15px; }
@@ -37,22 +37,21 @@
 <body>
 <div class="container">
     <div class="header">
-        <h2>🔄 Reset Completo — Ledgerlands v2</h2>
-        <p>Fix: contractId corrigido para formato do Firestore (ll_contract_XX)</p>
+        <h2>🔄 Reset Completo — Ledgerlands v3</h2>
+        <p>Fix: parcelas atribuídas por ordem cronológica (sem depender do memo)</p>
     </div>
     <div class="content">
         <div class="aviso">
-            <strong>⚠️ Apaga e reconstrói tudo de novo (sem volta):</strong>
-            ll_contracts · ll_payments · ll_installments · ll_properties<br>
-            Desta vez com contractId no formato correto que a página lê.
+            <strong>⚠️ Apaga e reconstrói tudo (sem volta):</strong>
+            ll_contracts · ll_payments · ll_installments · ll_properties
         </div>
         <div class="step-grid">
             <div class="step-box"><div class="num">1</div><div class="label">Salva imóveis</div><div class="desc">Lê ll_properties antes de apagar</div></div>
             <div class="step-box"><div class="num">2</div><div class="label">Apaga tudo</div><div class="desc">4 coleções zeradas</div></div>
-            <div class="step-box"><div class="num">3</div><div class="label">Reimporta</div><div class="desc">13 contratos + 72 pagamentos (contractId correto)</div></div>
-            <div class="step-box"><div class="num">4</div><div class="label">Gera parcelas</div><div class="desc">Cronograma + marcadas como pagas</div></div>
+            <div class="step-box"><div class="num">3</div><div class="label">Reimporta</div><div class="desc">13 contratos + 72 pagamentos</div></div>
+            <div class="step-box"><div class="num">4</div><div class="label">Gera parcelas</div><div class="desc">Cronograma + pagas em ordem de data</div></div>
         </div>
-        <button class="btn btn-reset" id="btnReset" onclick="executar()">🔄 Iniciar Reset v2</button>
+        <button class="btn btn-reset" id="btnReset" onclick="executar()">🔄 Iniciar Reset v3</button>
         <div class="log-box" id="logBox"></div>
         <div class="resultado" id="resultado"></div>
     </div>
@@ -73,7 +72,7 @@ const app = initializeApp({
     appId: "1:319681648843:web:8d9974ffa13d070850a34e"
 });
 const auth = getAuth(app);
-const db   = getFirestore(app);
+const db = getFirestore(app);
 let uid = null;
 onAuthStateChanged(auth, u => { if (!u) { window.location.href = 'GT_Smart_Login.html'; return; } uid = u.uid; });
 
@@ -84,7 +83,7 @@ function log(txt, tipo) {
     const box = document.getElementById('logBox');
     box.style.display = 'block';
     const d = document.createElement('div');
-    d.className = 'log-' + (tipo || 'info');
+    d.className = 'log-' + (tipo||'info');
     d.textContent = txt;
     box.appendChild(d);
     box.scrollTop = box.scrollHeight;
@@ -92,7 +91,7 @@ function log(txt, tipo) {
 
 async function wipeColl(name) {
     const snap = await getDocs(collection(db, 'users', uid, name));
-    if (snap.size === 0) { log(`   ${name}: vazia`, 'dim'); return; }
+    if (!snap.size) { log(`   ${name}: vazia`, 'dim'); return; }
     await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
     log(`   🗑️  ${name}: ${snap.size} docs apagados`, 'dim');
 }
@@ -102,18 +101,23 @@ function genDates(firstDateStr, count) {
     let year = +p[0], month = +p[1], day = +p[2];
     const dates = [];
     for (let i = 0; i < count; i++) {
-        const daysInMonth = new Date(year, month, 0).getDate();
-        const d = Math.min(day, daysInMonth);
+        const dim = new Date(year, month, 0).getDate();
+        const d = Math.min(day, dim);
         dates.push(`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
         month++; if (month > 12) { month = 1; year++; }
     }
     return dates;
 }
 
-function extractInstNum(memo) {
-    if (!memo) return null;
-    const m = memo.match(/#(\d+)/);
-    return m ? +m[1] : null;
+// Atribui pagamentos às parcelas em ordem cronológica (ignora memo)
+function assignByDate(pays, installmentCount) {
+    const sorted = [...pays].sort((a,b) => a.paymentDate < b.paymentDate ? -1 : 1);
+    const map = {};
+    sorted.forEach((p, i) => {
+        const slot = i + 1;
+        if (slot <= installmentCount) map[slot] = p;
+    });
+    return map;
 }
 
 window.executar = async function() {
@@ -148,8 +152,8 @@ window.executar = async function() {
             const { docId, contractId, ...fields } = c;
             try {
                 await setDoc(doc(db, 'users', uid, 'll_contracts', docId), {
-                    contractId: docId,  // ← CORRIGIDO: usa docId como contractId
-                    numericContractId: contractId,  // guarda o numérico como referência
+                    contractId: docId,
+                    numericContractId: contractId,
                     ...fields, importedAt: now
                 });
                 totalOk++;
@@ -157,7 +161,7 @@ window.executar = async function() {
             } catch(e) { totalErr++; log(`   ❌ ${docId}: ${e.message}`, 'err'); }
         }
 
-        // PASSO 3b: Pagamentos (contractId já é string "ll_contract_XX")
+        // PASSO 3b: Pagamentos
         log('', 'dim'); log('━━━ PASSO 3b — Importando pagamentos (72)', 'title');
         await Promise.all(CLEAN_PAYMENTS.map(p =>
             addDoc(collection(db, 'users', uid, 'll_payments'), { ...p, importedAt: now })
@@ -169,7 +173,6 @@ window.executar = async function() {
         // PASSO 4: Gerar parcelas
         log('', 'dim'); log('━━━ PASSO 4 — Gerando parcelas', 'title');
 
-        // Build paid map por docId (contractId já é "ll_contract_XX")
         const paidByDocId = {};
         for (const p of CLEAN_PAYMENTS) {
             if (!paidByDocId[p.contractId]) paidByDocId[p.contractId] = [];
@@ -188,21 +191,8 @@ window.executar = async function() {
             const dates = genDates(firstInstallmentDate, installmentCount);
             const pays = paidByDocId[docId] || [];
 
-            // Mapear pagamento → número da parcela
-            const paidMap = {};
-            const unnamed = [];
-            for (const p of [...pays].sort((a,b) => a.paymentDate < b.paymentDate ? -1 : 1)) {
-                const n = extractInstNum(p.memo);
-                if (n && n > 0 && !paidMap[n]) paidMap[n] = p;
-                else unnamed.push(p);
-            }
-            let seq = 1;
-            for (const p of unnamed) {
-                if ((p.memo||''). toLowerCase().includes('balloon')) continue;
-                while (paidMap[seq]) seq++;
-                if (seq <= installmentCount) { paidMap[seq] = p; }
-                seq++;
-            }
+            // ← Atribui por ordem cronológica
+            const paidMap = assignByDate(pays, installmentCount);
 
             const instPromises = [];
             for (let i = 0; i < installmentCount; i++) {
@@ -211,9 +201,11 @@ window.executar = async function() {
                 const pago = paidMap[num];
                 instPromises.push(
                     setDoc(doc(db, 'users', uid, 'll_installments', instId), {
-                        contractId: docId,  // ← "ll_contract_17" etc
-                        propertyId, installmentNumber: num,
-                        dueDate: dates[i], amount: installmentAmount, type: 'regular',
+                        contractId: docId, propertyId,
+                        installmentNumber: num,
+                        dueDate: dates[i],
+                        amount: installmentAmount,
+                        type: 'regular',
                         status: pago ? 'PAID' : 'PENDING',
                         paidDate: pago ? pago.paymentDate : null,
                         paidAmount: pago ? pago.amountTotal : null,
@@ -222,6 +214,8 @@ window.executar = async function() {
                       .catch(e => { totalErr++; log(`   ❌ ${instId}: ${e.message}`, 'err'); })
                 );
             }
+
+            // Balloon
             if (balloonAmount > 0) {
                 const bp = pays.find(p => (p.memo||''). toLowerCase().includes('balloon'));
                 instPromises.push(
@@ -237,8 +231,9 @@ window.executar = async function() {
                     }).then(() => totalOk++).catch(() => totalErr++)
                 );
             }
+
             await Promise.all(instPromises);
-            const paidCount = Object.keys(paidMap).filter(n => +n <= installmentCount).length;
+            const paidCount = Object.keys(paidMap).length;
             log(`   ✅ ${propertyId} — ${installmentCount} parcelas · ${paidCount} pagas`, 'ok');
         }
 
@@ -270,7 +265,7 @@ window.executar = async function() {
         res.innerHTML = `<div style="font-size:28px">✅</div><h3 style="color:#1b5e20;margin:8px 0 4px;">Concluído!</h3><p style="color:#555;font-size:13px;">${totalOk} documentos · 0 erros</p><a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>`;
     } else {
         res.style.cssText = 'background:#fff8e1;border:2px solid #ffc107;border-radius:10px;padding:18px;margin-top:20px;text-align:center;display:block;';
-        res.innerHTML = `<div style="font-size:28px">⚠️</div><h3 style="color:#f57f17;margin:8px 0 4px;">Com erros</h3><p style="color:#555;font-size:13px;">${totalOk} criados · ${totalErr} erros — veja o log</p><a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>`;
+        res.innerHTML = `<div style="font-size:28px">⚠️</div><h3 style="color:#f57f17;margin:8px 0 4px;">Com erros</h3><p style="color:#555;font-size:13px;">${totalOk} criados · ${totalErr} erros</p><a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>`;
     }
 };
 </script>
