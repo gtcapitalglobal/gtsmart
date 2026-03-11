@@ -154,34 +154,36 @@
             font-weight: 500;
         }
 
-        /* TOGGLE MODO CLARO/ESCURO */
+        /* BOTÃO FLUTUANTE DE TEMA */
         .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
             display: flex;
             align-items: center;
-            gap: 7px;
-            padding: 8px 14px;
-            border-radius: 10px;
-            background: var(--surface2);
-            border: 1px solid var(--border2);
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 30px;
+            background: var(--orange);
+            border: none;
             cursor: pointer;
             font-size: 13px;
             font-weight: 700;
-            color: var(--text2);
+            color: #fff;
             font-family: inherit;
             transition: all var(--transition);
-            flex-shrink: 0;
+            z-index: 999;
+            box-shadow: 0 4px 18px rgba(255,109,0,0.4);
             white-space: nowrap;
         }
         .theme-toggle:hover {
-            border-color: var(--orange);
-            color: var(--text);
-            box-shadow: 0 0 0 3px var(--orange-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255,109,0,0.6);
         }
-        .theme-toggle .t-icon { font-size: 16px; }
-        [data-theme="dark"] .icon-sun  { display: flex; align-items: center; gap: 7px; }
+        [data-theme="dark"] .icon-sun  { display: flex; align-items: center; gap: 8px; }
         [data-theme="dark"] .icon-moon { display: none; }
         [data-theme="light"] .icon-sun  { display: none; }
-        [data-theme="light"] .icon-moon { display: flex; align-items: center; gap: 7px; }
+        [data-theme="light"] .icon-moon { display: flex; align-items: center; gap: 8px; }
 
         /* ===========================
            USER BAR
@@ -397,10 +399,7 @@
             <div class="header-controls">
                 <span class="version-text">Basic 7.0 · 10/03/2026</span>
                 <span class="cotacao-pill" id="cotacaoDolar">💵 USD/BRL ...</span>
-                <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
-                    <span class="icon-sun">☀️ <span>Claro</span></span>
-                    <span class="icon-moon">🌙 <span>Escuro</span></span>
-                </button>
+
             </div>
         </div>
     </div>
@@ -788,5 +787,11 @@
         }
     };
 </script>
+    <!-- BOTÃO FLUTUANTE TEMA -->
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="icon-sun">☀️ Modo Claro</span>
+        <span class="icon-moon">🌙 Modo Escuro</span>
+    </button>
+
 </body>
 </html>
