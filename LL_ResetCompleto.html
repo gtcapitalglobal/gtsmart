@@ -214,7 +214,7 @@ window.executar = async function() {
                         contractId: docId,  // ← "ll_contract_17" etc
                         propertyId, installmentNumber: num,
                         dueDate: dates[i], amount: installmentAmount, type: 'regular',
-                        status: pago ? 'paid' : 'pending',
+                        status: pago ? 'PAID' : 'PENDING',
                         paidDate: pago ? pago.paymentDate : null,
                         paidAmount: pago ? pago.amountTotal : null,
                         createdAt: now, updatedAt: now
@@ -230,7 +230,7 @@ window.executar = async function() {
                         installmentNumber: installmentCount + 1,
                         dueDate: balloonDate || dates[dates.length-1],
                         amount: balloonAmount, type: 'balloon',
-                        status: bp ? 'paid' : 'pending',
+                        status: bp ? 'PAID' : 'PENDING',
                         paidDate: bp ? bp.paymentDate : null,
                         paidAmount: bp ? bp.amountTotal : null,
                         createdAt: now, updatedAt: now

@@ -281,6 +281,7 @@
     let pagamentos = [];
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
     const fmtData = d => { if (!d) return '—'; const s = d.includes('T') ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? '—' : dt.toLocaleDateString('pt-BR'); };
 
     onAuthStateChanged(auth, async (user) => {
