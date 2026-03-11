@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Importar Buyers</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0, #1976d2); min-height: 100vh; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #1976d2); color: white; padding: 20px; text-align: center; }
+        .header h2 { font-size: 20px; margin-bottom: 4px; }
+        .header p { font-size: 13px; opacity: 0.85; }
+        .content { padding: 24px; }
+        .aviso { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px 14px; border-radius: 8px; font-size: 13px; color: #795548; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+        .btn-iniciar { background: #1565c0; color: white; }
+        .btn-iniciar:hover { background: #0d47a1; }
+        .btn-iniciar:disabled { background: #90caf9; cursor: not-allowed; }
+        .btn-voltar { background: white; color: #1565c0; border: 2px solid #1565c0; }
+        #log { margin-top: 20px; }
+        .log-item { padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 6px; }
+        .log-ok    { background: #e8f5e9; color: #2e7d32; }
+        .log-info  { background: #e3f2fd; color: #1565c0; }
+        .log-erro  { background: #fdecea; color: #c62828; }
+        .log-skip  { background: #f5f5f5; color: #757575; }
+        #resultado { margin-top: 20px; padding: 16px; background: #e8f5e9; border-radius: 10px; text-align: center; display: none; }
+        #resultado h3 { color: #1b5e20; font-size: 18px; }
+        #resultado p { color: #388e3c; font-size: 13px; margin-top: 6px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📥 Importar Compradores</h2>
+        <p>Cria um registro de Buyer para cada contrato existente</p>
+    </div>
+    <div class="content">
+        <div class="aviso">
+            ⚠️ <strong>Use apenas uma vez.</strong> Esta ferramenta lê todos os contratos do Firebase e cria um comprador vinculado a cada um. Se já existir um comprador com o mesmo ID, ele será ignorado.
+        </div>
+
+        <button class="btn btn-iniciar" id="btnIniciar" onclick="iniciar()">🚀 Iniciar Importação</button>
+        <a href="LL_Buyers.html" class="btn btn-voltar" style="display:block;text-align:center;text-decoration:none;padding:12px;">← Voltar para Compradores</a>
+
+        <div id="log"></div>
+
+        <div id="resultado">
+            <h3>✅ Importação Concluída!</h3>
+            <p id="txtResultado"></p>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+        getFirestore, collection, getDocs, doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCAt7D5HOkdXZEV9o_DZck9pjPoGKW-GSY",
+        authDomain: "gtsmart-387b4.firebaseapp.com",
+        projectId: "gtsmart-387b4",
+        storageBucket: "gtsmart-387b4.appspot.com",
+        messagingSenderId: "1098509842185",
+        appId: "1:1098509842185:web:a2d7b4f8e5c1234567890a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let userId = null;
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        userId = user.uid;
+        log('Conectado como ' + user.email, 'info');
+    });
+
+    function log(msg, tipo = 'info') {
+        const el = document.getElementById('log');
+        const div = document.createElement('div');
+        div.className = 'log-item log-' + tipo;
+        div.textContent = msg;
+        el.appendChild(div);
+    }
+
+    window.iniciar = async function() {
+        if (!userId) { alert('Aguarde a autenticação'); return; }
+
+        const btn = document.getElementById('btnIniciar');
+        btn.disabled = true;
+        btn.textContent = '⏳ Importando...';
+        document.getElementById('log').innerHTML = '';
+
+        let criados = 0, ignorados = 0, erros = 0;
+
+        try {
+            // 1. Buscar todos os contratos
+            log('Buscando contratos...', 'info');
+            const contSnap = await getDocs(collection(db, 'users', userId, 'll_contracts'));
+            const contratos = contSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            log(`${contratos.length} contratos encontrados.`, 'info');
+
+            for (const c of contratos) {
+                if (!c.buyerName || !c.buyerName.trim()) {
+                    log(`Contrato ${c.id} sem buyerName — ignorado`, 'skip');
+                    ignorados++;
+                    continue;
+                }
+
+                // ID do buyer: mesmo do contrato mas com prefixo buyer_
+                const buyerId = 'buyer_' + c.id.replace('ll_contract_', '');
+
+                // Verificar se já existe
+                const existeSnap = await getDoc(doc(db, 'users', userId, 'll_buyers', buyerId));
+                if (existeSnap.exists()) {
+                    log(`${c.buyerName} — já existe (${buyerId})`, 'skip');
+                    ignorados++;
+                    continue;
+                }
+
+                // Criar buyer
+                const now = new Date().toISOString();
+                const buyer = {
+                    fullName: c.buyerName.trim(),
+                    phone: c.buyerPhone || '',
+                    email: c.buyerEmail || '',
+                    status: 'CONTRACTED',
+                    contractId: c.id,
+                    propertyId: c.propertyId || '',
+                    address: c.propertyAddress || '',
+                    notes: 'Importado automaticamente dos contratos.',
+                    source: 'import',
+                    preferredPayment: '',
+                    personalOrBusiness: 'Personal',
+                    businessName: '',
+                    hasCoBuyer: '0',
+                    coBuyerName: '',
+                    criadoEm: now,
+                    atualizadoEm: now
+                };
+
+                await setDoc(doc(db, 'users', userId, 'll_buyers', buyerId), buyer);
+                log(`✅ ${c.buyerName} → ${c.propertyId || c.id}`, 'ok');
+                criados++;
+            }
+
+            // Mostrar resultado
+            document.getElementById('resultado').style.display = 'block';
+            document.getElementById('txtResultado').textContent =
+                `${criados} compradores criados · ${ignorados} ignorados · ${erros} erros`;
+
+            btn.textContent = '✅ Concluído';
+
+        } catch(err) {
+            log('ERRO: ' + err.message, 'erro');
+            erros++;
+            btn.disabled = false;
+            btn.textContent = '🔄 Tentar Novamente';
+        }
+    };
+</script>
+</body>
+</html>
