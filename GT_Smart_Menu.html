@@ -3,292 +3,487 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#0f0f0f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="GT Smart">
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>GT Smart Equity LLC - Menu Principal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>GT Smart - Menu Principal</title>
     <style>
+        :root {
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface2: #222222;
+            --border: #2a2a2a;
+            --orange: #FF6D00;
+            --orange-light: #FF8F00;
+            --amber: #FFC400;
+            --text: #f0f0f0;
+            --text-muted: #888;
+            --text-dim: #555;
+            --green: #00C853;
+            --red: #FF3D00;
+            --yellow: #FFD600;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
             min-height: 100vh;
+            color: var(--text);
+            padding: 20px 16px 60px;
+        }
+        .container { max-width: 960px; margin: 0 auto; }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 32px 0 28px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--orange), var(--amber));
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            font-size: 22px;
+            box-shadow: 0 0 20px rgba(255,109,0,0.35);
         }
-        .container { max-width: 1000px; width: 100%; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: white; font-size: 32px; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .header p { color: rgba(255,255,255,0.9); font-size: 14px; }
+        .brand-name {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 30%, var(--amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 1px;
+            font-weight: 500;
+        }
+        .header-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .version-badge {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+        .cotacao-pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* ===== USER BAR ===== */
         .user-bar {
-            background: rgba(255,255,255,0.15);
-            border-radius: 10px;
-            padding: 10px 15px;
-            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: white;
-            font-size: 13px;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            flex-wrap: wrap;
         }
-        .menu-buttons {
+        .user-email {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .user-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            background: var(--surface2);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+        .btn-action.sair {
+            border-color: rgba(255,61,0,0.3);
+            color: #ff6b6b;
+        }
+        .btn-action.sair:hover { background: rgba(255,61,0,0.1); }
+
+        /* ===== DASHBOARD CARDS ===== */
+        .dash-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        .dash-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .dash-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            right: 0; height: 2px;
+            background: var(--border);
+            transition: background 0.2s;
+        }
+        .dash-card:hover { border-color: #3a3a3a; transform: translateY(-2px); }
+        .dash-card.verde::before { background: var(--green); }
+        .dash-card.vermelho::before { background: var(--red); }
+        .dash-card.amarelo::before { background: var(--yellow); }
+        .dash-card.verde { border-color: rgba(0,200,83,0.2); }
+        .dash-card.vermelho { border-color: rgba(255,61,0,0.2); }
+        .dash-card.amarelo { border-color: rgba(255,214,0,0.2); }
+        .dash-icon { font-size: 22px; margin-bottom: 10px; }
+        .dash-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .dash-value { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.5; }
+
+        /* ===== SECTION HEADER ===== */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            margin-top: 28px;
+        }
+        .section-header:first-of-type { margin-top: 0; }
+        .section-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--orange);
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+        }
+        .section-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ===== MENU GRID ===== */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 8px;
         }
         .menu-btn {
-            background: white;
-            border: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 25px 15px;
-            color: #333;
-            font-size: 14px;
+            padding: 20px 14px;
+            color: var(--text);
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
-            min-height: 130px;
+            transition: all 0.2s;
+            min-height: 110px;
             justify-content: center;
-            transition: all 0.3s ease;
+            font-family: inherit;
+            position: relative;
         }
-        .menu-btn .icon { font-size: 42px; }
+        .menu-btn .icon { font-size: 28px; }
+        .menu-btn span:last-child { line-height: 1.3; color: var(--text-muted); font-size: 12px; font-weight: 600; }
         .menu-btn:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+            background: var(--surface2);
+            border-color: var(--orange);
+            box-shadow: 0 0 0 1px var(--orange), 0 4px 20px rgba(255,109,0,0.15);
+            transform: translateY(-2px);
+            color: var(--text);
         }
+        .menu-btn:hover span:last-child { color: #ccc; }
+
+        /* Soon badge */
+        .menu-btn-soon {
+            opacity: 0.4;
+            cursor: default;
+            border-style: dashed;
+        }
+        .menu-btn-soon:hover {
+            transform: none !important;
+            box-shadow: none !important;
+            border-color: var(--border) !important;
+            border-style: dashed;
+        }
+        .soon-badge {
+            position: absolute;
+            top: 7px; right: 7px;
+            background: var(--orange);
+            color: #fff;
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== MIGRATE BANNER ===== */
         .migrate-banner {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 10px;
-            padding: 15px;
+            background: rgba(255,214,0,0.05);
+            border: 1px solid rgba(255,214,0,0.2);
+            border-radius: 12px;
+            padding: 14px 16px;
             margin-bottom: 20px;
-            color: #856404;
+            color: #FFD600;
             font-size: 13px;
+            display: none;
         }
         .migrate-banner button {
-            background: #ffc107;
-            color: #333;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
+            background: rgba(255,214,0,0.15);
+            color: #FFD600;
+            border: 1px solid rgba(255,214,0,0.3);
+            padding: 7px 14px;
+            border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
             margin-top: 8px;
+            font-family: inherit;
+            font-size: 12px;
         }
-        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
-        body.dark-mode .menu-btn { background: #16213e; color: #fff; }
-        body.dark-mode .menu-btn:hover { background: #1a1a2e; }
-        /* removido — cartoes e empresas usam estilo padrão agora */
-        .menu-btn-soon { opacity: 0.5; cursor: default; position: relative; border: 2px dashed #666 !important; background: rgba(255,255,255,0.03) !important; }
-        .menu-btn-soon:hover { transform: none !important; box-shadow: none !important; opacity: 0.6; }
-        .soon-badge { position: absolute; top: 8px; right: 8px; background: #ff9800; color: #fff; font-size: 9px; padding: 2px 7px; border-radius: 10px; font-weight: 700; text-transform: uppercase; }
-        body.dark-mode .menu-btn-soon { background: rgba(255,255,255,0.03) !important; border-color: #444 !important; }
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .dash-card {
-            background: rgba(255,255,255,0.15);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            color: white;
-            backdrop-filter: blur(10px);
-        }
-        .dash-card .dash-label { font-size: 11px; opacity: 0.85; margin-bottom: 5px; }
-        .dash-card .dash-value { font-size: 20px; font-weight: 700; }
-        .dash-card .dash-icon { font-size: 24px; margin-bottom: 5px; }
-        .dash-card.verde { background: rgba(40,167,69,0.35); }
-        .dash-card.vermelho { background: rgba(220,53,69,0.35); }
-        .dash-card.amarelo { background: rgba(255,193,7,0.25); }
-        .dash-card.azul { background: rgba(0,123,255,0.25); }
-        .progress-bar-wrap { background: rgba(255,255,255,0.2); border-radius: 10px; height: 6px; margin-top: 8px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: rgba(255,255,255,0.8); border-radius: 10px; transition: width 1s; }
-    
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
-            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
-            .cards-grid { grid-template-columns: 1fr !important; }
-            .header { flex-direction: column; text-align: center; gap: 8px; }
+            .header-top { flex-direction: column; }
+            .header-meta { align-items: flex-start; }
+            .menu-grid { grid-template-columns: repeat(3, 1fr); }
+            .dash-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 380px) {
+            .menu-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
     <div class="container">
+
+        <!-- HEADER -->
         <div class="header">
-            <h1>💼 GT Smart Equity LLC</h1>
-            <p>Sistema de Gestão de Empréstimos</p>
-            <p style="font-size:11px;opacity:0.7;margin-top:4px;">Basic 6.1 | 10/03/2026</p>
+            <div class="header-top">
+                <div class="brand">
+                    <div class="brand-icon">💼</div>
+                    <div>
+                        <div class="brand-name">GT Smart</div>
+                        <div class="brand-sub">Sistema de Gestão Financeira</div>
+                    </div>
+                </div>
+                <div class="header-meta">
+                    <span class="version-badge">Basic 7.0 · 10/03/2026</span>
+                    <span class="cotacao-pill" id="cotacaoDolar">💵 USD/BRL ...</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Banner de migração (aparece só se tiver dados no localStorage) -->
-        <div class="migrate-banner" id="migrateBanner" style="display:none;">
-            ⚠️ <strong>Dados locais encontrados!</strong> Migre seus dados para o Firebase (nuvem) para acessar de qualquer celular.
-            <br>
-            <button onclick="migrarDados()">☁️ Migrar para Firebase agora</button>
+        <!-- BANNER MIGRAÇÃO -->
+        <div class="migrate-banner" id="migrateBanner">
+            ⚠️ <strong>Dados locais encontrados!</strong> Migre seus dados para o Firebase para acessar de qualquer celular.
+            <br><button onclick="migrarDados()">☁️ Migrar para Firebase agora</button>
         </div>
 
+        <!-- USER BAR -->
         <div class="user-bar">
-            <span id="userEmail">🔄 Carregando...</span>
-            <button onclick="sair()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">
-                🚪 Sair
-            </button>
+            <span class="user-email" id="userEmail">🔄 Carregando...</span>
+            <div class="user-actions">
+                <button class="btn-action" id="btnBackup" onclick="fazerBackup()">☁️ Backup</button>
+                <button class="btn-action" onclick="document.getElementById('inputImport').click()">📥 Importar</button>
+                <button class="btn-action sair" onclick="sair()">🚪 Sair</button>
+                <input type="file" id="inputImport" accept=".json" style="display:none;" onchange="importarBackup(this)">
+            </div>
         </div>
 
-        <div style="text-align: center; margin-bottom: 20px;">
-            <button onclick="toggleDarkMode()" id="darkBtn" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
-                🌙 Modo Escuro
-            </button>
-            <button id="btnBackup" onclick="fazerBackup()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
-                ☁️ Backup
-            </button>
-            <button onclick="document.getElementById('inputImport').click()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
-                📥 Importar
-            </button>
-            <input type="file" id="inputImport" accept=".json" style="display:none;" onchange="importarBackup(this)">
-        </div>
-
-        <!-- Dashboard -->
-        <div class="dashboard" id="dashboard">
-            <div class="dash-card" id="dashPagarHoje" style="cursor:pointer;" onclick="window.location.href='GT_Smart_Cartoes.html'">
+        <!-- DASHBOARD -->
+        <div class="dash-grid" id="dashboard">
+            <div class="dash-card" id="dashPagarHoje" onclick="window.location.href='GT_Smart_Cartoes.html'">
                 <div class="dash-icon">💰</div>
                 <div class="dash-label">Vence Hoje</div>
-                <div class="dash-value" id="totalPagar" style="font-size:14px;">⏳ Carregando...</div>
+                <div class="dash-value" id="totalPagar">⏳ Carregando...</div>
             </div>
-            <div class="dash-card" id="dashAlertas" style="cursor:pointer;">
+            <div class="dash-card" id="dashAlertas">
                 <div class="dash-icon">⚠️</div>
                 <div class="dash-label">Atenção</div>
-                <div class="dash-value" id="totalAlertas" style="font-size:14px;">⏳ Carregando...</div>
+                <div class="dash-value" id="totalAlertas">⏳ Carregando...</div>
             </div>
         </div>
 
-        <div class="menu-buttons">
-            <a href="GT_Smart_Calculadora_Nova.html" class="menu-btn">
-                <span class="icon">🧮</span>
-                <span>Calcular Empréstimos</span>
-            </a>
-            <a href="GT_Smart_Gerador_Contrato.html" class="menu-btn">
-                <span class="icon">📄</span>
-                <span>Gerar Contrato</span>
-            </a>
-            <a href="GT_Smart_Historico_Contratos.html" class="menu-btn">
-                <span class="icon">📋</span>
-                <span>Histórico de Contratos</span>
-            </a>
+        <!-- EMPRÉSTIMOS & DÍVIDAS -->
+        <div class="section-header">
+            <div class="section-dot"></div>
+            <span class="section-title">Empréstimos & Dívidas</span>
+            <div class="section-line"></div>
+        </div>
+        <div class="menu-grid">
             <a href="GT_Smart_Gestao.html" class="menu-btn">
-                <span class="icon">💼</span>
-                <span>Gestão de Empréstimos</span>
+                <span class="icon">💼</span><span>Gestão de Empréstimos</span>
             </a>
             <a href="GT_Smart_Minhas_Dividas.html" class="menu-btn">
-                <span class="icon">💳</span>
-                <span>Gestão de Dívidas</span>
+                <span class="icon">💸</span><span>Gestão de Dívidas</span>
             </a>
-            <a href="GT_Smart_Relatorios.html" class="menu-btn">
-                <span class="icon">📊</span>
-                <span>Relatórios</span>
+            <a href="GT_Smart_Calculadora_Nova.html" class="menu-btn">
+                <span class="icon">🧮</span><span>Calcular Empréstimos</span>
             </a>
+            <a href="GT_Smart_Gerador_Contrato.html" class="menu-btn">
+                <span class="icon">📄</span><span>Gerar Contrato</span>
+            </a>
+            <a href="GT_Smart_Historico_Contratos.html" class="menu-btn">
+                <span class="icon">📋</span><span>Histórico de Contratos</span>
+            </a>
+        </div>
+
+        <!-- CARTÕES -->
+        <div class="section-header">
+            <div class="section-dot" style="background:#00BCD4;"></div>
+            <span class="section-title">Cartões de Crédito</span>
+            <div class="section-line"></div>
+        </div>
+        <div class="menu-grid">
             <a href="GT_Smart_Cartoes.html" class="menu-btn">
-                <span class="icon">💳</span>
-                <span>Gestão de Cartões</span>
-            </a>
-            <a href="GT_Smart_Dashboard_Cartoes.html" class="menu-btn">
-                <span class="icon">📊</span>
-                <span>Dashboard Cartões</span>
-            </a>
-            <a href="GT_Smart_Estrategia.html" class="menu-btn">
-                <span class="icon">🎯</span>
-                <span>Estratégia AZEO</span>
-            </a>
-            <a href="GT_Smart_Calendario_Cartoes.html" class="menu-btn">
-                <span class="icon">📅</span>
-                <span>Calendário Cartões</span>
+                <span class="icon">💳</span><span>Gestão de Cartões</span>
             </a>
             <a href="GT_Smart_Comparar_Cartoes.html" class="menu-btn">
-                <span class="icon">🏆</span>
-                <span>Qual Cartão Usar</span>
+                <span class="icon">🏆</span><span>Qual Cartão Usar</span>
             </a>
-            <a href="GT_Smart_Calendario.html" class="menu-btn">
-                <span class="icon">📅</span>
-                <span>Calendário</span>
+            <a href="GT_Smart_Estrategia.html" class="menu-btn">
+                <span class="icon">🎯</span><span>Estratégia AZEO</span>
+            </a>
+            <a href="GT_Smart_Calendario_Cartoes.html" class="menu-btn">
+                <span class="icon">📅</span><span>Calendário Cartões</span>
+            </a>
+            <a href="GT_Smart_Dashboard_Cartoes.html" class="menu-btn">
+                <span class="icon">📊</span><span>Dashboard Cartões</span>
+            </a>
+        </div>
+
+        <!-- DEFI / CRYPTO -->
+        <div class="section-header">
+            <div class="section-dot" style="background:#FF9800;"></div>
+            <span class="section-title">DeFi / Crypto</span>
+            <div class="section-line"></div>
+        </div>
+        <div class="menu-grid">
+            <a href="GT_Smart_Cripto.html" class="menu-btn">
+                <span class="icon">🪙</span><span>Crypto</span>
+            </a>
+            <a href="GT_Smart_DeFi_Dashboard.html" class="menu-btn">
+                <span class="icon">⛓️</span><span>DeFi Dashboard</span>
+            </a>
+            <a href="GT_Smart_DeFi_Pools.html" class="menu-btn">
+                <span class="icon">🌊</span><span>Pools</span>
+            </a>
+            <a href="GT_Smart_DeFi_Borrows.html" class="menu-btn">
+                <span class="icon">🏦</span><span>Borrows</span>
+            </a>
+            <a href="GT_Smart_DeFi_Colateral.html" class="menu-btn">
+                <span class="icon">🔒</span><span>Colateral</span>
+            </a>
+            <a href="GT_Smart_DeFi_Fees.html" class="menu-btn">
+                <span class="icon">💹</span><span>Fees</span>
+            </a>
+        </div>
+
+        <!-- GERAL -->
+        <div class="section-header">
+            <div class="section-dot" style="background:#7C4DFF;"></div>
+            <span class="section-title">Geral</span>
+            <div class="section-line"></div>
+        </div>
+        <div class="menu-grid">
+            <a href="GT_Smart_Alertas.html" class="menu-btn">
+                <span class="icon">🚨</span><span>Central de Alertas</span>
+            </a>
+            <a href="GT_Smart_Relatorios.html" class="menu-btn">
+                <span class="icon">📊</span><span>Relatórios</span>
             </a>
             <a href="GT_Smart_Empresas.html" class="menu-btn">
-                <span class="icon">🏢</span>
-                <span>Empresas</span>
+                <span class="icon">🏢</span><span>Empresas</span>
+            </a>
+            <a href="GT_Smart_Calendario.html" class="menu-btn">
+                <span class="icon">📅</span><span>Calendário</span>
             </a>
             <a href="GT_Smart_Configuracoes.html" class="menu-btn">
-                <span class="icon">⚙️</span>
-                <span>Configurações</span>
+                <span class="icon">⚙️</span><span>Configurações</span>
             </a>
         </div>
 
-        <div style="margin-top:25px; padding-top:20px; border-top:2px solid rgba(255,255,255,0.1);">
-            <div style="text-align:center; margin-bottom:15px; font-size:13px; color:#888; font-weight:600; letter-spacing:1px;">⛓️ DEFI / CRYPTO</div>
-            <div class="menu-grid">
-                <a href="GT_Smart_Cripto.html" class="menu-btn">
-                    <span class="icon">🪙</span>
-                    <span>Crypto</span>
-                </a>
-                <a href="GT_Smart_DeFi_Dashboard.html" class="menu-btn">
-                    <span class="icon">📊</span>
-                    <span>DeFi Dashboard</span>
-                </a>
-                <a href="GT_Smart_DeFi_Pools.html" class="menu-btn">
-                    <span class="icon">🌊</span>
-                    <span>DeFi Pools</span>
-                </a>
-                <a href="GT_Smart_DeFi_Borrows.html" class="menu-btn">
-                    <span class="icon">🏦</span>
-                    <span>DeFi Borrows</span>
-                </a>
-                <a href="GT_Smart_DeFi_Colateral.html" class="menu-btn">
-                    <span class="icon">🛡️</span>
-                    <span>Colateral</span>
-                </a>
-                <a href="GT_Smart_DeFi_Fees.html" class="menu-btn">
-                    <span class="icon">💸</span>
-                    <span>DeFi Fees</span>
-                </a>
+        <!-- EM BREVE -->
+        <div class="section-header">
+            <div class="section-dot" style="background:#444;"></div>
+            <span class="section-title">Em Breve</span>
+            <div class="section-line"></div>
+        </div>
+        <div class="menu-grid">
+            <div class="menu-btn menu-btn-soon" onclick="alert('🚧 Ledger Lands em desenvolvimento!')">
+                <span class="icon">🏡</span><span>Ledger Lands</span>
+                <span class="soon-badge">Breve</span>
+            </div>
+            <div class="menu-btn menu-btn-soon" onclick="alert('🚧 GT Lands Mensagem em desenvolvimento!')">
+                <span class="icon">💬</span><span>GT Lands Mensagem</span>
+                <span class="soon-badge">Breve</span>
             </div>
         </div>
 
-        <div style="margin-top:25px; padding-top:20px; border-top:2px solid rgba(255,255,255,0.1);">
-            <div style="text-align:center; margin-bottom:15px; font-size:13px; color:#888; font-weight:600; letter-spacing:1px;">🚧 EM BREVE</div>
-            <div class="menu-grid">
-                <a href="GT_Smart_Alertas.html" class="menu-btn" style="border:2px solid #ef5350;">
-                    <span class="icon">🚨</span>
-                    <span>Central de Alertas</span>
-                </a>
-                <div class="menu-btn menu-btn-soon" onclick="alert('🚧 Módulo Ledger Lands em desenvolvimento!')">
-                    <span class="icon">🏡</span>
-                    <span>Ledger Lands</span>
-                    <span class="soon-badge">Em breve</span>
-                </div>
-                <div class="menu-btn menu-btn-soon" onclick="alert('🚧 Módulo GT Lands Mensagem em desenvolvimento!')">
-                    <span class="icon">💬</span>
-                    <span>GT Lands Mensagem</span>
-                    <span class="soon-badge">Em breve</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    </div><!-- /container -->
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script type="module">
         import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, importFullBackup, getLoans, getDebts, getCards } from './firebase-config.js';
-        
-        // Tentar importar extras (pode não existir em versões antigas do firebase-config)
+
         let getEmpresas = async () => [];
         let getContracts = async () => [];
         try {
@@ -297,45 +492,51 @@
             if (mod.getContracts) getContracts = mod.getContracts;
         } catch(e) { console.log('Extras não disponíveis:', e); }
 
-        // Verificar login
-        // Registrar Service Worker (PWA)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW:', e));
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'GT_Smart_Login.html';
-                return;
+        // ===== COTAÇÃO DO DÓLAR =====
+        async function carregarCotacao() {
+            try {
+                const r = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+                if (!r.ok) return;
+                const d = await r.json();
+                const bid = parseFloat(d.USDBRL.bid);
+                const pct = parseFloat(d.USDBRL.pctChange);
+                const seta = pct >= 0 ? '▲' : '▼';
+                const cor = pct >= 0 ? '#FF6B6B' : '#69DB7C';
+                const el = document.getElementById('cotacaoDolar');
+                if (el) el.innerHTML = '💵 R$ ' + bid.toFixed(2) + ' <span style="color:' + cor + ';font-size:10px;">' + seta + ' ' + Math.abs(pct).toFixed(2) + '%</span>';
+            } catch(e) {
+                const el = document.getElementById('cotacaoDolar');
+                if (el) el.textContent = '💵 USD/BRL —';
             }
+        }
+        carregarCotacao();
+        setInterval(carregarCotacao, 300000);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
             document.getElementById('userEmail').textContent = '👤 ' + (user.email || 'Usuário');
             carregarDashboard();
-            
-            // Verificar se há dados locais para migrar
+
             const localLoans = JSON.parse(localStorage.getItem('gtSmartLoans') || '[]');
             const localDebts = JSON.parse(localStorage.getItem('gtSmartDebts') || '[]');
             const jaMigrou = localStorage.getItem('gtSmartMigrated') === 'true';
-            
             if (!jaMigrou && (localLoans.length > 0 || localDebts.length > 0)) {
                 document.getElementById('migrateBanner').style.display = 'block';
             }
 
-            // Backup automático diário pro Google Drive
             const hojeBackup = new Date().toISOString().split('T')[0];
             const ultimoBackup = localStorage.getItem('gtSmartLastDriveBackup');
             if (ultimoBackup !== hojeBackup) {
                 try {
-                    // Só tenta Drive se o Google carregou
                     if (typeof google !== 'undefined' && google.accounts) {
                         await backupParaDrive(true);
                         localStorage.setItem('gtSmartLastDriveBackup', hojeBackup);
-                        console.log('✅ Backup automático no Drive: ' + hojeBackup);
-                    } else {
-                        console.log('Google não carregou, backup Drive pulado');
                     }
-                } catch(e) {
-                    console.log('Backup automático Drive falhou:', e.message);
-                }
+                } catch(e) { console.log('Backup Drive falhou:', e.message); }
             }
         });
 
@@ -359,12 +560,7 @@
                     return d;
                 };
 
-                // ===== PAGAR HOJE =====
-                let pagarItens = [];
                 let totalPagarValor = 0;
-                let temAtrasado = false;
-
-                // Empréstimos: conta só a PRÓXIMA parcela não paga (igual GT_Smart_Gestao.html)
                 let parcelasEmpHoje = 0, parcelasEmpAtrasadas = 0;
                 loans.forEach(loan => {
                     if (loan.archived || loan.status === 'finished') return;
@@ -372,16 +568,10 @@
                     if (!proxima) return;
                     const dt = parseLocalDate(proxima.date);
                     if (!dt) return;
-                    if (dt.getTime() === hoje.getTime()) {
-                        parcelasEmpHoje++;
-                        totalPagarValor += proxima.amount || 0;
-                    } else if (dt < hoje) {
-                        parcelasEmpAtrasadas++;
-                        temAtrasado = true;
-                    }
+                    if (dt.getTime() === hoje.getTime()) { parcelasEmpHoje++; totalPagarValor += proxima.amount || 0; }
+                    else if (dt < hoje) { parcelasEmpAtrasadas++; }
                 });
 
-                // Dívidas: conta só a PRÓXIMA parcela não paga de cada dívida
                 let parcelasDivHoje = 0, parcelasDivAtrasadas = 0;
                 debts.forEach(debt => {
                     if (debt.archived || debt.status === 'finished') return;
@@ -389,20 +579,14 @@
                     if (!proxima) return;
                     const dt = parseLocalDate(proxima.date);
                     if (!dt) return;
-                    if (dt.getTime() === hoje.getTime()) {
-                        parcelasDivHoje++;
-                        totalPagarValor += proxima.amount || 0;
-                    } else if (dt < hoje) {
-                        parcelasDivAtrasadas++;
-                        temAtrasado = true;
-                    }
+                    if (dt.getTime() === hoje.getTime()) { parcelasDivHoje++; totalPagarValor += proxima.amount || 0; }
+                    else if (dt < hoje) { parcelasDivAtrasadas++; }
                 });
 
-                // Cartões com data boa = hoje
                 let cartoesHoje = 0, cartoesAtrasados = 0;
                 cards.forEach(c => {
                     if (c.pagoMes === mesAtual) return;
-                    if (!c.saldoUsado || parseFloat(c.saldoUsado) <= 0) return; // saldo $0 = nada a pagar
+                    if (!c.saldoUsado || parseFloat(c.saldoUsado) <= 0) return;
                     let dataBoa = null;
                     if (c.tipo === 'Business') {
                         const venc = parseInt(c.diaVencimento); if (!venc) return;
@@ -412,22 +596,14 @@
                         const fech = parseInt(c.diaFechamento); if (!fech) return;
                         dataBoa = fech - 2; if (dataBoa <= 0) dataBoa += 30;
                     }
-                    if (dataBoa === todayDay) {
-                        cartoesHoje++;
-                        totalPagarValor += c.saldoUsado || 0;
-                    } else if (dataBoa < todayDay) {
-                        cartoesAtrasados++;
-                        temAtrasado = true;
-                    }
+                    if (dataBoa === todayDay) { cartoesHoje++; totalPagarValor += c.saldoUsado || 0; }
+                    else if (dataBoa < todayDay) { cartoesAtrasados++; }
                 });
 
-                // Montar HTML do Pagar Hoje (só o que vence HOJE)
                 const totalHoje = parcelasEmpHoje + parcelasDivHoje + cartoesHoje;
-                let pagarHtml = '';
                 const dashPagar = document.getElementById('dashPagarHoje');
-
                 if (totalHoje === 0) {
-                    pagarHtml = '✅ Nada vence hoje';
+                    document.getElementById('totalPagar').innerHTML = '✅ Nada vence hoje';
                     dashPagar.className = 'dash-card verde';
                 } else {
                     let linhas = [];
@@ -435,20 +611,12 @@
                     if (parcelasDivHoje > 0) linhas.push('💰 ' + parcelasDivHoje + ' parcela' + (parcelasDivHoje > 1 ? 's' : '') + ' de dívida');
                     if (cartoesHoje > 0) linhas.push('💳 ' + cartoesHoje + ' cartão(ões)');
                     if (totalPagarValor > 0) linhas.push('💵 Total: ' + fmt(totalPagarValor));
-                    pagarHtml = linhas.join('<br>');
+                    document.getElementById('totalPagar').innerHTML = linhas.join('<br>');
                     dashPagar.className = 'dash-card amarelo';
                 }
-                document.getElementById('totalPagar').innerHTML = pagarHtml;
 
-                // ===== ALERTAS =====
                 let alertas = [];
                 const dashAlertas = document.getElementById('dashAlertas');
-
-                // Cartões acima de 30%
-                const acima30 = cards.filter(c => c.limite && (c.saldoUsado || 0) / c.limite * 100 >= 30).length;
-                if (acima30 > 0) alertas.push('🔴 ' + acima30 + ' cartão(ões) acima 30%');
-
-                // Empréstimos com próxima parcela atrasada — mostra nome do cliente
                 loans.forEach(loan => {
                     if (loan.archived || loan.status === 'finished') return;
                     const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
@@ -460,8 +628,6 @@
                         alertas.push('📋 ' + nome + ' — atrasado desde ' + dataFmt);
                     }
                 });
-
-                // Dívidas com próxima parcela atrasada — mostra nome
                 debts.forEach(debt => {
                     if (debt.archived || debt.status === 'finished') return;
                     const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
@@ -473,11 +639,7 @@
                         alertas.push('💰 ' + nome + ' — atrasado desde ' + dataFmt);
                     }
                 });
-
-                // Cartões com pagamento atrasado
                 if (cartoesAtrasados > 0) alertas.push('💳 ' + cartoesAtrasados + ' cartão(ões) com pagamento atrasado');
-
-                // Bônus de cartão vencendo em breve (15 dias) - sem duplicatas
                 const bonusVistos = new Set();
                 cards.forEach(c => {
                     if (!c.bonusPrazo) return;
@@ -487,43 +649,33 @@
                     const prazo = parseLocalDate(c.bonusPrazo);
                     if (!prazo) return;
                     const diff = Math.round((prazo - hoje) / (1000*60*60*24));
-                    if (diff >= 0 && diff <= 15) {
-                        alertas.push('⏱️ Bônus ' + (c.nome || '') + ' vence em ' + diff + ' dia' + (diff !== 1 ? 's' : ''));
-                    } else if (diff < 0 && diff >= -7) {
-                        alertas.push('❌ Bônus ' + (c.nome || '') + ' expirou há ' + Math.abs(diff) + ' dia' + (Math.abs(diff) !== 1 ? 's' : ''));
-                    }
+                    if (diff >= 0 && diff <= 15) alertas.push('⏱️ Bônus ' + (c.nome || '') + ' vence em ' + diff + ' dia' + (diff !== 1 ? 's' : ''));
+                    else if (diff < 0 && diff >= -7) alertas.push('❌ Bônus ' + (c.nome || '') + ' expirou há ' + Math.abs(diff) + ' dia' + (Math.abs(diff) !== 1 ? 's' : ''));
                 });
-
-                // Promos acabando em breve (30 dias)
                 cards.forEach(c => {
                     if (!c.promo) return;
                     const match = (c.promo || '').match(/(\d{1,2})\/(\d{4})/);
                     if (match) {
                         const promoDate = new Date(parseInt(match[2]), parseInt(match[1]) - 1, 28);
                         const diff = Math.round((promoDate - hoje) / (1000*60*60*24));
-                        if (diff >= 0 && diff <= 30) {
-                            alertas.push('🎯 Promo ' + (c.nome || '') + ' acaba em ' + diff + ' dias');
-                        }
+                        if (diff >= 0 && diff <= 30) alertas.push('🎯 Promo ' + (c.nome || '') + ' acaba em ' + diff + ' dias');
                     }
                 });
 
-                // Montar HTML dos Alertas
                 if (alertas.length === 0) {
                     document.getElementById('totalAlertas').innerHTML = '✅ Tudo tranquilo';
                     dashAlertas.className = 'dash-card verde';
                 } else {
                     document.getElementById('totalAlertas').innerHTML = alertas.join('<br>');
-                    const temCritico = acima30 > 0 || parcelasEmpAtrasadas > 0 || parcelasDivAtrasadas > 0 || cartoesAtrasados > 0;
+                    const temCritico = parcelasEmpAtrasadas > 0 || parcelasDivAtrasadas > 0 || cartoesAtrasados > 0;
                     dashAlertas.className = temCritico ? 'dash-card vermelho' : 'dash-card amarelo';
                 }
-
             } catch(e) {
                 console.log('Erro dashboard:', e);
                 document.getElementById('totalPagar').innerHTML = '❌ Erro';
                 document.getElementById('totalAlertas').innerHTML = '❌ Erro';
             }
         }
-
 
         window.importarBackup = async function(input) {
             const file = input.files[0];
@@ -546,20 +698,17 @@
             try {
                 await exportFullBackup();
                 btn.textContent = '✅ Baixado!';
-                // Tentar Drive em background silenciosamente (não bloqueia se falhar)
                 if (typeof google !== 'undefined' && google.accounts) {
-                    backupParaDrive(true).catch(e => console.log('Drive backup opcional falhou:', e.message));
+                    backupParaDrive(true).catch(e => console.log('Drive backup falhou:', e.message));
                 }
                 setTimeout(() => { btn.textContent = '☁️ Backup'; btn.disabled = false; }, 3000);
             } catch(e) {
-                console.error('Erro backup:', e);
                 alert('❌ Erro ao baixar backup: ' + e.message);
                 btn.textContent = '☁️ Backup';
                 btn.disabled = false;
             }
         };
 
-        // ===== GOOGLE DRIVE BACKUP =====
         const GOOGLE_CLIENT_ID = '870054137437-ftgm5iq8v8c552dib3tbgd3avkipsn5h.apps.googleusercontent.com';
         const DRIVE_FOLDER_ID = '1yosnY9qeZz0YVbrD8wwLJYJnJQ_mFyC9';
 
@@ -568,129 +717,63 @@
                 const tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: GOOGLE_CLIENT_ID,
                     scope: 'https://www.googleapis.com/auth/drive',
-                    callback: (response) => {
-                        if (response.error) reject(new Error(response.error));
-                        else resolve(response.access_token);
-                    },
-                    error_callback: (error) => {
-                        reject(new Error('Auth cancelada'));
-                    }
+                    callback: (response) => { if (response.error) reject(new Error(response.error)); else resolve(response.access_token); },
+                    error_callback: (error) => { reject(new Error('Auth cancelada')); }
                 });
                 tokenClient.requestAccessToken();
             });
         }
 
         async function backupParaDrive(silencioso) {
-            // Coletar TODOS os dados
             const loans = await getLoans();
             const debts = await getDebts();
             const cards = await getCards();
             const empresas = await getEmpresas();
             const contracts = await getContracts();
-
             const backup = {
                 exportDate: new Date().toISOString(),
                 exportDateFormatted: new Date().toLocaleString('pt-BR'),
-                system: 'GT Smart Equity',
-                version: '6.0',
+                system: 'GT Smart', version: '7.0',
                 data: { loans, debts, cards, empresas, contracts },
-                statistics: {
-                    totalLoans: loans.length,
-                    totalDebts: debts.length,
-                    totalCards: cards.length,
-                    totalEmpresas: empresas.length,
-                    totalContracts: contracts.length,
-                    activeLoans: loans.filter(l => l.status === 'active').length
-                }
+                statistics: { totalLoans: loans.length, totalDebts: debts.length, totalCards: cards.length, totalEmpresas: empresas.length, totalContracts: contracts.length, activeLoans: loans.filter(l => l.status === 'active').length }
             };
-
             const jsonStr = JSON.stringify(backup, null, 2);
             const blob = new Blob([jsonStr], { type: 'application/json' });
             const dataHoje = new Date().toISOString().slice(0, 10);
             const fileName = 'GT_Smart_Backup_' + dataHoje + '.json';
-
-            // Pedir permissão do Google
             const accessToken = await getGoogleAccessToken();
-
-            // Verificar se já existe backup de hoje (pra substituir)
-            const searchUrl = 'https://www.googleapis.com/drive/v3/files?q=' +
-                encodeURIComponent("name='" + fileName + "' and '" + DRIVE_FOLDER_ID + "' in parents and trashed=false") +
-                '&fields=files(id,name)';
-            const searchRes = await fetch(searchUrl, {
-                headers: { 'Authorization': 'Bearer ' + accessToken }
-            });
+            const searchUrl = 'https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent("name='" + fileName + "' and '" + DRIVE_FOLDER_ID + "' in parents and trashed=false") + '&fields=files(id,name)';
+            const searchRes = await fetch(searchUrl, { headers: { 'Authorization': 'Bearer ' + accessToken } });
             const searchData = await searchRes.json();
-
-            // Se já existe, deletar o antigo
             if (searchData.files && searchData.files.length > 0) {
                 for (const file of searchData.files) {
-                    await fetch('https://www.googleapis.com/drive/v3/files/' + file.id, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': 'Bearer ' + accessToken }
-                    });
+                    await fetch('https://www.googleapis.com/drive/v3/files/' + file.id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + accessToken } });
                 }
             }
-
-            // Upload do backup
-            const metadata = {
-                name: fileName,
-                mimeType: 'application/json',
-                parents: [DRIVE_FOLDER_ID]
-            };
-
             const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('metadata', new Blob([JSON.stringify({ name: fileName, mimeType: 'application/json', parents: [DRIVE_FOLDER_ID] })], { type: 'application/json' }));
             form.append('file', blob);
-
-            const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + accessToken },
-                body: form
-            });
-
+            const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', { method: 'POST', headers: { 'Authorization': 'Bearer ' + accessToken }, body: form });
             if (!uploadRes.ok) throw new Error('Upload falhou: ' + uploadRes.status);
-
             const result = await uploadRes.json();
             console.log('☁️ Backup salvo no Drive:', result.name);
             return result;
         }
 
         window.sair = async function() {
-            if (confirm('Deseja sair do sistema?')) {
-                await signOut(auth);
-                window.location.href = 'GT_Smart_Login.html';
-            }
+            if (confirm('Deseja sair do sistema?')) { await signOut(auth); window.location.href = 'GT_Smart_Login.html'; }
         };
 
         window.migrarDados = async function() {
             const btn = document.querySelector('.migrate-banner button');
-            btn.textContent = '⏳ Migrando...';
-            btn.disabled = true;
-            
+            btn.textContent = '⏳ Migrando...'; btn.disabled = true;
             const resultado = await migrateFromLocalStorage();
-            
             if (resultado) {
                 alert(`✅ Migração concluída!\n\n📊 ${resultado.loans} empréstimos\n💳 ${resultado.debts} dívidas\n📄 ${resultado.contracts} contratos\n\nSeus dados estão agora na nuvem!`);
                 document.getElementById('migrateBanner').style.display = 'none';
             } else {
                 alert('❌ Erro na migração. Tente novamente.');
-                btn.textContent = '☁️ Migrar para Firebase agora';
-                btn.disabled = false;
-            }
-        };
-
-        // Modo escuro
-        window.toggleDarkMode = function() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('gtSmartDarkMode', isDark);
-            document.getElementById('darkBtn').textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
-        };
-
-        window.onload = function() {
-            if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('darkBtn').textContent = '☀️ Modo Claro';
+                btn.textContent = '☁️ Migrar para Firebase agora'; btn.disabled = false;
             }
         };
     </script>
