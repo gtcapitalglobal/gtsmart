@@ -296,6 +296,7 @@
         if (!contrato) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ Contrato não encontrado.</div>'; return; }
 
         parcelas = allParcelas.filter(p => p.contractId === contratoId).sort((a,b) => a.installmentNumber - b.installmentNumber);
+        parcelas.forEach(p => { p.status = (p.status || 'PENDING').toUpperCase(); });
         pagamentos = allPags.filter(p => p.contractId === contratoId).sort((a,b) => b.paymentDate?.localeCompare(a.paymentDate));
 
         document.getElementById('headerTitulo').textContent = contrato.propertyId + ' — ' + contrato.buyerName;
