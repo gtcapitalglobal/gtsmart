@@ -21,24 +21,26 @@
 
         /* MODO ESCURO */
         [data-theme="dark"] {
-            --bg:           #0a0a0a;
-            --bg2:          #111111;
-            --surface:      #1a1a1a;
-            --surface2:     #242424;
-            --border:       #2e2e2e;
-            --border2:      #3a3a3a;
-            --text:         #f2f2f2;
-            --text2:        #aaaaaa;
-            --text3:        #666666;
-            --orange:       #FF6D00;
-            --orange-glow:  rgba(255,109,0,0.20);
-            --amber:        #FFC400;
-            --green:        #00E676;
+            --bg:           #0a0906;
+            --bg2:          #100e09;
+            --surface:      #161410;
+            --surface2:     #1e1b14;
+            --border:       #2a2518;
+            --border2:      #3d3520;
+            --text:         #f5ead0;
+            --text2:        #b8a070;
+            --text3:        #6b5a38;
+            --orange:       #FFa000;
+            --orange-glow:  rgba(255,160,0,0.22);
+            --amber:        #FFD54F;
+            --green:        #69F0AE;
             --red:          #FF5252;
             --yellow:       #FFD600;
-            --shadow:       0 4px 24px rgba(0,0,0,0.5);
-            --shadow-sm:    0 2px 8px rgba(0,0,0,0.4);
-            --icon-bg:      linear-gradient(135deg, #FF6D00, #FFC400);
+            --shadow:       0 8px 32px rgba(0,0,0,0.7), 0 2px 8px rgba(255,160,0,0.08);
+            --shadow-sm:    0 4px 16px rgba(0,0,0,0.6), 0 1px 4px rgba(255,160,0,0.06);
+            --card-shine:   linear-gradient(135deg, rgba(255,210,100,0.07) 0%, rgba(255,160,0,0.03) 50%, transparent 100%);
+            --card-border-top: rgba(255,210,100,0.18);
+            --icon-bg:      linear-gradient(135deg, #FF8F00, #FFD54F);
             --toggle-bg:    #1a1a1a;
             --toggle-border:#3a3a3a;
             --toggle-icon:  '☀️';
@@ -234,9 +236,25 @@
             border-radius: 14px;
             padding: 20px;
             cursor: pointer;
-            transition: all var(--transition);
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+        }
+        [data-theme="dark"] .dash-card {
+            border-top-color: var(--card-border-top);
+            box-shadow:
+                0 1px 0 rgba(255,220,100,0.10) inset,
+                0 -1px 0 rgba(0,0,0,0.5) inset,
+                0 8px 24px rgba(0,0,0,0.65),
+                0 2px 4px rgba(0,0,0,0.4);
+        }
+        [data-theme="dark"] .dash-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 35%;
+            background: linear-gradient(135deg, rgba(255,210,100,0.06) 0%, transparent 100%);
+            pointer-events: none;
         }
         .dash-card::after {
             content: '';
@@ -246,7 +264,14 @@
             background: var(--border2);
             transition: background var(--transition);
         }
-        .dash-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .dash-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        [data-theme="dark"] .dash-card:hover {
+            box-shadow:
+                0 1px 0 rgba(255,220,100,0.18) inset,
+                0 -1px 0 rgba(0,0,0,0.6) inset,
+                0 16px 40px rgba(0,0,0,0.75),
+                0 4px 12px rgba(255,160,0,0.1);
+        }
         .dash-card.verde::after  { background: var(--green); }
         .dash-card.vermelho::after { background: var(--red); }
         .dash-card.amarelo::after  { background: var(--yellow); }
@@ -307,20 +332,49 @@
             align-items: center;
             gap: 10px;
             text-decoration: none;
-            transition: all var(--transition);
+            transition: all 0.2s ease;
             min-height: 108px;
             justify-content: center;
             font-family: inherit;
             position: relative;
+            overflow: hidden;
             box-shadow: var(--shadow-sm);
         }
-        .menu-btn .icon { font-size: 28px; line-height: 1; }
-        .menu-btn .label { line-height: 1.35; color: var(--text2); font-size: 11.5px; font-weight: 600; }
+        /* Brilho dourado no topo do card — só dark mode */
+        [data-theme="dark"] .menu-btn {
+            border-top-color: var(--card-border-top);
+            box-shadow: 
+                0 1px 0 rgba(255,220,100,0.12) inset,
+                0 -1px 0 rgba(0,0,0,0.5) inset,
+                0 6px 20px rgba(0,0,0,0.6),
+                0 2px 4px rgba(0,0,0,0.4);
+        }
+        [data-theme="dark"] .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 40%;
+            background: var(--card-shine);
+            pointer-events: none;
+            border-radius: 14px 14px 0 0;
+        }
+        .menu-btn .icon { font-size: 28px; line-height: 1; position: relative; z-index: 1; }
+        .menu-btn .label { line-height: 1.35; color: var(--text2); font-size: 11.5px; font-weight: 600; position: relative; z-index: 1; }
         .menu-btn:hover {
             background: var(--surface2);
             border-color: var(--orange);
+            transform: translateY(-4px) scale(1.02);
+        }
+        [data-theme="dark"] .menu-btn:hover {
+            box-shadow: 
+                0 1px 0 rgba(255,220,100,0.25) inset,
+                0 -1px 0 rgba(0,0,0,0.6) inset,
+                0 0 0 1px var(--orange),
+                0 12px 32px rgba(0,0,0,0.7),
+                0 4px 12px var(--orange-glow);
+        }
+        [data-theme="light"] .menu-btn:hover {
             box-shadow: 0 0 0 1px var(--orange), 0 6px 24px var(--orange-glow);
-            transform: translateY(-3px);
         }
         .menu-btn:hover .label { color: var(--text); }
 
