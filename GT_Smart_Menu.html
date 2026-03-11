@@ -576,7 +576,6 @@
 
 </div><!-- /container -->
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script type="module">
     import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, importFullBackup, getLoans, getDebts, getCards } from './firebase-config.js';
 
@@ -634,15 +633,6 @@
             document.getElementById('migrateBanner').style.display = 'block';
         }
 
-        const hojeBackup = new Date().toISOString().split('T')[0];
-        if (localStorage.getItem('gtSmartLastDriveBackup') !== hojeBackup) {
-            try {
-                if (typeof google !== 'undefined' && google.accounts) {
-                    await backupParaDrive(true);
-                    localStorage.setItem('gtSmartLastDriveBackup', hojeBackup);
-                }
-            } catch(e) { console.log('Backup Drive:', e.message); }
-        }
     });
 
     // ===== DASHBOARD =====
@@ -786,7 +776,7 @@
         try {
             await exportFullBackup();
             btn.textContent = '✅ Baixado!';
-            // Drive backup removido do automático
+
             setTimeout(() => { btn.textContent = '☁️ Backup'; btn.disabled = false; }, 3000);
         } catch(e) {
             alert('❌ Erro ao baixar backup: ' + e.message);
@@ -794,36 +784,7 @@
         }
     };
 
-    const GOOGLE_CLIENT_ID = '870054137437-ftgm5iq8v8c552dib3tbgd3avkipsn5h.apps.googleusercontent.com';
-    const DRIVE_FOLDER_ID  = '1yosnY9qeZz0YVbrD8wwLJYJnJQ_mFyC9';
 
-    function getGoogleAccessToken() {
-        return new Promise((resolve, reject) => {
-            const tc = google.accounts.oauth2.initTokenClient({
-                client_id: GOOGLE_CLIENT_ID, scope: 'https://www.googleapis.com/auth/drive',
-                callback: r => { if (r.error) reject(new Error(r.error)); else resolve(r.access_token); },
-                error_callback: () => reject(new Error('Auth cancelada'))
-            });
-            tc.requestAccessToken();
-        });
-    }
-
-    async function backupParaDrive(silencioso) {
-        const [loans, debts, cards, empresas, contracts] = await Promise.all([getLoans(), getDebts(), getCards(), getEmpresas(), getContracts()]);
-        const backup = { exportDate: new Date().toISOString(), exportDateFormatted: new Date().toLocaleString('pt-BR'), system: 'GT Smart', version: '7.0', data: { loans, debts, cards, empresas, contracts }, statistics: { totalLoans: loans.length, totalDebts: debts.length, totalCards: cards.length, totalEmpresas: empresas.length, totalContracts: contracts.length, activeLoans: loans.filter(l => l.status === 'active').length } };
-        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-        const fileName = 'GT_Smart_Backup_' + new Date().toISOString().slice(0, 10) + '.json';
-        const accessToken = await getGoogleAccessToken();
-        const searchRes = await fetch('https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent("name='" + fileName + "' and '" + DRIVE_FOLDER_ID + "' in parents and trashed=false") + '&fields=files(id)', { headers: { 'Authorization': 'Bearer ' + accessToken } });
-        const searchData = await searchRes.json();
-        for (const f of (searchData.files || [])) await fetch('https://www.googleapis.com/drive/v3/files/' + f.id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + accessToken } });
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify({ name: fileName, mimeType: 'application/json', parents: [DRIVE_FOLDER_ID] })], { type: 'application/json' }));
-        form.append('file', blob);
-        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', { method: 'POST', headers: { 'Authorization': 'Bearer ' + accessToken }, body: form });
-        if (!res.ok) throw new Error('Upload falhou');
-        return await res.json();
-    }
 
     window.sair = async function() {
         if (confirm('Deseja sair do sistema?')) { await signOut(auth); window.location.href = 'GT_Smart_Login.html'; }
