@@ -627,6 +627,91 @@ async function saveUserSetting(key, value) {
   } catch(e) { console.error('Erro saveUserSetting:', e); return false; }
 }
 
+// ============================================================
+// MONITOR DE REDE — aparece automaticamente em qualquer página
+// ============================================================
+
+function _setupNetworkMonitor() {
+  function mostrarBannerOffline() {
+    if (document.getElementById('gt-offline-banner')) return;
+    const el = document.createElement('div');
+    el.id = 'gt-offline-banner';
+    el.style.cssText = [
+      'position:fixed', 'top:0', 'left:0', 'right:0',
+      'background:#c62828', 'color:white', 'text-align:center',
+      'padding:11px 16px', 'font-size:13px', 'font-weight:700',
+      'z-index:99999', 'box-shadow:0 2px 8px rgba(0,0,0,0.4)',
+      'display:flex', 'align-items:center', 'justify-content:center', 'gap:8px'
+    ].join(';');
+    el.innerHTML = '📡 Sem internet — suas alterações não serão salvas até reconectar.';
+    document.body.prepend(el);
+    // Empurra o conteúdo pra baixo para não cobrir nada importante
+    document.body.style.paddingTop = (parseInt(document.body.style.paddingTop || '0') + 44) + 'px';
+  }
+  function esconderBannerOffline() {
+    const el = document.getElementById('gt-offline-banner');
+    if (!el) return;
+    document.body.style.paddingTop = Math.max(0, parseInt(document.body.style.paddingTop || '0') - 44) + 'px';
+    el.remove();
+    // Mostra confirmação de reconexão por 3 segundos
+    showGTToast('🌐 Conexão restaurada!', 'sucesso');
+  }
+  if (!navigator.onLine) mostrarBannerOffline();
+  window.addEventListener('offline', mostrarBannerOffline);
+  window.addEventListener('online', esconderBannerOffline);
+}
+
+// Roda quando o DOM estiver pronto
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _setupNetworkMonitor);
+  } else {
+    setTimeout(_setupNetworkMonitor, 0);
+  }
+}
+
+// ============================================================
+// TOAST DE NOTIFICAÇÃO — use em qualquer página
+// showGTToast('mensagem') ou showGTToast('mensagem', 'sucesso' | 'aviso' | 'erro')
+// ============================================================
+
+export function showGTToast(msg, tipo = 'erro') {
+  const cores  = { erro: '#c62828', sucesso: '#2e7d32', aviso: '#e65100', info: '#1565c0' };
+  const emojis = { erro: '❌', sucesso: '✅', aviso: '⚠️', info: 'ℹ️' };
+  const cor = cores[tipo] || cores.info;
+  const emoji = emojis[tipo] || '';
+
+  const el = document.createElement('div');
+  el.style.cssText = [
+    'position:fixed', 'bottom:90px', 'left:50%', 'transform:translateX(-50%)',
+    'background:' + cor, 'color:white',
+    'padding:12px 22px', 'border-radius:10px',
+    'font-size:13px', 'font-weight:700',
+    'z-index:99998', 'max-width:88vw', 'text-align:center',
+    'box-shadow:0 4px 20px rgba(0,0,0,0.35)',
+    'animation:gtFadeIn 0.2s ease',
+    'pointer-events:none'
+  ].join(';');
+  el.textContent = emoji + ' ' + msg;
+
+  // Animação via style tag (só cria uma vez)
+  if (!document.getElementById('gt-toast-style')) {
+    const s = document.createElement('style');
+    s.id = 'gt-toast-style';
+    s.textContent = '@keyframes gtFadeIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+    document.head.appendChild(s);
+  }
+
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity 0.4s ease';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 400);
+  }, 3500);
+}
+
+// ============================================================
+
 export {
   auth,
   db,

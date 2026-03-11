@@ -465,11 +465,16 @@
         <br><button onclick="migrarDados()">☁️ Migrar para Firebase agora</button>
     </div>
 
+    <!-- BANNER OFFLINE -->
+    <div id="offlineBanner" style="display:none;background:#b71c1c;color:white;padding:10px 16px;border-radius:8px;margin-bottom:12px;font-size:13px;font-weight:600;text-align:center;">
+        📶 Sem conexão com a internet — os dados podem estar desatualizados
+    </div>
+
     <!-- USER BAR -->
     <div class="user-bar">
         <span class="user-email" id="userEmail">🔄 Carregando...</span>
         <div class="user-actions">
-            <button class="btn-action" id="btnBackup" onclick="fazerBackup()">☁️ Backup</button>
+            <a href="GT_Smart_Backup.html" class="btn-action" id="btnBackup">☁️ Backup</a>
             <button class="btn-action" onclick="document.getElementById('inputImport').click()">📥 Importar</button>
             <button class="btn-action sair" onclick="sair()">🚪 Sair</button>
             <input type="file" id="inputImport" accept=".json" style="display:none;" onchange="importarBackup(this)">
@@ -654,6 +659,15 @@
     carregarBitcoin();
     setInterval(carregarBitcoin, 300000);
 
+    // ===== DETECÇÃO DE INTERNET =====
+    function checkOnline() {
+        const banner = document.getElementById('offlineBanner');
+        if (banner) banner.style.display = navigator.onLine ? 'none' : 'block';
+    }
+    window.addEventListener('online',  checkOnline);
+    window.addEventListener('offline', checkOnline);
+    checkOnline();
+
     // ===== AUTH =====
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
@@ -786,8 +800,15 @@
                 dashAlertas.className = temCritico ? 'dash-card vermelho' : 'dash-card amarelo';
             }
         } catch(e) {
-            document.getElementById('totalPagar').innerHTML = '❌ Erro';
-            document.getElementById('totalAlertas').innerHTML = '❌ Erro';
+            const semInternet = !navigator.onLine;
+            const msgErro = semInternet
+                ? '📶 Sem conexão — verifique sua internet e recarregue a página'
+                : '❌ Erro ao carregar — tente recarregar a página';
+            document.getElementById('totalPagar').innerHTML = msgErro;
+            document.getElementById('totalAlertas').innerHTML = '⟳ <a href="" style="color:inherit;font-weight:700;">Tentar novamente</a>';
+            document.getElementById('dashPagarHoje').className = 'dash-card vermelho';
+            document.getElementById('dashAlertas').className = 'dash-card vermelho';
+            console.error('Erro dashboard:', e);
         }
     }
 

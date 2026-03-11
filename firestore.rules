@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+
+// ============================================================
+// INSTRUÇÕES — Como aplicar estas regras:
+// ============================================================
+//
+// 1. Acesse: https://console.firebase.google.com
+// 2. Clique no projeto: gtsmart-387b4
+// 3. No menu lateral, clique em "Firestore Database"
+// 4. Clique na aba "Regras" (Rules)
+// 5. Apague tudo que estiver escrito lá
+// 6. Cole as linhas acima (rules_version até o fechamento })
+// 7. Clique em "Publicar"
+//
+// O que essas regras fazem:
+// - Cada usuário só consegue ler e gravar os PRÓPRIOS dados
+// - Ninguém consegue acessar os dados de outra pessoa
+// - Sem autenticação = acesso negado
+// ============================================================
