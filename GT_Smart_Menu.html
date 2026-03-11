@@ -868,7 +868,7 @@
 
             <!-- USD → BRL -->
             <div style="margin-bottom:14px;">
-                <label style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;">Dólares (USD)</label>
+                <label style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;">🇺🇸 Dólares (USD)</label>
                 <div style="display:flex;align-items:center;border:2px solid #e0e0e0;border-radius:8px;margin-top:4px;overflow:hidden;">
                     <span style="padding:10px 10px;background:#f5f5f5;font-weight:700;color:#555;font-size:14px;">$</span>
                     <input type="number" id="inputUSD" placeholder="0,00" step="0.01" min="0"
@@ -881,7 +881,7 @@
 
             <!-- BRL → USD -->
             <div style="margin-bottom:18px;">
-                <label style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;">Reais (BRL)</label>
+                <label style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;">🇧🇷 Reais (BRL)</label>
                 <div style="display:flex;align-items:center;border:2px solid #e0e0e0;border-radius:8px;margin-top:4px;overflow:hidden;">
                     <span style="padding:10px 10px;background:#f5f5f5;font-weight:700;color:#555;font-size:14px;">R$</span>
                     <input type="number" id="inputBRL" placeholder="0,00" step="0.01" min="0"
@@ -935,7 +935,7 @@
                 cotacaoUSD = parseFloat(d.USDBRL.bid);
                 const agora = new Date().toLocaleString('pt-BR');
                 ultimaAtualizacaoConv = agora;
-                document.getElementById('convCotacaoLabel').textContent = '💵 1 USD = R$ ' + cotacaoUSD.toFixed(4) + ' — Cotação ao vivo';
+                document.getElementById('convCotacaoLabel').textContent = '🇺🇸 1 USD = 🇧🇷 R$ ' + cotacaoUSD.toFixed(4) + ' — Cotação ao vivo';
             } catch(e) {
                 document.getElementById('convCotacaoLabel').textContent = '⚠️ Sem cotação ao vivo — tente novamente';
                 cotacaoUSD = 0;
@@ -963,7 +963,7 @@
             const brlVal = parseFloat(document.getElementById('inputBRL').value) || 0;
             if (usdVal > 0 || brlVal > 0) {
                 document.getElementById('convFonte').style.display = 'block';
-                document.getElementById('convDetalhes').textContent = '1 USD = R$ ' + cotacaoUSD.toFixed(4) + ' · Atualizado: ' + ultimaAtualizacaoConv;
+                document.getElementById('convDetalhes').textContent = '🇺🇸 1 USD = 🇧🇷 R$ ' + cotacaoUSD.toFixed(4) + ' · Atualizado: ' + ultimaAtualizacaoConv;
                 document.getElementById('btnWhatsapp').style.display = 'flex';
             } else {
                 document.getElementById('convFonte').style.display = 'none';
@@ -978,9 +978,9 @@
             const fmtUSD = usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
             const fmtBRL = brl.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
             const texto = '💱 *Conversão USD / BRL*\n\n' +
-                '💵 *$ ' + fmtUSD + ' USD*\n' +
+                '🇺🇸 *$ ' + fmtUSD + ' USD*\n' +
                 '🇧🇷 *R$ ' + fmtBRL + ' BRL*\n\n' +
-                '📈 Cotação: 1 USD = R$ ' + cotacaoUSD.toFixed(4) + '\n' +
+                '📈 Cotação: 🇺🇸 1 USD = 🇧🇷 R$ ' + cotacaoUSD.toFixed(4) + '\n' +
                 '🕐 ' + ultimaAtualizacaoConv + '\n' +
                 '📡 Fonte: AwesomeAPI / Banco Central do Brasil';
             window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
