@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Limpeza de Duplicatas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 800px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #b71c1c, #c62828); color: white; padding: 15px 20px; }
+        .header h2 { font-size: 18px; margin-bottom: 4px; }
+        .header p { font-size: 12px; opacity: 0.85; }
+        .content { padding: 20px; }
+
+        .aviso { background: #fff8e1; border-left: 4px solid #ffc107; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #555; }
+        .aviso strong { color: #f57f17; display: block; margin-bottom: 4px; font-size: 14px; }
+
+        .resumo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .resumo-card { border-radius: 10px; padding: 14px; text-align: center; }
+        .resumo-card .label { font-size: 11px; font-weight: 600; opacity: 0.75; margin-bottom: 4px; }
+        .resumo-card .valor { font-size: 22px; font-weight: 800; }
+        .card-red { background: #fdecea; color: #c62828; }
+        .card-orange { background: #fff3e0; color: #e65100; }
+        .card-green { background: #e8f5e9; color: #1b5e20; }
+
+        .lista-duplicatas { margin-bottom: 20px; }
+        .grupo { border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .grupo-header { background: #f5f5f5; padding: 8px 14px; font-size: 12px; font-weight: 700; color: #555; border-bottom: 1px solid #e0e0e0; }
+        .item { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+        .item:last-child { border-bottom: none; }
+        .item-info { flex: 1; }
+        .item-memo { font-weight: 600; color: #333; }
+        .item-meta { color: #888; font-size: 11px; margin-top: 2px; }
+        .item-valor { font-weight: 700; color: #c62828; margin: 0 12px; }
+        .badge-lote { display: inline-block; background: #fdecea; color: #c62828; border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; margin-left: 6px; }
+        .badge-ok { background: #e8f5e9; color: #1b5e20; }
+
+        .btn-executar { background: #c62828; color: white; border: none; padding: 14px 28px; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-executar:hover { background: #b71c1c; }
+        .btn-executar:disabled { background: #aaa; cursor: not-allowed; }
+
+        .log-box { background: #f5f5f5; border-radius: 8px; padding: 14px; margin-top: 20px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; display: none; }
+        .log-linha { padding: 2px 0; }
+        .log-ok { color: #2e7d32; }
+        .log-err { color: #c62828; }
+        .log-info { color: #555; }
+
+        .resultado { background: #e8f5e9; border: 2px solid #43a047; border-radius: 10px; padding: 16px; margin-top: 20px; text-align: center; display: none; }
+        .resultado h3 { color: #1b5e20; font-size: 18px; margin-bottom: 6px; }
+        .resultado p { color: #555; font-size: 13px; }
+        .btn-voltar { display: inline-block; margin-top: 12px; background: #1565c0; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; }
+
+        #loading { text-align: center; padding: 30px; color: #888; display: none; }
+
+        @media (max-width: 600px) {
+            .resumo-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>🧹 Limpeza de Pagamentos Duplicados</h2>
+        <p>Remove os 30 registros duplicados identificados na análise do backup 11/03/2026</p>
+    </div>
+    <div class="content">
+
+        <div class="aviso">
+            <strong>⚠️ O que vai acontecer</strong>
+            Dois lotes de importação cobriram os mesmos meses com nomes diferentes ("Payment 1" vs "Installment #1"). Os registros do lote 180xxx serão removidos onde há sobreposição — os do lote 450xxx (com datas e canais corretos) serão mantidos.
+        </div>
+
+        <div class="resumo-grid">
+            <div class="resumo-card card-red">
+                <div class="label">A REMOVER</div>
+                <div class="valor">30</div>
+            </div>
+            <div class="resumo-card card-orange">
+                <div class="label">VALOR DUPLICADO</div>
+                <div class="valor" style="font-size:16px;">$10.674,80</div>
+            </div>
+            <div class="resumo-card card-green">
+                <div class="label">CONTRATOS</div>
+                <div class="valor">7</div>
+            </div>
+        </div>
+
+        <div class="lista-duplicatas">
+
+            <div class="grupo">
+                <div class="grupo-header">📄 Contrato #17</div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 2 <span class="badge-lote">180xxx</span></div><div class="item-meta">02/12/2025 · CHECK · id=180047</div></div><div class="item-valor">$162.90</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 3 <span class="badge-lote">180xxx</span></div><div class="item-meta">02/01/2026 · CHECK · id=180048</div></div><div class="item-valor">$162.90</div></div>
+            </div>
+
+            <div class="grupo">
+                <div class="grupo-header">📄 Contrato #22</div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 2 <span class="badge-lote">180xxx</span></div><div class="item-meta">23/11/2025 · CHECK · id=180050</div></div><div class="item-valor">$110.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 4 <span class="badge-lote">180xxx</span></div><div class="item-meta">23/01/2026 · CHECK · id=180052</div></div><div class="item-valor">$110.00</div></div>
+            </div>
+
+            <div class="grupo">
+                <div class="grupo-header">📄 Contrato #25</div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 1 <span class="badge-lote">180xxx</span></div><div class="item-meta">07/09/2025 · CHECK · id=180001</div></div><div class="item-valor">$449.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 3 <span class="badge-lote">180xxx</span></div><div class="item-meta">07/11/2025 · CHECK · id=180003</div></div><div class="item-valor">$449.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Balloon payment <span class="badge-lote">180xxx</span></div><div class="item-meta">10/11/2025 · CHECK · id=180004</div></div><div class="item-valor">$3,500.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 4 <span class="badge-lote">180xxx</span></div><div class="item-meta">07/12/2025 · CHECK · id=180005</div></div><div class="item-valor">$449.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 5 <span class="badge-lote">180xxx</span></div><div class="item-meta">07/01/2026 · CHECK · id=180006</div></div><div class="item-valor">$449.00</div></div>
+            </div>
+
+            <div class="grupo">
+                <div class="grupo-header">📄 Contrato #33</div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 1 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/09/2025 · CHECK · id=180011</div></div><div class="item-valor">$195.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 2 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/10/2025 · CHECK · id=180012</div></div><div class="item-valor">$195.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 3 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/11/2025 · CHECK · id=180013</div></div><div class="item-valor">$195.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 4 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/12/2025 · CHECK · id=180014</div></div><div class="item-valor">$195.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 5 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/01/2026 · CHECK · id=180015</div></div><div class="item-valor">$195.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 6 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/02/2026 · CHECK · id=180016</div></div><div class="item-valor">$195.00</div></div>
+            </div>
+
+            <div class="grupo">
+                <div class="grupo-header">📄 Contrato #35</div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 1 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/09/2025 · CHECK · id=180020</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 2 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/10/2025 · CHECK · id=180021</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 3 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/11/2025 · CHECK · id=180022</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 4 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/12/2025 · CHECK · id=180023</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 5 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/01/2026 · CHECK · id=180024</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 6 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/02/2026 · CHECK · id=180025</div></div><div class="item-valor">$236.00</div></div>
+            </div>
+
+            <div class="grupo">
+                <div class="grupo-header">📄 Contrato #43</div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 1 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/09/2025 · CHECK · id=180029</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 2 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/10/2025 · CHECK · id=180030</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 3 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/11/2025 · CHECK · id=180031</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 4 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/12/2025 · CHECK · id=180032</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 5 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/01/2026 · CHECK · id=180033</div></div><div class="item-valor">$236.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 6 <span class="badge-lote">180xxx</span></div><div class="item-meta">01/02/2026 · CHECK · id=180034</div></div><div class="item-valor">$236.00</div></div>
+            </div>
+
+            <div class="grupo">
+                <div class="grupo-header">📄 Contrato #45</div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 1 <span class="badge-lote">180xxx</span></div><div class="item-meta">05/11/2025 · CHECK · id=180038</div></div><div class="item-valor">$277.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 3 <span class="badge-lote">180xxx</span></div><div class="item-meta">05/01/2026 · CHECK · id=180040</div></div><div class="item-valor">$277.00</div></div>
+                <div class="item"><div class="item-info"><div class="item-memo">Payment 4 <span class="badge-lote">180xxx</span></div><div class="item-meta">05/02/2026 · CHECK · id=180041</div></div><div class="item-valor">$277.00</div></div>
+            </div>
+
+        </div>
+
+        <button class="btn-executar" id="btnExecutar" onclick="executarLimpeza()">
+            🗑️ Remover 30 Duplicatas Agora
+        </button>
+
+        <div id="loading" style="display:none;text-align:center;padding:20px;color:#888;">
+            <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+            <div id="loadingMsg">Removendo duplicatas...</div>
+        </div>
+
+        <div class="log-box" id="logBox"></div>
+
+        <div class="resultado" id="resultado">
+            <h3>✅ Limpeza concluída!</h3>
+            <p id="resultadoMsg">30 pagamentos duplicados removidos com sucesso.</p>
+            <a href="LL_Payments.html" class="btn-voltar">Ver Pagamentos →</a>
+        </div>
+
+    </div>
+</div>
+
+<a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyCAt7D5HOkdXZEV9o_DZck9pjPoGKW-GSY",
+        authDomain: "gtsmart-387b4.firebaseapp.com",
+        projectId: "gtsmart-387b4",
+        storageBucket: "gtsmart-387b4.firebasestorage.app",
+        messagingSenderId: "319681648843",
+        appId: "1:319681648843:web:8d9974ffa13d070850a34e"
+    };
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let userId = null;
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        userId = user.uid;
+    });
+
+    // IDs dos 30 pagamentos duplicados a remover
+    const IDS_DUPLICATAS = [
+        '180047', '180048',                              // #17
+        '180050', '180052',                              // #22
+        '180001', '180003', '180004', '180005', '180006', // #25
+        '180011', '180012', '180013', '180014', '180015', '180016', // #33
+        '180020', '180021', '180022', '180023', '180024', '180025', // #35
+        '180029', '180030', '180031', '180032', '180033', '180034', // #43
+        '180038', '180040', '180041'                     // #45
+    ];
+
+    function log(msg, tipo) {
+        const box = document.getElementById('logBox');
+        box.style.display = 'block';
+        const linha = document.createElement('div');
+        linha.className = 'log-linha log-' + (tipo || 'info');
+        linha.textContent = msg;
+        box.appendChild(linha);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    window.executarLimpeza = async function() {
+        if (!userId) { alert('Aguarde a autenticação...'); return; }
+
+        const btn = document.getElementById('btnExecutar');
+        btn.disabled = true;
+        btn.textContent = '⏳ Removendo...';
+        document.getElementById('loading').style.display = 'block';
+
+        let removidos = 0;
+        let erros = 0;
+        let naoEncontrados = 0;
+
+        log(`Iniciando remoção de ${IDS_DUPLICATAS.length} duplicatas...`, 'info');
+
+        for (const id of IDS_DUPLICATAS) {
+            try {
+                const ref = doc(db, 'users', userId, 'll_payments', id);
+                const snap = await getDoc(ref);
+
+                if (!snap.exists()) {
+                    log(`⚪ id=${id} — não encontrado (já removido?)`, 'info');
+                    naoEncontrados++;
+                    continue;
+                }
+
+                await deleteDoc(ref);
+                log(`✅ id=${id} removido`, 'ok');
+                removidos++;
+
+                document.getElementById('loadingMsg').textContent =
+                    `Removendo... ${removidos + naoEncontrados}/${IDS_DUPLICATAS.length}`;
+
+            } catch (err) {
+                log(`❌ id=${id} — erro: ${err.message}`, 'err');
+                erros++;
+            }
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        btn.style.display = 'none';
+
+        const resultado = document.getElementById('resultado');
+        const msg = document.getElementById('resultadoMsg');
+
+        if (erros === 0) {
+            resultado.style.display = 'block';
+            msg.textContent = `${removidos} duplicatas removidas com sucesso. ${naoEncontrados > 0 ? naoEncontrados + ' já não existiam.' : ''}`;
+        } else {
+            resultado.style.display = 'block';
+            resultado.style.background = '#fff8e1';
+            resultado.style.borderColor = '#ffc107';
+            resultado.querySelector('h3').textContent = '⚠️ Concluído com erros';
+            resultado.querySelector('h3').style.color = '#f57f17';
+            msg.textContent = `${removidos} removidos, ${erros} com erro, ${naoEncontrados} não encontrados. Veja o log acima.`;
+        }
+    };
+</script>
+</body>
+</html>
