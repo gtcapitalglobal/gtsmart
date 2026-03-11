@@ -816,7 +816,5 @@ export {
   updateDefiPosition,
   deleteDefiPosition,
   getUserSetting,
-  saveUserSetting,
-  showGTLoading,
-  hideGTLoading
+  saveUserSetting
 };
