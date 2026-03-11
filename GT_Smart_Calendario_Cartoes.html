@@ -191,9 +191,7 @@
     <script type="module">
         import { auth, onAuthStateChanged, getCards } from './firebase-config.js';
 
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') document.body.classList.add('dark-mode');
-
-        let currentDate = new Date();
+let currentDate = new Date();
         let selectedDateStr = '';
         let cards = [];
         const fmt = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});

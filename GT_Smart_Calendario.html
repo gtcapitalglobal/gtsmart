@@ -194,11 +194,7 @@
         let loans = [], debts = [], cards = [];
 
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
             loadAll().catch(e => {
                 console.error('Erro ao carregar:', e);

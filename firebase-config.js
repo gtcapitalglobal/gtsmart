@@ -185,9 +185,11 @@ async function saveContract(contract) {
     if (!userId) throw new Error('Não autenticado');
     const contractRef = doc(db, 'users', userId, 'contracts', contract.id);
     await setDoc(contractRef, contract);
+    _gtNotify('✅ Contrato salvo!', 'sucesso');
     return true;
   } catch (e) {
     console.error('Erro ao salvar contrato:', e);
+    _gtNotify('❌ Erro ao salvar contrato', 'erro');
     return false;
   }
 }
@@ -197,9 +199,11 @@ async function deleteContract(contractId) {
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error('Não autenticado');
     await deleteDoc(doc(db, 'users', userId, 'contracts', contractId));
+    _gtNotify('🗑️ Contrato removido', 'aviso');
     return true;
   } catch (e) {
     console.error('Erro ao deletar contrato:', e);
+    _gtNotify('❌ Erro ao remover contrato', 'erro');
     return false;
   }
 }
@@ -492,8 +496,9 @@ async function saveCard(card) {
     const { id, ...data } = card;
     const cardId = id || ('CARD' + Date.now());
     await setDoc(doc(db, 'users', userId, 'cards', cardId), data);
+    _gtNotify('✅ Cartão salvo!', 'sucesso');
     return cardId;
-  } catch(e) { console.error('Erro saveCard:', e); return null; }
+  } catch(e) { console.error('Erro saveCard:', e); _gtNotify('❌ Erro ao salvar cartão', 'erro'); return null; }
 }
 
 async function updateCard(card) {
@@ -502,8 +507,9 @@ async function updateCard(card) {
     if (!userId) return null;
     const { id, ...data } = card;
     await setDoc(doc(db, 'users', userId, 'cards', id), data);
+    _gtNotify('✅ Cartão atualizado!', 'sucesso');
     return true;
-  } catch(e) { console.error('Erro updateCard:', e); return null; }
+  } catch(e) { console.error('Erro updateCard:', e); _gtNotify('❌ Erro ao atualizar cartão', 'erro'); return null; }
 }
 
 async function deleteCard(cardId) {
@@ -511,8 +517,9 @@ async function deleteCard(cardId) {
     const userId = auth.currentUser?.uid;
     if (!userId) return null;
     await deleteDoc(doc(db, 'users', userId, 'cards', cardId));
+    _gtNotify('🗑️ Cartão removido', 'aviso');
     return true;
-  } catch(e) { console.error('Erro deleteCard:', e); return null; }
+  } catch(e) { console.error('Erro deleteCard:', e); _gtNotify('❌ Erro ao remover cartão', 'erro'); return null; }
 }
 async function getEmpresas() {
   try {
@@ -530,8 +537,9 @@ async function saveEmpresa(empresa) {
     const { id, ...data } = empresa;
     const empId = id || ('EMP' + Date.now());
     await setDoc(doc(db, 'users', userId, 'empresas', empId), data);
+    _gtNotify('✅ Empresa salva!', 'sucesso');
     return empId;
-  } catch(e) { console.error('Erro saveEmpresa:', e); return null; }
+  } catch(e) { console.error('Erro saveEmpresa:', e); _gtNotify('❌ Erro ao salvar empresa', 'erro'); return null; }
 }
 
 async function updateEmpresa(empresa) {
@@ -540,8 +548,9 @@ async function updateEmpresa(empresa) {
     if (!userId) return null;
     const { id, ...data } = empresa;
     await setDoc(doc(db, 'users', userId, 'empresas', id), data);
+    _gtNotify('✅ Empresa atualizada!', 'sucesso');
     return true;
-  } catch(e) { console.error('Erro updateEmpresa:', e); return null; }
+  } catch(e) { console.error('Erro updateEmpresa:', e); _gtNotify('❌ Erro ao atualizar empresa', 'erro'); return null; }
 }
 
 async function deleteEmpresa(empresaId) {
@@ -549,8 +558,9 @@ async function deleteEmpresa(empresaId) {
     const userId = auth.currentUser?.uid;
     if (!userId) return null;
     await deleteDoc(doc(db, 'users', userId, 'empresas', empresaId));
+    _gtNotify('🗑️ Empresa removida', 'aviso');
     return true;
-  } catch(e) { console.error('Erro deleteEmpresa:', e); return null; }
+  } catch(e) { console.error('Erro deleteEmpresa:', e); _gtNotify('❌ Erro ao remover empresa', 'erro'); return null; }
 }
 
 // =============================================
@@ -595,8 +605,9 @@ async function saveDefiPosition(data) {
     const { id, ...rest } = data;
     const posId = id || ('POS' + Date.now());
     await setDoc(doc(db, 'users', userId, 'defi_colateral', posId), rest);
+    _gtNotify('✅ Colateral salvo!', 'sucesso');
     return posId;
-  } catch(e) { console.error('Erro saveDefiPosition:', e); return null; }
+  } catch(e) { console.error('Erro saveDefiPosition:', e); _gtNotify('❌ Erro ao salvar colateral', 'erro'); return null; }
 }
 
 async function updateDefiPosition(id, data) {
@@ -604,8 +615,9 @@ async function updateDefiPosition(id, data) {
     const userId = auth.currentUser?.uid;
     if (!userId) return false;
     await setDoc(doc(db, 'users', userId, 'defi_colateral', id), data);
+    _gtNotify('✅ Colateral atualizado!', 'sucesso');
     return true;
-  } catch(e) { console.error('Erro updateDefiPosition:', e); return false; }
+  } catch(e) { console.error('Erro updateDefiPosition:', e); _gtNotify('❌ Erro ao atualizar colateral', 'erro'); return false; }
 }
 
 async function deleteDefiPosition(id) {
@@ -613,8 +625,9 @@ async function deleteDefiPosition(id) {
     const userId = auth.currentUser?.uid;
     if (!userId) return false;
     await deleteDoc(doc(db, 'users', userId, 'defi_colateral', id));
+    _gtNotify('🗑️ Colateral removido', 'aviso');
     return true;
-  } catch(e) { console.error('Erro deleteDefiPosition:', e); return false; }
+  } catch(e) { console.error('Erro deleteDefiPosition:', e); _gtNotify('❌ Erro ao remover colateral', 'erro'); return false; }
 }
 
 // =============================================

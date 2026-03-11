@@ -180,11 +180,7 @@
 
     <script type="module">
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        import { auth, onAuthStateChanged, saveCard } from './firebase-config.js';
+import { auth, onAuthStateChanged, saveCard } from './firebase-config.js';
         onAuthStateChanged(auth, user => { if (!user) window.location.href = 'GT_Smart_Login.html'; });
 
         window.goBack = () => window.location.href = 'GT_Smart_Cartoes.html';
