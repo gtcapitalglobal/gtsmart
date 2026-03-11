@@ -487,10 +487,6 @@
 
 <script type="module">
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
 import { auth, onAuthStateChanged, getEmpresas, updateEmpresa } from './firebase-config.js';
 
 const params = new URLSearchParams(window.location.search);

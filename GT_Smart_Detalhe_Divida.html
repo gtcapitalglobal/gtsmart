@@ -187,11 +187,7 @@
     
     <script type="module">
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        import { auth, onAuthStateChanged, getDebts, updateDebt, deleteDebt } from './firebase-config.js';
+import { auth, onAuthStateChanged, getDebts, updateDebt, deleteDebt } from './firebase-config.js';
         
         let debt = null;
         

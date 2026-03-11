@@ -481,10 +481,6 @@ body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#263
 import { auth, onAuthStateChanged, getEmpresas, saveEmpresa, updateEmpresa, deleteEmpresa } from './firebase-config.js';
 
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
 let empresas = [];
 
 // ==================== DADOS PRÉ-CADASTRADOS ====================

@@ -169,11 +169,7 @@
 
     <script type="module">
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        import { auth, onAuthStateChanged, getLoans, getDebts, getCards, getDefiPools, getDefiBorrows, exportFullBackup, importFullBackup } from './firebase-config.js';
+import { auth, onAuthStateChanged, getLoans, getDebts, getCards, getDefiPools, getDefiBorrows, exportFullBackup, importFullBackup } from './firebase-config.js';
 
         let loans = [];
         let debts = [];

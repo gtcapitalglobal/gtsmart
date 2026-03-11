@@ -86,11 +86,7 @@
 
     <script type="module">
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './firebase-config.js';
+import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './firebase-config.js';
 
         let loan = null;
         let loanId = null;
@@ -357,7 +353,6 @@
         };
 
         window.editLoan = function() {
-            localStorage.setItem('gtSmartEditLoan', JSON.stringify(loan));
             window.location.href = 'GT_Smart_Editar_Emprestimo.html?id=' + loanId;
         };
 

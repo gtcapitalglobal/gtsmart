@@ -245,11 +245,7 @@
     </div>
     <script type="module">
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-config.js";
+import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-config.js";
         let loan = null;
         const loanId = new URLSearchParams(window.location.search).get('id');
 
