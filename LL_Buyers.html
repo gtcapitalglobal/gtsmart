@@ -114,17 +114,17 @@
             <!-- KPIs -->
             <div class="kpi-grid">
                 <div class="kpi"><div class="num" id="kTotal">0</div><div class="lbl">Total</div></div>
-                <div class="kpi"><div class="num" id="kNovos">0</div><div class="lbl">Novos</div></div>
+                <div class="kpi"><div class="num" id="kNovos">0</div><div class="lbl">Deed Transf.</div></div>
                 <div class="kpi"><div class="num" id="kAndamento">0</div><div class="lbl">Em andamento</div></div>
-                <div class="kpi"><div class="num" id="kContratados">0</div><div class="lbl">Contratados</div></div>
+                <div class="kpi"><div class="num" id="kContratados">0</div><div class="lbl">CFD</div></div>
             </div>
 
             <!-- Pipeline visual -->
             <div class="pipeline-bar" id="pipelineBar">
-                <div class="pipeline-seg seg-new" onclick="filtrar('NEW')">🔵 Novos <span id="pNew">0</span></div>
+                <div class="pipeline-seg seg-new" onclick="filtrar('NEW')">🔵 Deed Transferido <span id="pNew">0</span></div>
                 <div class="pipeline-seg seg-psa" onclick="filtrar('PSA_SENT')">📄 PSA Enviado <span id="pPsa">0</span></div>
                 <div class="pipeline-seg seg-cfd" onclick="filtrar('CFD_SENT')">📑 CFD Enviado <span id="pCfd">0</span></div>
-                <div class="pipeline-seg seg-contracted" onclick="filtrar('CONTRACTED')">✅ Contratado <span id="pContract">0</span></div>
+                <div class="pipeline-seg seg-contracted" onclick="filtrar('CONTRACTED')">✅ Contract for Deed <span id="pContract">0</span></div>
                 <div class="pipeline-seg seg-cancelled" onclick="filtrar('CANCELLED')">❌ Cancelado <span id="pCancel">0</span></div>
             </div>
 
@@ -133,10 +133,10 @@
                 <input class="search-box" type="text" placeholder="🔍 Buscar por nome, email ou telefone..." oninput="renderTabela()" id="searchInput">
                 <select class="filter-select" id="filterStatus" onchange="renderTabela()">
                     <option value="">Todos os status</option>
-                    <option value="NEW">Novo</option>
+                    <option value="NEW">Deed Transferido</option>
                     <option value="PSA_SENT">PSA Enviado</option>
                     <option value="CFD_SENT">CFD Enviado</option>
-                    <option value="CONTRACTED">Contratado</option>
+                    <option value="CONTRACTED">Contract for Deed</option>
                     <option value="CANCELLED">Cancelado</option>
                 </select>
             </div>
@@ -266,10 +266,10 @@
             <div class="form-group">
                 <label>Status</label>
                 <select id="bStatus">
-                    <option value="NEW">Novo</option>
+                    <option value="NEW">Deed Transferido</option>
                     <option value="PSA_SENT">PSA Enviado</option>
                     <option value="CFD_SENT">CFD Enviado</option>
-                    <option value="CONTRACTED">Contratado</option>
+                    <option value="CONTRACTED">Contract for Deed</option>
                     <option value="CANCELLED">Cancelado</option>
                 </select>
             </div>
@@ -303,7 +303,7 @@
         let buyers = [];
         let filtroAtivo = '';
 
-        const STATUS_LABEL = { NEW:'Novo', PSA_SENT:'PSA Enviado', CFD_SENT:'CFD Enviado', CONTRACTED:'Contratado', CANCELLED:'Cancelado' };
+        const STATUS_LABEL = { NEW:'Deed Transferido', PSA_SENT:'PSA Enviado', CFD_SENT:'CFD Enviado', CONTRACTED:'Contract for Deed', CANCELLED:'Cancelado' };
 
         const fmtData = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
 
