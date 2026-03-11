@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Gerar Parcelas Todos os Contratos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 900px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 15px 20px; }
+        .header h2 { font-size: 18px; margin-bottom: 4px; }
+        .header p { font-size: 12px; opacity: 0.85; }
+        .content { padding: 20px; }
+        .aviso { background: #fff8e1; border-left: 4px solid #ffc107; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #555; }
+        .aviso strong { color: #f57f17; display: block; margin-bottom: 4px; }
+        .btn { border: none; padding: 14px 28px; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .btn-gerar { background: #1565c0; color: white; }
+        .btn-gerar:hover { background: #0d47a1; }
+        .btn:disabled { background: #bbb !important; cursor: not-allowed; }
+        .log-box { background: #1a1a2e; border-radius: 8px; padding: 14px; margin-top: 16px; max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 12px; display: none; }
+        .log-ok    { color: #69f0ae; padding: 1px 0; }
+        .log-err   { color: #ff5252; padding: 1px 0; }
+        .log-warn  { color: #ffeb3b; padding: 1px 0; }
+        .log-info  { color: #90caf9; padding: 1px 0; }
+        .log-dim   { color: #555; padding: 1px 0; }
+        .log-title { color: #ffffff; font-weight: bold; padding: 4px 0 2px; border-top: 1px solid #333; margin-top: 4px; }
+        .resultado { border-radius: 10px; padding: 18px; margin-top: 20px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📋 Gerar Parcelas — Todos os Contratos</h2>
+        <p>Gera cronograma completo e marca parcelas pagas automaticamente</p>
+    </div>
+    <div class="content">
+
+        <div class="aviso">
+            <strong>⚠️ O que esta ferramenta faz:</strong>
+            1. Apaga todas as parcelas existentes (ll_installments) de cada contrato<br>
+            2. Gera o cronograma completo baseado nos dados do contrato<br>
+            3. Lê os pagamentos já registrados e marca parcelas como pagas<br>
+            4. Contratos sem pagamentos terão todas as parcelas como pendentes
+        </div>
+
+        <button class="btn btn-gerar" id="btnGerar" onclick="executar()">
+            🚀 Gerar Parcelas de Todos os Contratos
+        </button>
+
+        <div class="log-box" id="logBox"></div>
+        <div class="resultado" id="resultado"></div>
+    </div>
+</div>
+
+<a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+    getFirestore, collection, getDocs, deleteDoc, setDoc, doc, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp({
+    apiKey: "AIzaSyCAt7D5HOkdXZEV9o_DZck9pjPoGKW-GSY",
+    authDomain: "gtsmart-387b4.firebaseapp.com",
+    projectId: "gtsmart-387b4",
+    storageBucket: "gtsmart-387b4.firebasestorage.app",
+    messagingSenderId: "319681648843",
+    appId: "1:319681648843:web:8d9974ffa13d070850a34e"
+});
+const auth = getAuth(app);
+const db   = getFirestore(app);
+let uid = null;
+
+onAuthStateChanged(auth, u => {
+    if (!u) { window.location.href = 'GT_Smart_Login.html'; return; }
+    uid = u.uid;
+});
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function log(txt, tipo) {
+    const box = document.getElementById('logBox');
+    box.style.display = 'block';
+    const d = document.createElement('div');
+    d.className = 'log-' + (tipo || 'info');
+    d.textContent = txt;
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+}
+
+function gerarDatas(firstDateStr, count) {
+    // firstDateStr: "YYYY-MM-DD" ou "YYYY-MM-DDT..."
+    const clean = firstDateStr.substring(0, 10);
+    const parts = clean.split('-');
+    let year = parseInt(parts[0]);
+    let month = parseInt(parts[1]);
+    const day = parseInt(parts[2]);
+
+    const dates = [];
+    for (let i = 0; i < count; i++) {
+        const m = String(month).padStart(2, '0');
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const d = String(Math.min(day, daysInMonth)).padStart(2, '0');
+        dates.push(`${year}-${m}-${d}`);
+        month++;
+        if (month > 12) { month = 1; year++; }
+    }
+    return dates;
+}
+
+// Extract installment number from memo e.g. "Installment #5" → 5
+function extractInstNum(memo) {
+    if (!memo) return null;
+    const m = memo.match(/#(\d+)/);
+    if (m) return parseInt(m[1]);
+    return null;
+}
+
+// ─── Main logic per contract ──────────────────────────────────────────────────
+async function processContract(contract) {
+    const cid        = contract.contractId;  // numeric e.g. 210001
+    const pid        = (contract.propertyId || '').replace('#', ''); // "25"
+    const buyer      = contract.buyerName || '?';
+    const count      = parseInt(contract.installmentCount || 0);
+    const amount     = parseFloat(contract.installmentAmount || 0);
+    const firstDate  = contract.firstInstallmentDate || '';
+    const balloon    = parseFloat(contract.balloonAmount || 0);
+    const balloonDate = contract.balloonDate || '';
+    const docId      = contract.id; // Firestore doc ID e.g. "ll_contract_25" (string)
+
+    const colInst = collection(db, 'users', uid, 'll_installments');
+    const colPay  = collection(db, 'users', uid, 'll_payments');
+    const now     = new Date().toISOString();
+
+    log(``, 'dim');
+    log(`━━ Contrato #${pid} — ${buyer}`, 'title');
+    log(`   ${count}x $${amount.toFixed(2)} | 1ª parcela: ${firstDate.substring(0,10)}${balloon ? ` | Balloon: $${balloon}` : ''}`, 'dim');
+
+    if (!count || !amount || !firstDate) {
+        log(`   ⚠️  Dados insuficientes — pulando`, 'warn');
+        return { ok: 0, err: 0 };
+    }
+
+    // 1. Apagar parcelas existentes deste contrato
+    try {
+        const snap = await getDocs(query(colInst, where('contractId', '==', cid)));
+        if (snap.size > 0) {
+            await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+            log(`   🗑️  ${snap.size} parcelas antigas removidas`, 'dim');
+        }
+    } catch(e) {
+        log(`   ❌ Erro ao limpar: ${e.message}`, 'err');
+        return { ok: 0, err: 1 };
+    }
+
+    // 2. Buscar pagamentos deste contrato
+    let payments = [];
+    try {
+        const pSnap = await getDocs(query(colPay, where('contractId', '==', cid)));
+        payments = pSnap.docs.map(d => d.data());
+    } catch(e) {
+        log(`   ⚠️  Não foi possível buscar pagamentos: ${e.message}`, 'warn');
+    }
+
+    // Filter out down payment, installment #0, balloon, transfers
+    const instPayments = payments.filter(p => {
+        const memo = (p.memo || '').toLowerCase();
+        const num = extractInstNum(p.memo);
+        if (num === 0) return false;
+        if (memo.includes('down') || memo.includes('before transfer')) return false;
+        return true;
+    });
+
+    // 3. Build paid map: instNum → payment
+    // Priority: "Installment #N" memo → direct assignment
+    // Others → sequential fill
+    const paidMap = {};
+
+    // First pass: numbered memos
+    for (const p of instPayments) {
+        const num = extractInstNum(p.memo);
+        if (num && num > 0) {
+            if (!paidMap[num]) {
+                paidMap[num] = p;
+            }
+        }
+    }
+
+    // Second pass: unnamed/sequential — sort by paymentDate
+    const unnamed = instPayments
+        .filter(p => !extractInstNum(p.memo) || extractInstNum(p.memo) === null)
+        .sort((a, b) => (a.paymentDate || '') < (b.paymentDate || '') ? -1 : 1);
+
+    let seq = 1;
+    for (const p of unnamed) {
+        // skip balloon memos
+        const memo = (p.memo || '').toLowerCase();
+        if (memo.includes('balloon')) continue;
+        while (paidMap[seq]) seq++;
+        if (seq <= count) {
+            paidMap[seq] = p;
+        }
+        seq++;
+    }
+
+    const paidCount = Object.keys(paidMap).filter(n => parseInt(n) <= count).length;
+    log(`   💳 ${instPayments.length} pagamentos → ${paidCount} parcelas marcadas como pagas`, 'info');
+
+    // 4. Generate installments
+    const dates = gerarDatas(firstDate, count);
+    let ok = 0, erros = 0;
+
+    for (let i = 0; i < count; i++) {
+        const num    = i + 1;
+        const instId = `ll_contract_${pid}_inst_${String(num).padStart(3, '0')}`;
+        const pago   = paidMap[num];
+
+        const docData = {
+            contractId:        cid,
+            propertyId:        `#${pid}`,
+            installmentNumber: num,
+            dueDate:           dates[i],
+            amount:            amount,
+            type:              'regular',
+            status:            pago ? 'paid' : 'pending',
+            paidDate:          pago ? (pago.paymentDate || '').substring(0, 10) : null,
+            paidAmount:        pago ? parseFloat(pago.amountTotal || amount) : null,
+            createdAt:         now,
+            updatedAt:         now
+        };
+        try {
+            await setDoc(doc(db, 'users', uid, 'll_installments', instId), docData);
+            ok++;
+        } catch(e) {
+            erros++;
+            log(`   ❌ Erro na #${num}: ${e.message}`, 'err');
+        }
+    }
+
+    // 5. Balloon payment (if exists)
+    if (balloon > 0) {
+        const balloonPago = payments.find(p => {
+            const memo = (p.memo || '').toLowerCase();
+            return memo.includes('balloon') || extractInstNum(p.memo) === count + 1;
+        });
+        const balloonInstId = `ll_contract_${pid}_balloon`;
+        const balloonDue = balloonDate ? balloonDate.substring(0, 10) : dates[dates.length - 1];
+        try {
+            await setDoc(doc(db, 'users', uid, 'll_installments', balloonInstId), {
+                contractId:        cid,
+                propertyId:        `#${pid}`,
+                installmentNumber: count + 1,
+                dueDate:           balloonDue,
+                amount:            balloon,
+                type:              'balloon',
+                status:            balloonPago ? 'paid' : 'pending',
+                paidDate:          balloonPago ? (balloonPago.paymentDate || '').substring(0,10) : null,
+                paidAmount:        balloonPago ? parseFloat(balloonPago.amountTotal || balloon) : null,
+                createdAt:         now,
+                updatedAt:         now
+            });
+            ok++;
+            log(`   🎈 Balloon $${balloon.toFixed(2)} ${balloonPago ? '✅ pago' : '· pendente'}`, balloonPago ? 'ok' : 'dim');
+        } catch(e) {
+            erros++;
+            log(`   ❌ Erro no balloon: ${e.message}`, 'err');
+        }
+    }
+
+    log(`   ✅ ${ok} parcelas geradas · ${paidCount} pagas · ${erros} erros`, erros ? 'warn' : 'ok');
+    return { ok, err: erros };
+}
+
+// ─── Entry point ─────────────────────────────────────────────────────────────
+window.executar = async function() {
+    if (!uid) { alert('Aguarde autenticação...'); return; }
+    if (!confirm('Gerar parcelas de TODOS os contratos? Parcelas existentes serão substituídas.')) return;
+
+    const btn = document.getElementById('btnGerar');
+    btn.disabled = true;
+    btn.textContent = '⏳ Processando...';
+
+    let totalOk = 0, totalErr = 0, totalContratos = 0;
+
+    try {
+        // Load all contracts
+        const colContracts = collection(db, 'users', uid, 'll_contracts');
+        const snap = await getDocs(colContracts);
+        const contracts = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+
+        log(`🔍 ${contracts.length} contratos encontrados`, 'info');
+
+        for (const c of contracts) {
+            const { ok, err } = await processContract(c);
+            totalOk += ok;
+            totalErr += err;
+            totalContratos++;
+        }
+
+        log(``, 'dim');
+        log(`══════════════════════════════════`, 'dim');
+        log(`✅ CONCLUÍDO — ${totalContratos} contratos processados`, 'ok');
+        log(`   ${totalOk} parcelas geradas · ${totalErr} erros`, totalErr ? 'warn' : 'ok');
+
+    } catch(e) {
+        log(`❌ Erro geral: ${e.message}`, 'err');
+        totalErr++;
+    }
+
+    btn.style.display = 'none';
+    const res = document.getElementById('resultado');
+    res.style.display = 'block';
+
+    if (totalErr === 0) {
+        res.style.cssText = 'background:#e8f5e9;border:2px solid #43a047;border-radius:10px;padding:18px;margin-top:20px;text-align:center;display:block;';
+        res.innerHTML = `
+            <div style="font-size:28px">✅</div>
+            <h3 style="color:#1b5e20;margin:8px 0 4px;">Tudo pronto!</h3>
+            <p style="color:#555;font-size:13px;">${totalContratos} contratos · ${totalOk} parcelas geradas · parcelas pagas marcadas automaticamente</p>
+            <a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>
+        `;
+    } else {
+        res.style.cssText = 'background:#fff8e1;border:2px solid #ffc107;border-radius:10px;padding:18px;margin-top:20px;text-align:center;display:block;';
+        res.innerHTML = `
+            <div style="font-size:28px">⚠️</div>
+            <h3 style="color:#f57f17;margin:8px 0 4px;">Concluído com erros</h3>
+            <p style="color:#555;font-size:13px;">${totalOk} geradas · ${totalErr} erros · veja o log acima</p>
+            <a href="LL_Contracts.html" style="display:inline-block;margin-top:14px;background:#1565c0;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">Ver Contratos →</a>
+        `;
+    }
+};
+</script>
+</body>
+</html>
