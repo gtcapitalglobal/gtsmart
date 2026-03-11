@@ -65,9 +65,11 @@ async function saveLoan(loan) {
     if (!userId) throw new Error('Não autenticado');
     const loanRef = doc(db, 'users', userId, 'loans', loan.id);
     await setDoc(loanRef, loan);
+    _gtNotify('✅ Empréstimo salvo!', 'sucesso');
     return true;
   } catch (e) {
     console.error('Erro ao salvar empréstimo:', e);
+    _gtNotify('❌ Erro ao salvar empréstimo', 'erro');
     return false;
   }
 }
@@ -78,9 +80,11 @@ async function updateLoan(loanId, data) {
     if (!userId) throw new Error('Não autenticado');
     const loanRef = doc(db, 'users', userId, 'loans', loanId);
     await updateDoc(loanRef, data);
+    _gtNotify('✅ Empréstimo atualizado!', 'sucesso');
     return true;
   } catch (e) {
     console.error('Erro ao atualizar empréstimo:', e);
+    _gtNotify('❌ Erro ao atualizar empréstimo', 'erro');
     return false;
   }
 }
@@ -90,9 +94,11 @@ async function deleteLoan(loanId) {
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error('Não autenticado');
     await deleteDoc(doc(db, 'users', userId, 'loans', loanId));
+    _gtNotify('🗑️ Empréstimo removido', 'aviso');
     return true;
   } catch (e) {
     console.error('Erro ao deletar empréstimo:', e);
+    _gtNotify('❌ Erro ao remover', 'erro');
     return false;
   }
 }
@@ -119,9 +125,11 @@ async function saveDebt(debt) {
     if (!userId) throw new Error('Não autenticado');
     const debtRef = doc(db, 'users', userId, 'debts', debt.id);
     await setDoc(debtRef, debt);
+    _gtNotify('✅ Dívida salva!', 'sucesso');
     return true;
   } catch (e) {
     console.error('Erro ao salvar dívida:', e);
+    _gtNotify('❌ Erro ao salvar dívida', 'erro');
     return false;
   }
 }
@@ -132,9 +140,11 @@ async function updateDebt(debtId, data) {
     if (!userId) throw new Error('Não autenticado');
     const debtRef = doc(db, 'users', userId, 'debts', debtId);
     await updateDoc(debtRef, data);
+    _gtNotify('✅ Dívida atualizada!', 'sucesso');
     return true;
   } catch (e) {
     console.error('Erro ao atualizar dívida:', e);
+    _gtNotify('❌ Erro ao atualizar dívida', 'erro');
     return false;
   }
 }
@@ -144,9 +154,11 @@ async function deleteDebt(debtId) {
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error('Não autenticado');
     await deleteDoc(doc(db, 'users', userId, 'debts', debtId));
+    _gtNotify('🗑️ Dívida removida', 'aviso');
     return true;
   } catch (e) {
     console.error('Erro ao deletar dívida:', e);
+    _gtNotify('❌ Erro ao remover', 'erro');
     return false;
   }
 }
@@ -628,6 +640,17 @@ async function saveUserSetting(key, value) {
 }
 
 // ============================================================
+// HELPER INTERNO — notificação automática em save/update/delete
+// ============================================================
+
+function _gtNotify(msg, tipo) {
+  // Chama showGTToast se o DOM estiver disponível
+  if (typeof document !== 'undefined') {
+    setTimeout(() => showGTToast(msg, tipo), 50);
+  }
+}
+
+// ============================================================
 // MONITOR DE REDE — aparece automaticamente em qualquer página
 // ============================================================
 
@@ -668,6 +691,38 @@ if (typeof document !== 'undefined') {
   } else {
     setTimeout(_setupNetworkMonitor, 0);
   }
+}
+
+// ============================================================
+// LOADING OVERLAY — showGTLoading() / hideGTLoading()
+// ============================================================
+
+export function showGTLoading(msg = 'Carregando...') {
+  let el = document.getElementById('gt-loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'gt-loading-overlay';
+    el.style.cssText = [
+      'position:fixed','top:0','left:0','right:0','bottom:0',
+      'background:rgba(0,0,0,0.45)','z-index:99997',
+      'display:flex','align-items:center','justify-content:center',
+      'flex-direction:column','gap:14px'
+    ].join(';');
+    el.innerHTML = '<div style="background:white;padding:24px 32px;border-radius:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-width:280px;">'
+      + '<div style="font-size:28px;margin-bottom:10px;">⏳</div>'
+      + '<div id="gt-loading-msg" style="font-size:14px;font-weight:700;color:#333;">' + msg + '</div>'
+      + '</div>';
+    document.body.appendChild(el);
+  } else {
+    const msgEl = document.getElementById('gt-loading-msg');
+    if (msgEl) msgEl.textContent = msg;
+    el.style.display = 'flex';
+  }
+}
+
+export function hideGTLoading() {
+  const el = document.getElementById('gt-loading-overlay');
+  if (el) el.style.display = 'none';
 }
 
 // ============================================================
@@ -748,5 +803,7 @@ export {
   updateDefiPosition,
   deleteDefiPosition,
   getUserSetting,
-  saveUserSetting
+  saveUserSetting,
+  showGTLoading,
+  hideGTLoading
 };

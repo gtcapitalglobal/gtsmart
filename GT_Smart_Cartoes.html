@@ -281,11 +281,7 @@
 
     <script type="module">
         // Dark mode
-        if (localStorage.getItem('gtSmartDarkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        import { auth, onAuthStateChanged, getCards, updateCard } from './firebase-config.js';
+import { auth, onAuthStateChanged, getCards, updateCard } from './firebase-config.js';
 
         let cards = [];
         let filtroAtivo = 'todos';

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart — Página não encontrada</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 32px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .emoji { font-size: 64px; margin-bottom: 16px; }
+        .titulo { font-size: 22px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+        .subtitulo { font-size: 14px; color: #777; margin-bottom: 28px; line-height: 1.6; }
+        .url-atual { background: #f5f5f5; border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #999; font-family: monospace; margin-bottom: 24px; word-break: break-all; }
+        .btn-menu {
+            display: inline-block;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+            transition: transform 0.2s;
+        }
+        .btn-menu:hover { transform: translateY(-2px); }
+        .btn-voltar {
+            display: inline-block;
+            margin-top: 12px;
+            color: #aaa;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="emoji">🔍</div>
+        <div class="titulo">Página não encontrada</div>
+        <div class="subtitulo">O link que você acessou não existe ou foi movido.<br>Verifique se o endereço está correto.</div>
+        <div class="url-atual" id="urlAtual"></div>
+        <a href="GT_Smart_Menu.html" class="btn-menu">🏠 Ir para o Menu</a>
+        <br>
+        <button class="btn-voltar" onclick="history.back()">← Voltar à página anterior</button>
+    </div>
+    <script>
+        document.getElementById('urlAtual').textContent = window.location.pathname + window.location.search;
+    </script>
+</body>
+</html>
