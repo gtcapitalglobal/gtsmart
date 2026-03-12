@@ -57,6 +57,7 @@
         .is-PENDING { background: #fff8e1; color: #f57f17; }
         .is-OVERDUE { background: #fdecea; color: #c62828; }
         .is-BALLOON { background: #e3f2fd; color: #1565c0; }
+        .is-regular { background: #f3f4f6; color: #555; }
 
         .btn-sm { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
         .btn-pagar { background: #e8f5e9; color: #2e7d32; }
@@ -85,6 +86,25 @@
         .btn-save { background: #1565c0; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; margin-top: 8px; }
 
         .empty { text-align: center; padding: 30px; color: #aaa; font-size: 13px; }
+
+        /* WhatsApp Section */
+        .wa-section { border: 2px solid #dcfce7; border-radius: 12px; padding: 16px; margin-top: 20px; background: #f0fdf4; }
+        .wa-title { font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .wa-lang-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+        .wa-lang-label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-right: 4px; }
+        .wa-lang-btn { padding: 5px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 13px; font-weight: 600; cursor: pointer; color: #555; transition: all 0.15s; }
+        .wa-lang-btn.active { background: #166534; color: white; border-color: #166534; }
+        .wa-phone-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+        .wa-phone-row label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; white-space: nowrap; }
+        .wa-phone-row input { flex: 1; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; max-width: 220px; }
+        .wa-phone-row input:focus { border-color: #25d366; }
+        .wa-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-wa { display: flex; align-items: center; gap: 8px; padding: 11px 18px; border: none; border-radius: 9px; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; transition: all 0.15s; }
+        .btn-wa-cobranca { background: #c62828; color: white; }
+        .btn-wa-cobranca:hover { background: #b71c1c; }
+        .btn-wa-extrato { background: #25d366; color: white; }
+        .btn-wa-extrato:hover { background: #1ebe58; }
+        .btn-wa:disabled { background: #bbb !important; cursor: not-allowed; }
 
         @media (max-width: 600px) {
             .grid2 { grid-template-columns: 1fr; }
@@ -271,7 +291,7 @@
 <a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏡 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, getLLContracts, getLLInstallments, getLLPayments, saveLLPayment, deleteLLPayment, updateLLInstallment, updateLLContract } from './firebase-config.js';
+    import { auth, onAuthStateChanged, getLLContracts, getLLInstallments, getLLPayments, getLLBuyers, saveLLPayment, deleteLLPayment, updateLLInstallment, updateLLContract } from './firebase-config.js';
 
     const params = new URLSearchParams(window.location.search);
     const contratoId = params.get('id');
@@ -279,6 +299,8 @@
     let contrato = null;
     let parcelas = [];
     let pagamentos = [];
+    let buyer = null;
+    let waLang = 'en';
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
@@ -288,14 +310,26 @@
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
         if (!contratoId) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ ID do contrato não encontrado.</div>'; return; }
 
-        const [todos, allParcelas, allPags] = await Promise.all([
-            getLLContracts(), getLLInstallments(), getLLPayments()
+        const [todos, allParcelas, allPags, allBuyers] = await Promise.all([
+            getLLContracts(), getLLInstallments(), getLLPayments(), getLLBuyers()
         ]);
 
         contrato = todos.find(c => c.id === contratoId);
         if (!contrato) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ Contrato não encontrado.</div>'; return; }
 
-        parcelas = allParcelas.filter(p => p.contractId === contratoId).sort((a,b) => a.installmentNumber - b.installmentNumber);
+        buyer = allBuyers.find(b => b.contractId === contratoId || b.propertyId === contrato.propertyId) || null;
+
+        parcelas = allParcelas.filter(p => p.contractId === contratoId).sort((a,b) => {
+            // Ordena por data de vencimento (balloon aparece na posição cronológica correta)
+            const da = a.dueDate || '', db = b.dueDate || '';
+            if (da < db) return -1;
+            if (da > db) return 1;
+            // Mesma data: regular antes de balloon
+            const ta = (a.type||'').toLowerCase(), tb = (b.type||'').toLowerCase();
+            if (ta === 'balloon' && tb !== 'balloon') return 1;
+            if (tb === 'balloon' && ta !== 'balloon') return -1;
+            return a.installmentNumber - b.installmentNumber;
+        });
         parcelas.forEach(p => { p.status = (p.status || 'PENDING').toUpperCase(); });
         pagamentos = allPags.filter(p => p.contractId === contratoId).sort((a,b) => b.paymentDate?.localeCompare(a.paymentDate));
 
@@ -307,8 +341,8 @@
 
     function renderTudo() {
         const hoje = new Date();
-        const pagas = parcelas.filter(p => p.status === 'PAID').length;
-        const total = parcelas.filter(p => p.type !== 'BALLOON').length;
+        const pagas = parcelas.filter(p => p.status === 'PAID' && (p.type||'').toLowerCase() !== 'balloon').length;
+        const total = parcelas.filter(p => (p.type||'').toLowerCase() !== 'balloon').length;
         const pct = total > 0 ? Math.round((pagas / total) * 100) : 0;
 
         const totalRecebido = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
@@ -371,12 +405,26 @@
                     <table>
                         <thead><tr><th>#</th><th>Vencimento</th><th>Valor</th><th>Tipo</th><th>Status</th><th>Pago em</th><th>Ação</th></tr></thead>
                         <tbody>
-                            ${parcelas.map(p => `
-                                <tr class="${p.status === 'PAID' ? 'pago' : p._overdue ? 'vencida' : ''}">
-                                    <td>${p.installmentNumber}</td>
+                            ${contrato.downPayment > 0 ? `
+                                <tr class="pago" style="background:#f0fdf4;">
+                                    <td style="color:#166534;font-weight:700;">—</td>
+                                    <td>${fmtData(contrato.contractDate)}</td>
+                                    <td>${fmt2(contrato.downPayment)}</td>
+                                    <td><span class="inst-status" style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">Entrada</span></td>
+                                    <td><span class="inst-status is-PAID">Pago</span></td>
+                                    <td style="font-size:11px;color:#aaa;">${fmtData(contrato.contractDate)}</td>
+                                    <td></td>
+                                </tr>` : ''}
+                            ${parcelas.map(p => {
+                                const isBalloon = (p.type||'').toLowerCase() === 'balloon';
+                                const tipoLabel = isBalloon ? 'Balloon' : 'regular';
+                                const tipoClass = isBalloon ? 'is-BALLOON' : 'is-regular';
+                                return `
+                                <tr class="${p.status === 'PAID' ? 'pago' : p._overdue ? 'vencida' : ''}${isBalloon ? '" style="background:#fff8e1;' : ''}">
+                                    <td>${isBalloon ? '🎈' : p.installmentNumber}</td>
                                     <td>${fmtData(p.dueDate)}${p._overdue && p.status !== 'PAID' ? ' <span style="color:#c62828;font-size:10px;font-weight:700;">ATRASADA</span>' : ''}</td>
                                     <td>${fmt2(p.amount)}</td>
-                                    <td><span class="inst-status is-${p.type === 'BALLOON' ? 'BALLOON' : p.status}">${p.type === 'BALLOON' ? 'Balloon' : p.type === 'REGULAR' ? 'Regular' : p.type}</span></td>
+                                    <td><span class="inst-status ${tipoClass}">${tipoLabel}</span></td>
                                     <td><span class="inst-status is-${p.status}">${p.status === 'PAID' ? 'Pago' : p._overdue ? 'Atrasado' : 'Pendente'}</span></td>
                                     <td style="font-size:11px;color:#aaa;">${p.status === 'PAID' ? fmtData(p.paidDate) : '—'}</td>
                                     <td>
@@ -386,7 +434,7 @@
                                         }
                                     </td>
                                 </tr>
-                            `).join('')}
+                            `; }).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -427,6 +475,24 @@
                     `).join('');
                     return dpRow + pagsHtml || '<div class="empty">Nenhum pagamento registrado ainda.</div>';
                 })()}
+            </div>
+            <!-- WhatsApp -->
+            <div class="wa-section">
+                <div class="wa-title">📱 Enviar pelo WhatsApp</div>
+                <div class="wa-lang-row">
+                    <span class="wa-lang-label">Idioma:</span>
+                    <button class="wa-lang-btn ${waLang==='en'?'active':''}" onclick="setWaLang('en')">🇺🇸 English</button>
+                    <button class="wa-lang-btn ${waLang==='pt'?'active':''}" onclick="setWaLang('pt')">🇧🇷 Português</button>
+                    <button class="wa-lang-btn ${waLang==='es'?'active':''}" onclick="setWaLang('es')">🇪🇸 Español</button>
+                </div>
+                <div class="wa-phone-row">
+                    <label>Telefone (com DDD):</label>
+                    <input type="tel" id="waPhone" placeholder="+1 (305) 000-0000" value="${buyer?.phone || ''}">
+                </div>
+                <div class="wa-btns">
+                    <button class="btn-wa btn-wa-cobranca" onclick="enviarWA('cobranca')">🔴 Cobrança de Atraso</button>
+                    <button class="btn-wa btn-wa-extrato" onclick="enviarWA('extrato')">📄 Extrato Completo</button>
+                </div>
             </div>
         `;
     }
@@ -558,6 +624,70 @@
         await del(id);
         pagamentos = pagamentos.filter(p => p.id !== id);
         renderTudo();
+    };
+
+    window.setWaLang = function(lang) {
+        waLang = lang;
+        renderTudo();
+    };
+
+    window.enviarWA = function(tipo) {
+        const rawPhone = (document.getElementById('waPhone')?.value || '').replace(/\D/g, '');
+        if (!rawPhone) { alert('Por favor, informe o telefone do comprador.'); return; }
+        const phone = rawPhone.startsWith('1') || rawPhone.length <= 10 ? rawPhone : rawPhone;
+        const fPhone = rawPhone.length === 10 ? '1' + rawPhone : rawPhone;
+
+        const hoje = new Date();
+        const nome = (contrato.buyerName || '').split(' ')[0];
+        const propId = contrato.propertyId || '';
+        const parcela = fmt2(contrato.installmentAmount || 0);
+        const pagas = parcelas.filter(p => p.status === 'PAID' && (p.type||'').toLowerCase() !== 'balloon').length;
+        const total = parcelas.filter(p => (p.type||'').toLowerCase() !== 'balloon').length;
+        const restantes = total - pagas;
+        const balance = fmt2((contrato.installmentAmount || 0) * restantes + (contrato.balloonAmount || 0));
+
+        // Parcela mais antiga em atraso
+        const atrasadas = parcelas.filter(p => p.status !== 'PAID' && p._overdue);
+        const primeiraAtrasada = atrasadas.sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
+        const diasAtraso = primeiraAtrasada ? Math.floor((hoje - safeDate(primeiraAtrasada.dueDate)) / 86400000) : 0;
+        const qtdAtrasadas = atrasadas.length;
+        const totalAtrasado = fmt2(qtdAtrasadas * (contrato.installmentAmount || 0));
+
+        // Histórico de pagamentos para extrato
+        const sortedPags = [...pagamentos].sort((a,b) => a.paymentDate?.localeCompare(b.paymentDate));
+        const totalRecebido = fmt2(pagamentos.reduce((s,p) => s + parseFloat(p.amountTotal||0), 0) + parseFloat(contrato.downPayment||0));
+
+        let msg = '';
+
+        if (tipo === 'cobranca') {
+            if (qtdAtrasadas === 0) { alert('Nenhuma parcela em atraso neste contrato.'); return; }
+            const dataVenc = primeiraAtrasada ? fmtData(primeiraAtrasada.dueDate) : '—';
+            if (waLang === 'en') {
+                msg = `Hi ${nome},\n\nThis is a reminder that you have ${qtdAtrasadas === 1 ? '1 payment' : qtdAtrasadas + ' payments'} overdue for Property ${propId}.\n\nOverdue since: ${dataVenc} (${diasAtraso} days ago)\nTotal past due: ${totalAtrasado}\nMonthly payment: ${parcela}\n\nPlease send your payment at your earliest convenience.\n\nThank you,\nGT Real Assets`;
+            } else if (waLang === 'pt') {
+                msg = `Olá ${nome},\n\nPassando para lembrar que você tem ${qtdAtrasadas === 1 ? '1 parcela atrasada' : qtdAtrasadas + ' parcelas atrasadas'} referente ao imóvel ${propId}.\n\nEm atraso desde: ${dataVenc} (${diasAtraso} dias)\nTotal em atraso: ${totalAtrasado}\nParcela mensal: ${parcela}\n\nPor favor, realize o pagamento o quanto antes.\n\nObrigado,\nGT Real Assets`;
+            } else {
+                msg = `Hola ${nome},\n\nLe recordamos que tiene ${qtdAtrasadas === 1 ? '1 pago vencido' : qtdAtrasadas + ' pagos vencidos'} de la propiedad ${propId}.\n\nVencido desde: ${dataVenc} (hace ${diasAtraso} días)\nTotal vencido: ${totalAtrasado}\nCuota mensual: ${parcela}\n\nPor favor realice el pago a la brevedad posible.\n\nGracias,\nGT Real Assets`;
+            }
+        } else {
+            // Extrato
+            const linhasPag = sortedPags.map((p,i) => {
+                const num = p.memo || `#${i+1}`;
+                return `  ${fmtData(p.paymentDate)} — ${fmt2(p.amountTotal)} (${num})`;
+            }).join('\n');
+            const dpLine = contrato.downPayment > 0 ? `  ${fmtData(contrato.contractDate)} — ${fmt2(contrato.downPayment)} (Down Payment)\n` : '';
+
+            if (waLang === 'en') {
+                msg = `Hi ${nome},\n\nHere is your account statement for Property ${propId}:\n\n— CONTRACT DETAILS —\nSale Price: ${fmt2(contrato.contractPrice)}\nDown Payment: ${fmt2(contrato.downPayment)}\nMonthly Payment: ${parcela} × ${total}\nProgress: ${pagas}/${total} payments made\n\n— PAYMENT HISTORY —\n${dpLine}${linhasPag}\n\nTotal Received: ${totalRecebido}\nRemaining Balance: ~${balance}\n\nThank you,\nGT Real Assets`;
+            } else if (waLang === 'pt') {
+                msg = `Olá ${nome},\n\nSegue o extrato da sua conta referente ao imóvel ${propId}:\n\n— DADOS DO CONTRATO —\nPreço de Venda: ${fmt2(contrato.contractPrice)}\nDown Payment: ${fmt2(contrato.downPayment)}\nParcela Mensal: ${parcela} × ${total}\nProgresso: ${pagas}/${total} parcelas pagas\n\n— HISTÓRICO DE PAGAMENTOS —\n${dpLine}${linhasPag}\n\nTotal Recebido: ${totalRecebido}\nSaldo Devedor: ~${balance}\n\nObrigado,\nGT Real Assets`;
+            } else {
+                msg = `Hola ${nome},\n\nAquí está el estado de cuenta de la propiedad ${propId}:\n\n— DATOS DEL CONTRATO —\nPrecio de Venta: ${fmt2(contrato.contractPrice)}\nPago Inicial: ${fmt2(contrato.downPayment)}\nCuota Mensual: ${parcela} × ${total}\nProgreso: ${pagas}/${total} pagos realizados\n\n— HISTORIAL DE PAGOS —\n${dpLine}${linhasPag}\n\nTotal Recibido: ${totalRecebido}\nSaldo Restante: ~${balance}\n\nGracias,\nGT Real Assets`;
+            }
+        }
+
+        const url = `https://wa.me/${fPhone}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
     };
 
     document.getElementById('modalEditar').addEventListener('click', e => {
