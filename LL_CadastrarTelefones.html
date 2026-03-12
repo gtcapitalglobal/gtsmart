@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledgerlands — Cadastrar Telefones</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1565c0, #1976d2); color: white; padding: 20px; text-align: center; }
+        .header h2 { font-size: 18px; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 6px; }
+        .content { padding: 20px; }
+        .btn-run { width: 100%; background: #1565c0; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
+        .btn-run:disabled { background: #aaa; cursor: not-allowed; }
+        .log { background: #f5f5f5; border-radius: 8px; padding: 14px; font-size: 13px; line-height: 2; }
+        .ok { color: #2e7d32; }
+        .err { color: #c62828; }
+        .info { color: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📱 Cadastrar Telefones nos Contratos</h2>
+        <p>Uso único — atualiza o campo buyerPhone em todos os contratos</p>
+    </div>
+    <div class="content">
+        <button class="btn-run" id="btnRun" onclick="rodar()">▶ Cadastrar Todos os Telefones</button>
+        <div class="log" id="log"><span class="info">Clique no botão para iniciar.</span></div>
+    </div>
+</div>
+
+<script type="module">
+    import { auth, onAuthStateChanged } from './firebase-config.js';
+    import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const db = getFirestore();
+    const log = document.getElementById('log');
+
+    const TELEFONES = [
+        { id: 'll_contract_25', nome: 'Chase Quinton Menerey',         phone: '3098835836' },
+        { id: 'll_contract_33', nome: 'Yandri Garcia Leiva',            phone: '6562126362' },
+        { id: 'll_contract_35', nome: 'Rafael Garcia Garcia (#35)',      phone: '7867182356' },
+        { id: 'll_contract_43', nome: 'Rafael Garcia Garcia (#43)',      phone: '7867182356' },
+        { id: 'll_contract_45', nome: 'Jennifer Lynn Soderlund',         phone: '7152120058' },
+        { id: 'll_contract_17', nome: 'Donald Thomas Way',               phone: '8146367788' },
+        { id: 'll_contract_22', nome: 'Bryan Shawn Hamilton',            phone: '9049170663' },
+        { id: 'll_contract_31', nome: 'Tomy Rodriguez Gonzalez',         phone: '3864573907' },
+        { id: 'll_contract_62', nome: 'Polyana Cunha Barbosa',           phone: '4044536612' },
+        { id: 'll_contract_63', nome: 'Nathally Barbosa Fernandez',      phone: '6784976958' },
+        { id: 'll_contract_64', nome: 'Yoanky Guerrero Ramos',           phone: '2143929279' },
+        { id: 'll_contract_26', nome: 'Alissa Jackson',                  phone: '9049033340' },
+        { id: 'll_contract_27', nome: 'David Orlando Sanabria',          phone: '7542357382' },
+    ];
+
+    function addLog(msg, tipo = 'info') {
+        log.innerHTML += `<div class="${tipo}">${msg}</div>`;
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+        window._userId = user.uid;
+    });
+
+    window.rodar = async function() {
+        const btn = document.getElementById('btnRun');
+        btn.disabled = true;
+        log.innerHTML = '';
+        addLog('🚀 Iniciando...', 'info');
+
+        let ok = 0, err = 0;
+
+        for (const item of TELEFONES) {
+            try {
+                const ref = doc(db, 'users', window._userId, 'll_contracts', item.id);
+                await updateDoc(ref, { buyerPhone: item.phone });
+                addLog(`✅ ${item.nome} → ${item.phone}`, 'ok');
+                ok++;
+            } catch(e) {
+                addLog(`❌ ${item.nome} — ERRO: ${e.message}`, 'err');
+                err++;
+            }
+        }
+
+        addLog('', 'info');
+        addLog(`━━━━━━━━━━━━━━━━━━━━`, 'info');
+        addLog(`✅ ${ok} atualizados com sucesso`, 'ok');
+        if (err > 0) addLog(`❌ ${err} com erro`, 'err');
+        addLog(`Pode fechar esta página.`, 'info');
+        btn.textContent = '✅ Concluído';
+    };
+</script>
+</body>
+</html>
