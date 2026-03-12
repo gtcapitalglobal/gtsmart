@@ -304,7 +304,7 @@
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
-    const fmtData = d => { if (!d) return '—'; const s = d.includes('T') ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? '—' : dt.toLocaleDateString('pt-BR'); };
+    const fmtData = d => { if (!d) return '—'; const s = d.includes('T') ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? '—' : dt.toLocaleDateString('en-US'); };
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
@@ -670,19 +670,38 @@
                 msg = `Hola ${nome},\n\nLe recordamos que tiene ${qtdAtrasadas === 1 ? '1 pago vencido' : qtdAtrasadas + ' pagos vencidos'} de la propiedad ${propId}.\n\nVencido desde: ${dataVenc} (hace ${diasAtraso} días)\nTotal vencido: ${totalAtrasado}\nCuota mensual: ${parcela}\n\nPor favor realice el pago a la brevedad posible.\n\nGracias,\nGT Real Assets`;
             }
         } else {
-            // Extrato
-            const linhasPag = sortedPags.map((p,i) => {
-                const num = p.memo || `#${i+1}`;
-                return `  ${fmtData(p.paymentDate)} — ${fmt2(p.amountTotal)} (${num})`;
-            }).join('\n');
-            const dpLine = contrato.downPayment > 0 ? `  ${fmtData(contrato.contractDate)} — ${fmt2(contrato.downPayment)} (Down Payment)\n` : '';
+            // Extrato — separar balloon de regulares
+            let numReg = 0;
+            const allLinhas = [];
+
+            // Down payment primeiro
+            if (contrato.downPayment > 0) {
+                if (waLang === 'en')      allLinhas.push(`📥 ${fmtData(contrato.contractDate)}   ${fmt2(contrato.downPayment)}   Down Payment`);
+                else if (waLang === 'pt') allLinhas.push(`📥 ${fmtData(contrato.contractDate)}   ${fmt2(contrato.downPayment)}   Entrada`);
+                else                      allLinhas.push(`📥 ${fmtData(contrato.contractDate)}   ${fmt2(contrato.downPayment)}   Pago Inicial`);
+            }
+
+            // Pagamentos ordenados por data
+            sortedPags.forEach(p => {
+                const isBalloon = (p.memo || '').toLowerCase().includes('balloon');
+                if (isBalloon) {
+                    if (waLang === 'en')      allLinhas.push(`🎈 ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Balloon`);
+                    else if (waLang === 'pt') allLinhas.push(`🎈 ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Balloon`);
+                    else                      allLinhas.push(`🎈 ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Balloon`);
+                } else {
+                    numReg++;
+                    allLinhas.push(`✅ ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Payment ${numReg}/${total}`);
+                }
+            });
+
+            const historicoStr = allLinhas.join('\n');
 
             if (waLang === 'en') {
-                msg = `Hi ${nome},\n\nHere is your account statement for Property ${propId}:\n\n— CONTRACT DETAILS —\nSale Price: ${fmt2(contrato.contractPrice)}\nDown Payment: ${fmt2(contrato.downPayment)}\nMonthly Payment: ${parcela} × ${total}\nProgress: ${pagas}/${total} payments made\n\n— PAYMENT HISTORY —\n${dpLine}${linhasPag}\n\nTotal Received: ${totalRecebido}\nRemaining Balance: ~${balance}\n\nThank you,\nGT Real Assets`;
+                msg = `Hi ${nome},\n\nHere is your payment statement for Property ${propId}:\n\n📋 ${pagas}/${total} payments made\n💵 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}\n\n— PAYMENT HISTORY —\n${historicoStr}\n\nThank you,\nGT Real Assets`;
             } else if (waLang === 'pt') {
-                msg = `Olá ${nome},\n\nSegue o extrato da sua conta referente ao imóvel ${propId}:\n\n— DADOS DO CONTRATO —\nPreço de Venda: ${fmt2(contrato.contractPrice)}\nDown Payment: ${fmt2(contrato.downPayment)}\nParcela Mensal: ${parcela} × ${total}\nProgresso: ${pagas}/${total} parcelas pagas\n\n— HISTÓRICO DE PAGAMENTOS —\n${dpLine}${linhasPag}\n\nTotal Recebido: ${totalRecebido}\nSaldo Devedor: ~${balance}\n\nObrigado,\nGT Real Assets`;
+                msg = `Olá ${nome},\n\nSegue o extrato do imóvel ${propId}:\n\n📋 ${pagas}/${total} parcelas pagas\n💵 Total recebido: ${totalRecebido}\n📌 Saldo devedor: ~${balance}\n\n— HISTÓRICO —\n${historicoStr}\n\nObrigado,\nGT Real Assets`;
             } else {
-                msg = `Hola ${nome},\n\nAquí está el estado de cuenta de la propiedad ${propId}:\n\n— DATOS DEL CONTRATO —\nPrecio de Venta: ${fmt2(contrato.contractPrice)}\nPago Inicial: ${fmt2(contrato.downPayment)}\nCuota Mensual: ${parcela} × ${total}\nProgreso: ${pagas}/${total} pagos realizados\n\n— HISTORIAL DE PAGOS —\n${dpLine}${linhasPag}\n\nTotal Recibido: ${totalRecebido}\nSaldo Restante: ~${balance}\n\nGracias,\nGT Real Assets`;
+                msg = `Hola ${nome},\n\nAquí está su estado de cuenta de la propiedad ${propId}:\n\n📋 ${pagas}/${total} pagos realizados\n💵 Total recibido: ${totalRecebido}\n📌 Saldo restante: ~${balance}\n\n— HISTORIAL —\n${historicoStr}\n\nGracias,\nGT Real Assets`;
             }
         }
 
