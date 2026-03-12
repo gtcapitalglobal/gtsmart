@@ -14,8 +14,6 @@
         .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
         .content { padding: 15px 20px; }
         .version { font-size: 10px; opacity: 0.5; text-align: right; padding: 4px 20px 8px; }
-
-        /* Summary */
         .sum-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
         .sum-card { border-radius: 10px; padding: 12px; text-align: center; }
         .sum-card .lbl { font-size: 10px; font-weight: 700; opacity: 0.8; margin-bottom: 3px; text-transform: uppercase; }
@@ -24,24 +22,19 @@
         .sc-orange { background: #fff3e0; color: #e65100; }
         .sc-blue { background: #e3f2fd; color: #1565c0; }
         .sc-green { background: #e8f5e9; color: #2e7d32; }
-
-        /* Filters */
         .filtros { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
         .search-box { flex: 1; min-width: 180px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; }
         .search-box:focus { border-color: #1565c0; }
         .filter-btn { padding: 7px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; white-space: nowrap; }
         .filter-btn.active { background: #1565c0; color: white; border-color: #1565c0; }
-
-        /* Table */
         .tbl-wrap { overflow-x: auto; }
         .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
         .tbl th { background: #f5f5f5; padding: 9px 10px; text-align: left; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase; white-space: nowrap; }
         .tbl td { padding: 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
         .tbl tr:last-child td { border-bottom: none; }
         .tbl tr.row-overdue td { background: #fff8f8; }
-        .tbl tr.row-paid td { background: #f9fff9; opacity: 0.7; }
-        .tbl tr:hover td { background: #f5f5f5 !important; }
-
+        .tbl tr.row-paid td { background: #f9fff9; opacity: 0.75; }
+        .tbl tr:hover td { background: #f5f5f5 !important; opacity: 1 !important; }
         .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; }
         .badge-red { background: #fdecea; color: #c62828; }
         .badge-orange { background: #fff3e0; color: #e65100; }
@@ -49,29 +42,27 @@
         .badge-green { background: #e8f5e9; color: #2e7d32; }
         .badge-grey { background: #f5f5f5; color: #777; }
         .badge-purple { background: #f3e5f5; color: #7b1fa2; }
-
-        .btn-pagar { background: #2e7d32; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .btn-pagar { background: #2e7d32; color: white; border: none; padding: 5px 11px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .btn-pagar:hover { background: #1b5e20; }
-        .btn-despagar { background: #fff3e0; color: #e65100; border: 1px solid #e65100; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
-
-        /* Modal */
+        .btn-despagar { background: #fff3e0; color: #e65100; border: 1px solid #e65100; padding: 5px 11px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .btn-editar { background: #e3f2fd; color: #1565c0; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
+        .btn-excluir { background: #fdecea; color: #c62828; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
         .modal.open { display: flex; }
-        .modal-box { background: white; border-radius: 12px; padding: 20px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal-box { background: white; border-radius: 12px; padding: 20px; width: 100%; max-width: 430px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .modal-title { font-size: 16px; font-weight: 800; color: #333; margin-bottom: 16px; }
+        .modal-info { background: #f5f5f5; border-radius: 8px; padding: 10px; margin-bottom: 14px; font-size: 13px; color: #555; line-height: 1.5; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 11px; font-weight: 700; color: #666; margin-bottom: 4px; text-transform: uppercase; }
-        .form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; }
-        .form-group input:focus, .form-group select:focus { border-color: #1565c0; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #1565c0; }
         .modal-footer { display: flex; gap: 8px; margin-top: 16px; }
         .btn-salvar { flex: 1; background: #1565c0; color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+        .btn-salvar-green { flex: 1; background: #2e7d32; color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
         .btn-cancelar { background: #f5f5f5; color: #555; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
-
         .empty { text-align: center; color: #aaa; padding: 30px; font-size: 14px; }
-
-        @media (max-width: 600px) {
-            .sum-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
+        .loading { text-align: center; color: #1565c0; padding: 30px; font-size: 14px; }
+        @media (max-width: 600px) { .sum-grid { grid-template-columns: repeat(2, 1fr) !important; } }
     </style>
 </head>
 <body>
@@ -82,29 +73,13 @@
             <a href="LL_Menu.html" class="btn-back">← Voltar</a>
         </div>
     </div>
-
     <div class="content">
-        <!-- Summary -->
         <div class="sum-grid">
-            <div class="sum-card sc-red">
-                <div class="lbl">Vencidas</div>
-                <div class="val" id="sumVencidas">—</div>
-            </div>
-            <div class="sum-card sc-orange">
-                <div class="lbl">Vencendo (30d)</div>
-                <div class="val" id="sumProx30">—</div>
-            </div>
-            <div class="sum-card sc-blue">
-                <div class="lbl">Pendentes Total</div>
-                <div class="val" id="sumPendentes">—</div>
-            </div>
-            <div class="sum-card sc-green">
-                <div class="lbl">Pagas</div>
-                <div class="val" id="sumPagas">—</div>
-            </div>
+            <div class="sum-card sc-red"><div class="lbl">Vencidas</div><div class="val" id="sumVencidas">—</div></div>
+            <div class="sum-card sc-orange"><div class="lbl">Vencendo (30d)</div><div class="val" id="sumProx30">—</div></div>
+            <div class="sum-card sc-blue"><div class="lbl">Pendentes</div><div class="val" id="sumPendentes">—</div></div>
+            <div class="sum-card sc-green"><div class="lbl">Pagas</div><div class="val" id="sumPagas">—</div></div>
         </div>
-
-        <!-- Filters -->
         <div class="filtros">
             <input type="text" class="search-box" id="searchBox" placeholder="🔍 Buscar imóvel ou comprador..." oninput="filtrar()">
             <button class="filter-btn active" id="fTodas" onclick="setFiltro('todas')">Todas</button>
@@ -113,8 +88,6 @@
             <button class="filter-btn" id="fProx90" onclick="setFiltro('prox90')">📆 90 dias</button>
             <button class="filter-btn" id="fPagas" onclick="setFiltro('pagas')">✅ Pagas</button>
         </div>
-
-        <!-- Table -->
         <div class="tbl-wrap">
             <table class="tbl">
                 <thead>
@@ -126,30 +99,58 @@
                         <th>Vencimento</th>
                         <th>Valor</th>
                         <th>Status</th>
-                        <th>Ação</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody id="tbody"></tbody>
+                <tbody id="tbody">
+                    <tr><td colspan="8" class="loading">⏳ Carregando parcelas...</td></tr>
+                </tbody>
             </table>
         </div>
         <div class="empty" id="emptyMsg" style="display:none;">Nenhuma parcela encontrada.</div>
     </div>
-    <div class="version">Basic 8.1 | 11/03/2026</div>
+    <div class="version">Basic 9.0 | 11/03/2026</div>
 </div>
 
-<!-- Modal Editar Parcela -->
+<!-- MODAL PAGAR -->
+<div class="modal" id="modalPagar">
+    <div class="modal-box">
+        <div class="modal-title">✅ Registrar Pagamento</div>
+        <div class="modal-info" id="mpInfo"></div>
+        <input type="hidden" id="mpId">
+        <div class="form-group"><label>Data do Pagamento</label><input type="date" id="mpData"></div>
+        <div class="form-group"><label>Valor Pago ($)</label><input type="number" id="mpValor" step="0.01" placeholder="0.00"></div>
+        <div class="form-group">
+            <label>Canal de Recebimento</label>
+            <select id="mpCanal">
+                <option value="GT_REAL">GT Real</option>
+                <option value="PERSONAL">Personal</option>
+                <option value="LEGACY">Legacy</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Observação (opcional)</label><textarea id="mpMemo" rows="2" placeholder="Ex: Pix, cheque, transferência..."></textarea></div>
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="fecharModalPagar()">Cancelar</button>
+            <button class="btn-salvar-green" onclick="confirmarPagar()">✅ Confirmar Pagamento</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDITAR -->
 <div class="modal" id="modalEditar">
     <div class="modal-box">
         <div class="modal-title">✏️ Editar Parcela</div>
-        <div id="modalInfoEditar" style="background:#f5f5f5;border-radius:8px;padding:10px;margin-bottom:14px;font-size:13px;color:#555;"></div>
+        <div class="modal-info" id="meInfo"></div>
         <input type="hidden" id="meId">
+        <div class="form-group"><label>Data de Vencimento</label><input type="date" id="meData"></div>
+        <div class="form-group"><label>Valor ($)</label><input type="number" id="meValor" step="0.01" placeholder="0.00"></div>
         <div class="form-group">
-            <label>Data de Vencimento</label>
-            <input type="date" id="meData">
-        </div>
-        <div class="form-group">
-            <label>Valor ($)</label>
-            <input type="number" id="meValor" step="0.01" placeholder="0.00">
+            <label>Tipo</label>
+            <select id="meTipo">
+                <option value="REGULAR">Regular</option>
+                <option value="BALLOON">🎈 Balloon</option>
+                <option value="DOWN_PAYMENT">⬇️ Entrada</option>
+            </select>
         </div>
         <div class="modal-footer">
             <button class="btn-cancelar" onclick="fecharModalEditar()">Cancelar</button>
@@ -158,23 +159,13 @@
     </div>
 </div>
 
-<!-- Modal Pagar -->
-<div class="modal" id="modalPagar">
+<!-- MODAL DETALHE PAGAMENTO -->
+<div class="modal" id="modalDetalhe">
     <div class="modal-box">
-        <div class="modal-title">✅ Registrar Pagamento</div>
-        <div id="modalInfoParcela" style="background:#f5f5f5;border-radius:8px;padding:10px;margin-bottom:14px;font-size:13px;color:#555;"></div>
-        <input type="hidden" id="mpId">
-        <div class="form-group">
-            <label>Data do Pagamento</label>
-            <input type="date" id="mpData">
-        </div>
-        <div class="form-group">
-            <label>Valor Pago</label>
-            <input type="number" id="mpValor" step="0.01" placeholder="0.00">
-        </div>
+        <div class="modal-title">📋 Detalhes da Parcela</div>
+        <div id="detalheConteudo"></div>
         <div class="modal-footer">
-            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
-            <button class="btn-salvar" onclick="confirmarPagar()">✅ Confirmar</button>
+            <button class="btn-cancelar" onclick="fecharModalDetalhe()" style="width:100%;">Fechar</button>
         </div>
     </div>
 </div>
@@ -182,11 +173,12 @@
 <a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment } from './firebase-config.js';
+    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment, deleteLLInstallment, saveLLPayment } from './firebase-config.js';
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
-    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('pt-BR') : '—'; };
+    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '—'; };
+    const toDateInput = d => { if (!d) return ''; if (typeof d === 'string' && d.includes('T')) return d.split('T')[0]; return d; };
 
     let parcelas = [], contratos = [], filtroAtivo = 'todas', searchTerm = '';
 
@@ -203,7 +195,7 @@
         const prox30 = parcelas.filter(p => {
             if (p.status === 'PAID') return false;
             const d = safeDate(p.dueDate);
-            const dias = Math.floor((d - hoje) / 86400000);
+            const dias = d ? Math.floor((d - hoje) / 86400000) : 999;
             return dias >= 0 && dias <= 30;
         }).length;
         const pendentes = parcelas.filter(p => p.status !== 'PAID').length;
@@ -229,112 +221,63 @@
 
     function renderTabela() {
         const hoje = new Date();
-
         let lista = [...parcelas].sort((a, b) => {
-            // Sort: overdue first, then by dueDate
-            const da = safeDate(a.dueDate) || new Date(0);
-            const db = safeDate(b.dueDate) || new Date(0);
             if (a.status !== 'PAID' && b.status === 'PAID') return -1;
             if (a.status === 'PAID' && b.status !== 'PAID') return 1;
+            const da = safeDate(a.dueDate) || new Date(0);
+            const db = safeDate(b.dueDate) || new Date(0);
             return da - db;
         });
-
-        // Apply filter
-        if (filtroAtivo === 'vencidas') {
-            lista = lista.filter(p => p.status !== 'PAID' && safeDate(p.dueDate) < hoje);
-        } else if (filtroAtivo === 'prox30') {
-            lista = lista.filter(p => {
-                if (p.status === 'PAID') return false;
-                const d = safeDate(p.dueDate);
-                const dias = Math.floor((d - hoje) / 86400000);
-                return dias >= 0 && dias <= 30;
-            });
-        } else if (filtroAtivo === 'prox90') {
-            lista = lista.filter(p => {
-                if (p.status === 'PAID') return false;
-                const d = safeDate(p.dueDate);
-                const dias = Math.floor((d - hoje) / 86400000);
-                return dias >= 0 && dias <= 90;
-            });
-        } else if (filtroAtivo === 'pagas') {
-            lista = lista.filter(p => p.status === 'PAID');
-        }
-
-        // Search
-        if (searchTerm) {
-            lista = lista.filter(p => {
-                const c = contratos.find(x => x.id === p.contractId) || {};
-                return (p.propertyId || '').toLowerCase().includes(searchTerm) ||
-                       (c.buyerName || '').toLowerCase().includes(searchTerm);
-            });
-        }
+        if (filtroAtivo === 'vencidas') lista = lista.filter(p => p.status !== 'PAID' && safeDate(p.dueDate) < hoje);
+        else if (filtroAtivo === 'prox30') lista = lista.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); const dias = d ? Math.floor((d-hoje)/86400000) : 999; return dias >= 0 && dias <= 30; });
+        else if (filtroAtivo === 'prox90') lista = lista.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); const dias = d ? Math.floor((d-hoje)/86400000) : 999; return dias >= 0 && dias <= 90; });
+        else if (filtroAtivo === 'pagas') lista = lista.filter(p => p.status === 'PAID');
+        if (searchTerm) lista = lista.filter(p => { const c = contratos.find(x => x.id === p.contractId) || {}; return (p.propertyId||'').toLowerCase().includes(searchTerm) || (c.buyerName||'').toLowerCase().includes(searchTerm); });
 
         const tbody = document.getElementById('tbody');
-        const emptyMsg = document.getElementById('emptyMsg');
-
-        if (lista.length === 0) {
-            tbody.innerHTML = '';
-            emptyMsg.style.display = 'block';
-            return;
-        }
-        emptyMsg.style.display = 'none';
+        if (lista.length === 0) { tbody.innerHTML = ''; document.getElementById('emptyMsg').style.display = 'block'; return; }
+        document.getElementById('emptyMsg').style.display = 'none';
 
         tbody.innerHTML = lista.map(p => {
             const c = contratos.find(x => x.id === p.contractId) || {};
             const dVenc = safeDate(p.dueDate);
-            const isOverdue = p.status !== 'PAID' && dVenc < hoje;
-            const diasDiff = Math.floor((dVenc - hoje) / 86400000);
+            const isOverdue = p.status !== 'PAID' && dVenc && dVenc < hoje;
+            const diasDiff = dVenc ? Math.floor((dVenc - hoje) / 86400000) : 999;
             const rowClass = isOverdue ? 'row-overdue' : (p.status === 'PAID' ? 'row-paid' : '');
 
-            // Badge status
             let badge, statusLabel;
-            if (p.status === 'PAID') {
-                badge = 'green'; statusLabel = '✅ Pago';
-            } else if (isOverdue) {
-                badge = 'red'; statusLabel = `🚨 Vencida (${Math.abs(diasDiff)}d)`;
-            } else if (diasDiff <= 5) {
-                badge = 'orange'; statusLabel = `⚠️ ${diasDiff}d`;
-            } else if (diasDiff <= 30) {
-                badge = 'blue'; statusLabel = `⏰ ${diasDiff}d`;
-            } else {
-                badge = 'grey'; statusLabel = `📆 ${diasDiff}d`;
-            }
+            if (p.status === 'PAID') { badge = 'green'; statusLabel = `✅ Pago${p.paidDate ? ' · ' + fmtData(p.paidDate) : ''}`; }
+            else if (isOverdue) { badge = 'red'; statusLabel = `🚨 ${Math.abs(diasDiff)}d atraso`; }
+            else if (diasDiff <= 5) { badge = 'orange'; statusLabel = `⚠️ ${diasDiff}d`; }
+            else if (diasDiff <= 30) { badge = 'blue'; statusLabel = `⏰ ${diasDiff}d`; }
+            else { badge = 'grey'; statusLabel = `📆 ${diasDiff}d`; }
 
-            // Tipo badge
-            const tipoBadge = p.type === 'BALLOON' ? '<span class="badge badge-purple">🎈 Balloon</span>' :
-                              p.type === 'DOWN_PAYMENT' ? '<span class="badge badge-blue">⬇️ Entrada</span>' :
-                              '<span class="badge badge-grey">Regular</span>';
-
-            const btnAcao = p.status === 'PAID'
-                ? `<button class="btn-despagar" onclick="desfazerPagamento('${p.id}')">↩️ Desfazer</button>`
-                : `<button class="btn-pagar" onclick="abrirPagar('${p.id}')">💰 Pagar</button>`;
-
-            const btnEditar = `<button onclick="abrirEditar('${p.id}')" style="background:#e3f2fd;color:#1565c0;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-left:4px;">✏️</button>`;
+            const tipoBadge = p.type === 'BALLOON' ? '<span class="badge badge-purple">🎈 Balloon</span>' : p.type === 'DOWN_PAYMENT' ? '<span class="badge badge-blue">⬇️ Entrada</span>' : '<span class="badge badge-grey">Regular</span>';
+            const btnPrincipal = p.status === 'PAID' ? `<button class="btn-despagar" onclick="desfazerPagamento('${p.id}')">↩️ Desfazer</button>` : `<button class="btn-pagar" onclick="abrirPagar('${p.id}')">💰 Pagar</button>`;
+            const btnDetalhe = p.status === 'PAID' ? `<button class="btn-editar" onclick="abrirDetalhe('${p.id}')" title="Ver detalhes">📋</button>` : '';
 
             return `<tr class="${rowClass}">
-                <td style="color:#999;font-size:12px;">${p.installmentNumber || '—'}</td>
-                <td><a href="LL_Detalhe_Contrato.html?id=${p.contractId}" style="font-weight:700;color:#1565c0;text-decoration:none;">${p.propertyId || c.propertyId || '—'}</a></td>
-                <td style="font-size:12px;">${c.buyerName || '—'}</td>
+                <td style="color:#999;font-size:12px;font-weight:700;">${p.installmentNumber||'—'}</td>
+                <td><a href="LL_Detalhe_Contrato.html?id=${p.contractId}" style="font-weight:700;color:#1565c0;text-decoration:none;">${p.propertyId||c.propertyId||'—'}</a></td>
+                <td style="font-size:12px;">${c.buyerName||'—'}</td>
                 <td>${tipoBadge}</td>
-                <td>${fmtData(p.dueDate)}</td>
+                <td style="white-space:nowrap;">${fmtData(p.dueDate)}</td>
                 <td style="font-weight:700;">${fmt2(p.amount)}</td>
-                <td><span class="badge badge-${badge}">${statusLabel}</span></td>
-                <td>${btnAcao}${btnEditar}</td>
+                <td><span class="badge badge-${badge}" style="white-space:nowrap;">${statusLabel}</span></td>
+                <td style="white-space:nowrap;">${btnPrincipal}${btnDetalhe}<button class="btn-editar" onclick="abrirEditar('${p.id}')" title="Editar">✏️</button><button class="btn-excluir" onclick="excluirParcela('${p.id}')" title="Excluir">🗑️</button></td>
             </tr>`;
         }).join('');
     }
 
     window.abrirPagar = function(id) {
-        const p = parcelas.find(x => x.id === id);
-        if (!p) return;
+        const p = parcelas.find(x => x.id === id); if (!p) return;
         const c = contratos.find(x => x.id === p.contractId) || {};
         document.getElementById('mpId').value = id;
         document.getElementById('mpData').value = new Date().toISOString().split('T')[0];
-        document.getElementById('mpValor').value = parseFloat(p.amount || 0).toFixed(2);
-        document.getElementById('modalInfoParcela').innerHTML = `
-            <strong>${p.propertyId || c.propertyId}</strong> — Parcela #${p.installmentNumber || '—'}<br>
-            Comprador: ${c.buyerName || '—'} · Vencimento: ${fmtData(p.dueDate)}
-        `;
+        document.getElementById('mpValor').value = parseFloat(p.amount||0).toFixed(2);
+        document.getElementById('mpMemo').value = '';
+        document.getElementById('mpCanal').value = 'GT_REAL';
+        document.getElementById('mpInfo').innerHTML = `<strong>${p.propertyId||c.propertyId||'—'}</strong> — Parcela #${p.installmentNumber||'—'}<br>Comprador: <strong>${c.buyerName||'—'}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(p.amount)}</strong>`;
         document.getElementById('modalPagar').classList.add('open');
     };
 
@@ -342,69 +285,81 @@
         const id = document.getElementById('mpId').value;
         const data = document.getElementById('mpData').value;
         const valor = parseFloat(document.getElementById('mpValor').value) || 0;
+        const canal = document.getElementById('mpCanal').value;
+        const memo = document.getElementById('mpMemo').value.trim();
         if (!data || valor <= 0) { alert('❌ Data e valor são obrigatórios!'); return; }
-
+        const p = parcelas.find(x => x.id === id); if (!p) return;
+        const c = contratos.find(x => x.id === p.contractId) || {};
         const ok = await updateLLInstallment(id, { status: 'PAID', paidDate: data, paidAmount: valor });
-        if (ok) {
-            const idx = parcelas.findIndex(x => x.id === id);
-            if (idx >= 0) { parcelas[idx].status = 'PAID'; parcelas[idx].paidDate = data; parcelas[idx].paidAmount = valor; }
-            fecharModal();
-            renderSummary();
-            renderTabela();
-        }
+        if (!ok) return;
+        await saveLLPayment({ contractId: p.contractId, propertyId: p.propertyId||c.propertyId||'', installmentId: id, installmentNumber: p.installmentNumber||null, paymentDate: data, amountTotal: valor, principalAmount: valor, lateFeeAmount: 0, receivedBy: canal, channel: canal, memo: memo || `Parcela #${p.installmentNumber||'—'}` });
+        const idx = parcelas.findIndex(x => x.id === id);
+        if (idx >= 0) { parcelas[idx].status = 'PAID'; parcelas[idx].paidDate = data; parcelas[idx].paidAmount = valor; }
+        fecharModalPagar(); renderSummary(); renderTabela();
     };
 
     window.desfazerPagamento = async function(id) {
-        if (!confirm('Desfazer o pagamento desta parcela?')) return;
+        if (!confirm('Desfazer o pagamento desta parcela?\n\nAtenção: o registro em Pagamentos NÃO será removido automaticamente.')) return;
         const ok = await updateLLInstallment(id, { status: 'PENDING', paidDate: null, paidAmount: null });
-        if (ok) {
-            const idx = parcelas.findIndex(x => x.id === id);
-            if (idx >= 0) { parcelas[idx].status = 'PENDING'; delete parcelas[idx].paidDate; delete parcelas[idx].paidAmount; }
-            renderSummary();
-            renderTabela();
-        }
+        if (ok) { const idx = parcelas.findIndex(x => x.id === id); if (idx >= 0) { parcelas[idx].status = 'PENDING'; delete parcelas[idx].paidDate; delete parcelas[idx].paidAmount; } renderSummary(); renderTabela(); }
     };
 
     window.abrirEditar = function(id) {
-        const p = parcelas.find(x => x.id === id);
-        if (!p) return;
+        const p = parcelas.find(x => x.id === id); if (!p) return;
         const c = contratos.find(x => x.id === p.contractId) || {};
         document.getElementById('meId').value = id;
-        document.getElementById('meData').value = p.dueDate || '';
-        document.getElementById('meValor').value = parseFloat(p.amount || 0).toFixed(2);
-        document.getElementById('modalInfoEditar').innerHTML = `<strong>${p.propertyId || c.propertyId}</strong> — Parcela #${p.installmentNumber || '—'} · ${c.buyerName || '—'}`;
+        document.getElementById('meData').value = toDateInput(p.dueDate);
+        document.getElementById('meValor').value = parseFloat(p.amount||0).toFixed(2);
+        document.getElementById('meTipo').value = p.type || 'REGULAR';
+        document.getElementById('meInfo').innerHTML = `<strong>${p.propertyId||c.propertyId||'—'}</strong> — Parcela #${p.installmentNumber||'—'}<br>Comprador: <strong>${c.buyerName||'—'}</strong>`;
         document.getElementById('modalEditar').classList.add('open');
-    };
-
-    window.fecharModalEditar = function() {
-        document.getElementById('modalEditar').classList.remove('open');
     };
 
     window.confirmarEditar = async function() {
         const id = document.getElementById('meId').value;
         const dueDate = document.getElementById('meData').value;
         const amount = parseFloat(document.getElementById('meValor').value) || 0;
+        const type = document.getElementById('meTipo').value;
         if (!dueDate || amount <= 0) { alert('❌ Data e valor são obrigatórios!'); return; }
-        const ok = await updateLLInstallment(id, { dueDate, amount });
-        if (ok) {
-            const idx = parcelas.findIndex(x => x.id === id);
-            if (idx >= 0) { parcelas[idx].dueDate = dueDate; parcelas[idx].amount = amount; }
-            fecharModalEditar();
-            renderSummary();
-            renderTabela();
-        }
+        const ok = await updateLLInstallment(id, { dueDate, amount, type });
+        if (ok) { const idx = parcelas.findIndex(x => x.id === id); if (idx >= 0) { parcelas[idx].dueDate = dueDate; parcelas[idx].amount = amount; parcelas[idx].type = type; } fecharModalEditar(); renderSummary(); renderTabela(); }
     };
 
-    document.getElementById('modalEditar').addEventListener('click', e => {
-        if (e.target === document.getElementById('modalEditar')) fecharModalEditar();
-    });
-
-    window.fecharModal = function() {
-        document.getElementById('modalPagar').classList.remove('open');
+    window.excluirParcela = async function(id) {
+        const p = parcelas.find(x => x.id === id); if (!p) return;
+        const c = contratos.find(x => x.id === p.contractId) || {};
+        if (!confirm(`Excluir esta parcela?\n\nImóvel: ${p.propertyId||c.propertyId||'—'}\nParcela #${p.installmentNumber||'—'} · ${fmtData(p.dueDate)} · ${fmt2(p.amount)}\n\nEsta ação não pode ser desfeita.`)) return;
+        const ok = await deleteLLInstallment(id);
+        if (ok) { parcelas = parcelas.filter(x => x.id !== id); renderSummary(); renderTabela(); }
     };
 
-    document.getElementById('modalPagar').addEventListener('click', e => {
-        if (e.target === document.getElementById('modalPagar')) fecharModal();
+    window.abrirDetalhe = function(id) {
+        const p = parcelas.find(x => x.id === id); if (!p) return;
+        const c = contratos.find(x => x.id === p.contractId) || {};
+        document.getElementById('detalheConteudo').innerHTML = `
+            <div style="display:grid;gap:10px;">
+                <div style="background:#f5f5f5;border-radius:8px;padding:12px;font-size:13px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#666;">Imóvel</span><strong>${p.propertyId||c.propertyId||'—'}</strong></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#666;">Comprador</span><strong>${c.buyerName||'—'}</strong></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#666;">Parcela #</span><strong>${p.installmentNumber||'—'}</strong></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#666;">Vencimento</span><strong>${fmtData(p.dueDate)}</strong></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:#666;">Valor original</span><strong>${fmt2(p.amount)}</strong></div>
+                </div>
+                <div style="background:#e8f5e9;border-radius:8px;padding:12px;font-size:13px;">
+                    <div style="font-size:11px;font-weight:800;color:#2e7d32;margin-bottom:8px;">✅ PAGAMENTO REGISTRADO</div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#555;">Data do pagamento</span><strong>${fmtData(p.paidDate)}</strong></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:#555;">Valor pago</span><strong style="color:#2e7d32;">${fmt2(p.paidAmount||p.amount)}</strong></div>
+                </div>
+            </div>`;
+        document.getElementById('modalDetalhe').classList.add('open');
+    };
+
+    window.fecharModalPagar = function() { document.getElementById('modalPagar').classList.remove('open'); };
+    window.fecharModalEditar = function() { document.getElementById('modalEditar').classList.remove('open'); };
+    window.fecharModalDetalhe = function() { document.getElementById('modalDetalhe').classList.remove('open'); };
+
+    ['modalPagar','modalEditar','modalDetalhe'].forEach(mid => {
+        document.getElementById(mid).addEventListener('click', e => { if (e.target === document.getElementById(mid)) document.getElementById(mid).classList.remove('open'); });
     });
 </script>
 </body>

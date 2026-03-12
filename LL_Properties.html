@@ -223,7 +223,7 @@
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
-    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('pt-BR') : '—'; };
+    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '—'; };
 
     let imoveis = [];
     let filtroAtivo = 'todos';

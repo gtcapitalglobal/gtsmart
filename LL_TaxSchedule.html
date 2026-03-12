@@ -192,7 +192,7 @@
 
         let html = `
         <div style="text-align:center;font-size:11px;color:#888;margin-bottom:12px;" id="reportHeader">
-            Entidade: <strong>GT Real Assets LLC</strong> · Ano Fiscal: <strong>${anoSel}</strong> · Gerado em: <strong>${new Date().toLocaleDateString('pt-BR')}</strong>
+            Entidade: <strong>GT Real Assets LLC</strong> · Ano Fiscal: <strong>${anoSel}</strong> · Gerado em: <strong>${new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}</strong>
         </div>
 
         <!-- Totals box -->
