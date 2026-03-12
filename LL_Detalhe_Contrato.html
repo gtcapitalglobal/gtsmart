@@ -90,10 +90,7 @@
         /* WhatsApp Section */
         .wa-section { border: 2px solid #dcfce7; border-radius: 12px; padding: 16px; margin-top: 20px; background: #f0fdf4; }
         .wa-title { font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .wa-lang-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
-        .wa-lang-label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-right: 4px; }
-        .wa-lang-btn { padding: 5px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 13px; font-weight: 600; cursor: pointer; color: #555; transition: all 0.15s; }
-        .wa-lang-btn.active { background: #166534; color: white; border-color: #166534; }
+
         .wa-phone-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
         .wa-phone-row label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; white-space: nowrap; }
         .wa-phone-row input { flex: 1; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; max-width: 220px; }
@@ -300,7 +297,7 @@
     let parcelas = [];
     let pagamentos = [];
     let buyer = null;
-    let waLang = 'en';
+
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
@@ -479,12 +476,6 @@
             <!-- WhatsApp -->
             <div class="wa-section">
                 <div class="wa-title">📱 Enviar pelo WhatsApp</div>
-                <div class="wa-lang-row">
-                    <span class="wa-lang-label">Idioma:</span>
-                    <button class="wa-lang-btn ${waLang==='en'?'active':''}" onclick="setWaLang('en')">🇺🇸 English</button>
-                    <button class="wa-lang-btn ${waLang==='pt'?'active':''}" onclick="setWaLang('pt')">🇧🇷 Português</button>
-                    <button class="wa-lang-btn ${waLang==='es'?'active':''}" onclick="setWaLang('es')">🇪🇸 Español</button>
-                </div>
                 <div class="wa-phone-row">
                     <label>Telefone (com DDD):</label>
                     <input type="tel" id="waPhone" placeholder="+1 (305) 000-0000" value="${buyer?.phone || ''}">
@@ -626,15 +617,9 @@
         renderTudo();
     };
 
-    window.setWaLang = function(lang) {
-        waLang = lang;
-        renderTudo();
-    };
-
     window.enviarWA = function(tipo) {
         const rawPhone = (document.getElementById('waPhone')?.value || '').replace(/\D/g, '');
-        if (!rawPhone) { alert('Por favor, informe o telefone do comprador.'); return; }
-        const phone = rawPhone.startsWith('1') || rawPhone.length <= 10 ? rawPhone : rawPhone;
+        if (!rawPhone) { alert('Please enter the buyer\'s phone number.'); return; }
         const fPhone = rawPhone.length === 10 ? '1' + rawPhone : rawPhone;
 
         const hoje = new Date();
@@ -646,63 +631,49 @@
         const restantes = total - pagas;
         const balance = fmt2((contrato.installmentAmount || 0) * restantes + (contrato.balloonAmount || 0));
 
-        // Parcela mais antiga em atraso
         const atrasadas = parcelas.filter(p => p.status !== 'PAID' && p._overdue);
         const primeiraAtrasada = atrasadas.sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
         const diasAtraso = primeiraAtrasada ? Math.floor((hoje - safeDate(primeiraAtrasada.dueDate)) / 86400000) : 0;
         const qtdAtrasadas = atrasadas.length;
         const totalAtrasado = fmt2(qtdAtrasadas * (contrato.installmentAmount || 0));
 
-        // Histórico de pagamentos para extrato
         const sortedPags = [...pagamentos].sort((a,b) => a.paymentDate?.localeCompare(b.paymentDate));
         const totalRecebido = fmt2(pagamentos.reduce((s,p) => s + parseFloat(p.amountTotal||0), 0) + parseFloat(contrato.downPayment||0));
+
+        const sep = '━━━━━━━━━━━━━━━━━━━━━━';
+        const propAddr = contrato.propertyAddress || contrato.address || '';
+        const contractDate = fmtData(contrato.contractDate);
+        const proximaPendente = parcelas
+            .filter(p => p.status !== 'PAID' && (p.type||'').toLowerCase() !== 'balloon')
+            .sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
+        const proximaDataStr = proximaPendente ? fmtData(proximaPendente.dueDate) : null;
 
         let msg = '';
 
         if (tipo === 'cobranca') {
-            if (qtdAtrasadas === 0) { alert('Nenhuma parcela em atraso neste contrato.'); return; }
+            if (qtdAtrasadas === 0) { alert('No overdue payments on this contract.'); return; }
             const dataVenc = primeiraAtrasada ? fmtData(primeiraAtrasada.dueDate) : '—';
-            if (waLang === 'en') {
-                msg = `Hi ${nome},\n\nThis is a reminder that you have ${qtdAtrasadas === 1 ? '1 payment' : qtdAtrasadas + ' payments'} overdue for Property ${propId}.\n\nOverdue since: ${dataVenc} (${diasAtraso} days ago)\nTotal past due: ${totalAtrasado}\nMonthly payment: ${parcela}\n\nPlease send your payment at your earliest convenience.\n\nThank you,\nGT Real Assets`;
-            } else if (waLang === 'pt') {
-                msg = `Olá ${nome},\n\nPassando para lembrar que você tem ${qtdAtrasadas === 1 ? '1 parcela atrasada' : qtdAtrasadas + ' parcelas atrasadas'} referente ao imóvel ${propId}.\n\nEm atraso desde: ${dataVenc} (${diasAtraso} dias)\nTotal em atraso: ${totalAtrasado}\nParcela mensal: ${parcela}\n\nPor favor, realize o pagamento o quanto antes.\n\nObrigado,\nGT Real Assets`;
-            } else {
-                msg = `Hola ${nome},\n\nLe recordamos que tiene ${qtdAtrasadas === 1 ? '1 pago vencido' : qtdAtrasadas + ' pagos vencidos'} de la propiedad ${propId}.\n\nVencido desde: ${dataVenc} (hace ${diasAtraso} días)\nTotal vencido: ${totalAtrasado}\nCuota mensual: ${parcela}\n\nPor favor realice el pago a la brevedad posible.\n\nGracias,\nGT Real Assets`;
-            }
+            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n⚠️ *PAYMENT REMINDER*\n\nYou have ${qtdAtrasadas === 1 ? '1 overdue payment' : qtdAtrasadas + ' overdue payments'}.\n\n📆 Overdue since: ${dataVenc} (${diasAtraso} days)\n💸 Total past due: ${totalAtrasado}\n💳 Monthly payment: ${parcela}\n\nPlease send your payment at your earliest convenience.\n\n📎 If you have already made the payment, please send us the receipt.\n\n${sep}\nThank you,\nGT Real Assets 🏡`;
         } else {
-            // Extrato — separar balloon de regulares
             let numReg = 0;
             const allLinhas = [];
 
-            // Down payment primeiro
             if (contrato.downPayment > 0) {
-                if (waLang === 'en')      allLinhas.push(`📥 ${fmtData(contrato.contractDate)}   ${fmt2(contrato.downPayment)}   Down Payment`);
-                else if (waLang === 'pt') allLinhas.push(`📥 ${fmtData(contrato.contractDate)}   ${fmt2(contrato.downPayment)}   Entrada`);
-                else                      allLinhas.push(`📥 ${fmtData(contrato.contractDate)}   ${fmt2(contrato.downPayment)}   Pago Inicial`);
+                allLinhas.push(`📥 ${fmtData(contrato.contractDate)} · ${fmt2(contrato.downPayment)}\n   ↳ Down Payment`);
             }
 
-            // Pagamentos ordenados por data
             sortedPags.forEach(p => {
                 const isBalloon = (p.memo || '').toLowerCase().includes('balloon');
                 if (isBalloon) {
-                    if (waLang === 'en')      allLinhas.push(`🎈 ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Balloon`);
-                    else if (waLang === 'pt') allLinhas.push(`🎈 ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Balloon`);
-                    else                      allLinhas.push(`🎈 ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Balloon`);
+                    allLinhas.push(`🎈 ${fmtData(p.paymentDate)} · ${fmt2(p.amountTotal)}\n   ↳ Balloon Payment`);
                 } else {
                     numReg++;
-                    allLinhas.push(`✅ ${fmtData(p.paymentDate)}   ${fmt2(p.amountTotal)}   Payment ${numReg}/${total}`);
+                    allLinhas.push(`✅ ${fmtData(p.paymentDate)} · ${fmt2(p.amountTotal)}\n   ↳ Payment ${numReg}/${total}`);
                 }
             });
 
-            const historicoStr = allLinhas.join('\n');
-
-            if (waLang === 'en') {
-                msg = `Hi ${nome},\n\nHere is your payment statement for Property ${propId}:\n\n📋 ${pagas}/${total} payments made\n💵 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}\n\n— PAYMENT HISTORY —\n${historicoStr}\n\nThank you,\nGT Real Assets`;
-            } else if (waLang === 'pt') {
-                msg = `Olá ${nome},\n\nSegue o extrato do imóvel ${propId}:\n\n📋 ${pagas}/${total} parcelas pagas\n💵 Total recebido: ${totalRecebido}\n📌 Saldo devedor: ~${balance}\n\n— HISTÓRICO —\n${historicoStr}\n\nObrigado,\nGT Real Assets`;
-            } else {
-                msg = `Hola ${nome},\n\nAquí está su estado de cuenta de la propiedad ${propId}:\n\n📋 ${pagas}/${total} pagos realizados\n💵 Total recibido: ${totalRecebido}\n📌 Saldo restante: ~${balance}\n\n— HISTORIAL —\n${historicoStr}\n\nGracias,\nGT Real Assets`;
-            }
+            const historicoStr = allLinhas.join('\n\n');
+            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n📊 *OVERVIEW*\n✅ Payments made: ${pagas} of ${total}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}${proximaDataStr ? '\n📆 Next payment due: ' + proximaDataStr : ''}\n\n${sep}\n📋 *PAYMENT HISTORY*\n\n${historicoStr}\n\n${sep}\nThank you,\nGT Real Assets 🏡`;
         }
 
         const url = `https://wa.me/${fPhone}?text=${encodeURIComponent(msg)}`;
