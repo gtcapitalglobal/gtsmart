@@ -478,7 +478,7 @@
                 <div class="wa-title">📱 Enviar pelo WhatsApp</div>
                 <div class="wa-phone-row">
                     <label>Telefone (com DDD):</label>
-                    <input type="tel" id="waPhone" placeholder="+1 (305) 000-0000" value="${buyer?.phone || ''}">
+                    <input type="tel" id="waPhone" placeholder="+1 (305) 000-0000" value="${buyer?.phone || contrato.buyerPhone || contrato.phone || ''}">
                 </div>
                 <div class="wa-btns">
                     <button class="btn-wa btn-wa-cobranca" onclick="enviarWA('cobranca')">🔴 Cobrança de Atraso</button>
