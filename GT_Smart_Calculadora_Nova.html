@@ -215,7 +215,7 @@
             const juros = parseFloat(document.getElementById('juros').value) / 100;
             const numParcelas = parseInt(document.getElementById('parcelas').value);
             const frequencia = document.getElementById('frequencia').value;
-            const dataInicio = new Date(document.getElementById('data').value);
+            const dataInicio = new Date(document.getElementById('data').value + 'T12:00:00');
             
             if (!valor || !juros || !numParcelas || !dataInicio) {
                 alert('Preencha todos os campos!');
@@ -265,7 +265,13 @@
                     Parcela #${i} - ${dataFormatada} - ${formatUSD(valorParcela)}
                 </div>`;
                 
-                dataAtual.setDate(dataAtual.getDate() + dias);
+                // Avança corretamente por frequência
+                if (frequencia === 'monthly') {
+                    dataAtual = new Date(dataInicio);
+                    dataAtual.setMonth(dataAtual.getMonth() + i);
+                } else {
+                    dataAtual.setDate(dataAtual.getDate() + dias);
+                }
             }
             
             document.getElementById('listaParcelas').innerHTML = html;
@@ -289,16 +295,10 @@
             let cronograma = '';
             let count = 0;
             items.forEach(item => {
-                if (count < 5) {
                     const txt = item.textContent.trim();
-                    // Reformat: "Parcela #1 - 27/03/2026 - $156.04" → "#1 — 27/03/2026 — $156.04"
                     const reformatted = txt.replace(/^Parcela (#\d+) - (.+) - (.+)$/, '$1 — $2 — $3');
                     cronograma += reformatted + '\n';
-                    count++;
-                }
             });
-            const restante = totalParcelas - 5;
-            if (restante > 0) cronograma += `_(+ ${restante} parcelas)_\n`;
 
             const msg = `🤝 *Simulação*\n\n` +
                 `💵 *Valor:* ${valorEmprestimo}\n` +
