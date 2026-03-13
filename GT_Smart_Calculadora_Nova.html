@@ -274,6 +274,7 @@
         
         window.enviarWhatsApp = function enviarWhatsApp() {
             const valorParcela = document.getElementById('valorParcela').textContent;
+            const valorEmprestimo = document.getElementById('valor').value ? '$' + parseFloat(document.getElementById('valor').value).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '';
             const totalPagar = document.getElementById('totalPagar').textContent;
             const totalJuros = document.getElementById('totalJuros').textContent;
             const numParcelas = document.getElementById('parcelas').value;
@@ -291,6 +292,7 @@
             
             const msg = `_Simulação_\n\n` +
                 `💰 *Resumo:*\n` +
+                `• Valor do Empréstimo: *${valorEmprestimo}*\n` +
                 `• Frequência: ${freqTexto}\n` +
                 `• Valor da Parcela: *${valorParcela}*\n` +
                 `• Total de Parcelas: *${numParcelas}*\n\n` +
