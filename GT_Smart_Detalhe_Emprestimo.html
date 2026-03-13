@@ -421,7 +421,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './fi
             });
             const totalLate = latePayments.reduce((s,p) => s+p.amount, 0);
             msg += `\n💰 *Total em atraso: ${formatCurrency(totalLate)}*\n`;
-            if (confirm('Incluir pergunta de renegociação?\n\n"Quer renegociar ou fazer o pagamento? 🙏"')) {
+            if (confirm('Quer enviar a pergunta?\n\n"Quer renegociar ou fazer o pagamento? 🙏"\n\nSim = envia com a pergunta\nNão = envia sem a pergunta')) {
                 msg += `\nQuer renegociar ou fazer o pagamento? 🙏`;
             }
             const phone = (loan.clientPhone || '').replace(/\D/g, '');
