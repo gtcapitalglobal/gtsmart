@@ -222,16 +222,10 @@
             const parcela = valor * taxaPeriodo / (1 - Math.pow(1 + taxaPeriodo, -numParcelas));
             const parcelaArredondada = Math.round(parcela * 100) / 100;
             
-            // Calcular última parcela ajustada
-            let saldo = valor;
-            for (let i = 0; i < numParcelas - 1; i++) {
-                saldo = saldo * (1 + taxaPeriodo) - parcelaArredondada;
-            }
-            const ultimaParcela = Math.round(saldo * (1 + taxaPeriodo) * 100) / 100;
-            
             // Total
-            const total = (parcelaArredondada * (numParcelas - 1)) + ultimaParcela;
-            const totalJuros = total - valor;
+            const ultimaParcela = parcelaArredondada;
+            const total = Math.round(parcelaArredondada * numParcelas * 100) / 100;
+            const totalJuros = Math.round((total - valor) * 100) / 100;
             
             // Função para formatar em USD
             const formatUSD = (num) => {
