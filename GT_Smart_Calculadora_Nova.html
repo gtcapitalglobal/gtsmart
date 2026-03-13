@@ -193,6 +193,7 @@
             if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
             // Define data de hoje como padrão
             document.getElementById('data').valueAsDate = new Date();
+            calcSemJuros();
         });
 
         window.calcSemJuros = function calcSemJuros() {
