@@ -425,6 +425,26 @@
         /* ===========================
            RESPONSIVE
         =========================== */
+        /* ALERTA LEDGERLANDS */
+        .ll-alerta {
+            background: rgba(198,40,40,0.12);
+            border: 1px solid rgba(198,40,40,0.4);
+            border-radius: 12px;
+            padding: 13px 16px;
+            margin-bottom: 12px;
+            display: none;
+            text-decoration: none;
+            color: var(--red);
+            transition: all 0.2s;
+        }
+        .ll-alerta:hover { background: rgba(198,40,40,0.2); }
+        .ll-alerta .ll-row { display: flex; align-items: center; gap: 10px; }
+        .ll-alerta .ll-icon { font-size: 22px; flex-shrink: 0; }
+        .ll-alerta .ll-texto { flex: 1; }
+        .ll-alerta .ll-titulo { font-size: 13px; font-weight: 800; }
+        .ll-alerta .ll-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+        .ll-alerta .ll-seta { font-size: 16px; opacity: 0.7; }
+
         @media (max-width: 600px) {
             .menu-grid { grid-template-columns: repeat(3, 1fr); }
             .dash-grid { grid-template-columns: 1fr 1fr; }
@@ -546,6 +566,18 @@
             <span class="section-title">Ledgerlands</span>
             <div class="section-line"></div>
         </div>
+
+        <!-- Alerta de parcelas vencidas LL -->
+        <a href="LL_Installments.html" class="ll-alerta" id="llAlertaVencidas">
+            <div class="ll-row">
+                <div class="ll-icon">🚨</div>
+                <div class="ll-texto">
+                    <div class="ll-titulo" id="llAlertaTitulo">Parcelas vencidas no Ledgerlands</div>
+                    <div class="ll-sub" id="llAlertaSub">Clique para ver</div>
+                </div>
+                <div class="ll-seta">→</div>
+            </div>
+        </a>
         <div class="menu-grid">
             <a href="LL_Menu.html" class="menu-btn" style="border:2px solid #1565c0;"><span class="icon">🏡</span><span class="label">LL Menu</span></a>
             <a href="LL_Dashboard.html" class="menu-btn"><span class="icon">📊</span><span class="label">Dashboard</span></a>
@@ -596,7 +628,7 @@
 </div><!-- /container -->
 
 <script type="module">
-    import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, importFullBackup, getLoans, getDebts, getCards, getUserSetting, saveUserSetting } from './firebase-config.js';
+    import { auth, onAuthStateChanged, signOut, migrateFromLocalStorage, exportFullBackup, importFullBackup, getLoans, getDebts, getCards, getUserSetting, saveUserSetting, getLLInstallments } from './firebase-config.js';
 
     let getEmpresas = async () => [];
     let getContracts = async () => [];
@@ -706,6 +738,30 @@
             const loans = await getLoans() || [];
             const debts = await getDebts() || [];
             const cards = await getCards() || [];
+
+            // Parcelas vencidas Ledgerlands (mais de 24h)
+            try {
+                const parcelas = await getLLInstallments() || [];
+                const agora = new Date();
+                const limite24h = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
+                const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
+                const vencidas = parcelas.filter(p => {
+                    if (p.status === 'PAID') return false;
+                    const venc = safeDate(p.dueDate);
+                    return venc && venc < limite24h;
+                });
+                if (vencidas.length > 0) {
+                    const totalVenc = vencidas.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+                    const banner = document.getElementById('llAlertaVencidas');
+                    banner.style.display = 'block';
+                    document.getElementById('llAlertaTitulo').textContent =
+                        vencidas.length === 1
+                            ? '1 parcela vencida há mais de 24h'
+                            : vencidas.length + ' parcelas vencidas há mais de 24h';
+                    document.getElementById('llAlertaSub').textContent =
+                        'Total: $' + totalVenc.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' — Clique para ver';
+                }
+            } catch(e) { /* LL pode não ter parcelas ainda */ }
 
             const hoje = new Date(); hoje.setHours(0,0,0,0);
             const todayDay = hoje.getDate();
