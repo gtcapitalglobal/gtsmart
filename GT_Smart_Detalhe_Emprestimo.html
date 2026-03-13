@@ -170,6 +170,9 @@ import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './fi
                     extraBtn = `<button onclick="recalculatePayment(${index}); event.stopPropagation();" style="background:#ff9800;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;margin-left:8px;">⚙️ Recalcular</button>`;
                 } else if (pDate <= twoDaysFromNow) {
                     itemClass = 'due-soon';
+                    extraBtn = `<button onclick="recalculatePayment(${index}); event.stopPropagation();" style="background:#ff9800;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;margin-left:8px;">⚙️ Renegociar</button>`;
+                } else {
+                    extraBtn = `<button onclick="recalculatePayment(${index}); event.stopPropagation();" style="background:#ff9800;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;margin-left:8px;">⚙️ Renegociar</button>`;
                 }
 
                 return `
