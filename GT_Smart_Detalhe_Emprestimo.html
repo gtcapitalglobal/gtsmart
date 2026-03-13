@@ -276,7 +276,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './fi
             const payment = loan.payments[index];
             const today = new Date(); today.setHours(0,0,0,0);
             const pDate = parseLocalDate(payment.date);
-            if (pDate >= today || payment.paid) { alert('❌ Esta parcela não está atrasada!'); return; }
+            if (payment.paid) { alert('❌ Esta parcela já foi paga!'); return; }
             if (payment.negotiated) { alert('❌ Esta parcela já está negociada!'); return; }
 
             const lastPayment = loan.payments[loan.payments.length - 1];
