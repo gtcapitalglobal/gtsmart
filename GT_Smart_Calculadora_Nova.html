@@ -194,9 +194,7 @@
             document.getElementById('data').valueAsDate = new Date();
         });
 
-        window.calcular = function() {
-        
-        function calcular() {
+        window.calcular = function calcular() {
             const valor = parseFloat(document.getElementById('valor').value);
             const juros = parseFloat(document.getElementById('juros').value) / 100;
             const numParcelas = parseInt(document.getElementById('parcelas').value);
@@ -264,7 +262,7 @@
             document.getElementById('resultado').style.display = 'block';
         }
         
-        function enviarWhatsApp() {
+        window.enviarWhatsApp = function enviarWhatsApp() {
             const valorParcela = document.getElementById('valorParcela').textContent;
             const totalPagar = document.getElementById('totalPagar').textContent;
             const totalJuros = document.getElementById('totalJuros').textContent;
@@ -296,7 +294,7 @@
             window.open(url, '_blank');
         }
         
-        function criarEmprestimo() {
+        window.criarEmprestimo = function criarEmprestimo() {
             const valor = parseFloat(document.getElementById('valor').value);
             const numParcelas = parseInt(document.getElementById('parcelas').value);
             const juros = parseFloat(document.getElementById('juros').value) / 100;
@@ -325,6 +323,6 @@
         };
     </script>
 
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 11/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 9.0 | 13/03/2026</p>
 </body>
 </html>
