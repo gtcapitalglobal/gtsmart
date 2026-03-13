@@ -6,11 +6,11 @@
     <title>GT Smart Equity - Login</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; flex-direction: column; gap: 12px; }
         .login-box { background: white; border-radius: 16px; padding: 40px 30px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
         .logo { font-size: 50px; margin-bottom: 10px; }
         h1 { font-size: 22px; color: #333; margin-bottom: 5px; }
-        p { font-size: 13px; color: #888; margin-bottom: 25px; }
+        p.sub { font-size: 13px; color: #888; margin-bottom: 25px; }
         .form-group { margin-bottom: 15px; text-align: left; }
         label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
         input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
@@ -23,6 +23,16 @@
         .success-msg { background: #d4edda; color: #155724; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; text-align: left; }
         .loading { display: none; margin-top: 15px; color: #667eea; font-size: 13px; }
         .forgot-link { display: block; margin-top: 15px; color: #667eea; font-size: 13px; cursor: pointer; text-decoration: underline; background: none; border: none; width: 100%; text-align: center; }
+
+        /* Banner de email não verificado */
+        .banner-verificacao { background: white; border-radius: 14px; padding: 18px 20px; width: 100%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-left: 5px solid #f57f17; display: none; }
+        .banner-verificacao .bv-titulo { font-size: 14px; font-weight: 700; color: #e65100; margin-bottom: 6px; }
+        .banner-verificacao .bv-desc { font-size: 12px; color: #555; margin-bottom: 12px; line-height: 1.5; }
+        .btn-reenviar { background: #f57f17; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 8px; }
+        .btn-continuar { background: #eee; color: #555; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; width: 100%; }
+        .bv-msg { font-size: 12px; font-weight: 600; margin-top: 8px; display: none; }
+
+        /* Modal redefinir senha */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 999; }
         .modal-overlay.show { display: flex; }
         .modal { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 340px; text-align: center; }
@@ -31,19 +41,9 @@
         .modal input { margin-bottom: 15px; }
         .btn-reset { width: 100%; padding: 11px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
         .btn-cancelar { width: 100%; padding: 11px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
-    
-        /* Dark Mode */
-        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
-        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
-        body.dark-mode .header { }
-        body.dark-mode .content { color: #e0e0e0; }
-        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
-        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
-    
+
         @media (max-width: 600px) {
-            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
-            .cards-grid { grid-template-columns: 1fr !important; }
-            .header { flex-direction: column; text-align: center; gap: 8px; }
+            .login-box { padding: 30px 20px; }
         }
     </style>
 </head>
@@ -51,7 +51,7 @@
     <div class="login-box">
         <div class="logo">💼</div>
         <h1>GT Smart Equity</h1>
-        <p>Sistema de Gestão de Empréstimos</p>
+        <p class="sub">Sistema de Gestão de Empréstimos</p>
         <div class="form-group">
             <label>📧 Email</label>
             <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
@@ -65,8 +65,22 @@
         <div class="success-msg" id="successMsg"></div>
         <div class="loading" id="loading">⏳ Entrando...</div>
         <button class="forgot-link" onclick="abrirEsqueceuSenha()">🔑 Esqueceu a senha?</button>
+        <p style="text-align:center;font-size:11px;opacity:0.4;margin-top:18px;">Basic 9.0 | 12/03/2026</p>
     </div>
 
+    <!-- Banner: email não verificado -->
+    <div class="banner-verificacao" id="bannerVerificacao">
+        <div class="bv-titulo">⚠️ Email não verificado</div>
+        <div class="bv-desc">
+            Seu email ainda não foi confirmado. Verifique sua caixa de entrada (incluindo spam) pelo link que enviamos ao criar sua conta.<br><br>
+            Você ainda pode acessar o sistema, mas recomendamos verificar o email para maior segurança.
+        </div>
+        <button class="btn-reenviar" id="btnReenviar" onclick="reenviarVerificacao()">📧 Reenviar Email de Verificação</button>
+        <button class="btn-continuar" onclick="continuarSemVerificar()">Continuar mesmo assim →</button>
+        <div class="bv-msg" id="bvMsg"></div>
+    </div>
+
+    <!-- Modal redefinir senha -->
     <div class="modal-overlay" id="modalSenha">
         <div class="modal">
             <h3>🔑 Redefinir Senha</h3>
@@ -77,26 +91,37 @@
             <button class="btn-reset" onclick="enviarResetSenha()">📧 Enviar Link</button>
             <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
         </div>
-    
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 11/03/2026</p>
     </div>
 
     <script type="module">
-        // Dark mode
-import { auth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail } from './firebase-config.js';
+        import { auth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail } from './firebase-config.js';
+        import { sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        let _usuarioLogado = null;
 
         onAuthStateChanged(auth, (user) => {
-            if (user) window.location.href = 'GT_Smart_Menu.html';
+            if (user) {
+                // Se já logado e verificado → vai direto pro menu
+                if (user.emailVerified) {
+                    window.location.href = 'GT_Smart_Menu.html';
+                }
+                // Se já logado mas não verificado → mantém na página mostrando o banner
+            }
         });
+
+        // ============================================================
+        // LOGIN
+        // ============================================================
 
         window.fazerLogin = async function() {
             const email = document.getElementById('email').value.trim();
             const senha = document.getElementById('password').value;
-            const btn = document.getElementById('btnLogin');
-            const erro = document.getElementById('errorMsg');
+            const btn   = document.getElementById('btnLogin');
+            const erro  = document.getElementById('errorMsg');
             const loading = document.getElementById('loading');
 
             erro.style.display = 'none';
+            document.getElementById('bannerVerificacao').style.display = 'none';
             document.getElementById('email').classList.remove('erro');
             document.getElementById('password').classList.remove('erro');
 
@@ -112,7 +137,19 @@ import { auth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordReset
             loading.style.display = 'block';
 
             try {
-                await signInWithEmailAndPassword(auth, email, senha);
+                const cred = await signInWithEmailAndPassword(auth, email, senha);
+                _usuarioLogado = cred.user;
+
+                if (!cred.user.emailVerified) {
+                    // Mostrar banner de verificação
+                    loading.style.display = 'none';
+                    btn.disabled = false;
+                    document.getElementById('bannerVerificacao').style.display = 'block';
+                    window.scrollTo({ top: 9999, behavior: 'smooth' });
+                } else {
+                    // Email verificado → ir pro menu (onAuthStateChanged também redireciona)
+                    window.location.href = 'GT_Smart_Menu.html';
+                }
             } catch (e) {
                 loading.style.display = 'none';
                 btn.disabled = false;
@@ -131,6 +168,47 @@ import { auth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordReset
             }
         };
 
+        // ============================================================
+        // BANNER — email não verificado
+        // ============================================================
+
+        window.reenviarVerificacao = async function() {
+            const btn = document.getElementById('btnReenviar');
+            const msg = document.getElementById('bvMsg');
+            msg.style.display = 'none';
+
+            if (!_usuarioLogado) return;
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Enviando...';
+            try {
+                await sendEmailVerification(_usuarioLogado);
+                msg.style.color = '#1b5e20';
+                msg.textContent = '✅ Email enviado! Verifique sua caixa de entrada.';
+                msg.style.display = 'block';
+                btn.textContent = '✅ Email enviado!';
+                setTimeout(() => { btn.textContent = '📧 Reenviar Email de Verificação'; btn.disabled = false; }, 5000);
+            } catch(e) {
+                msg.style.color = '#c62828';
+                if (e.code === 'auth/too-many-requests') {
+                    msg.textContent = '⚠️ Aguarde alguns minutos antes de reenviar.';
+                } else {
+                    msg.textContent = '❌ Erro ao enviar: ' + e.message;
+                }
+                msg.style.display = 'block';
+                btn.textContent = '📧 Reenviar Email de Verificação';
+                btn.disabled = false;
+            }
+        };
+
+        window.continuarSemVerificar = function() {
+            window.location.href = 'GT_Smart_Menu.html';
+        };
+
+        // ============================================================
+        // MODAL — redefinir senha
+        // ============================================================
+
         window.abrirEsqueceuSenha = function() {
             document.getElementById('emailReset').value = document.getElementById('email').value;
             document.getElementById('errorReset').style.display = 'none';
@@ -144,7 +222,7 @@ import { auth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordReset
 
         window.enviarResetSenha = async function() {
             const email = document.getElementById('emailReset').value.trim();
-            const erro = document.getElementById('errorReset');
+            const erro  = document.getElementById('errorReset');
             const sucesso = document.getElementById('successReset');
             erro.style.display = 'none';
             sucesso.style.display = 'none';

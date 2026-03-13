@@ -244,7 +244,7 @@
             <button class="btn-save" onclick="saveChanges()">💾 Salvar Todas as Alterações</button>
         </div>
     
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 11/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 9.0 | 12/03/2026</p>
     </div>
     <script type="module">
         // Dark mode
@@ -393,15 +393,24 @@ import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-confi
                 return;
             }
 
-            if (!newLoanDate) {
-                alert('❌ Data do empréstimo é obrigatória!');
-                return;
+            // ── Validação de datas ──────────────────────────────────
+            const errosDatas = [];
+            const el1 = document.getElementById('loanDate');
+            const el2 = document.getElementById('firstPaymentDate');
+            el1.style.borderColor = '#e0e0e0';
+            el2.style.borderColor = '#e0e0e0';
+            if (!newLoanDate) { el1.style.borderColor='#c62828'; errosDatas.push('Data do empréstimo é obrigatória'); }
+            if (!newFirstPaymentDate) { el2.style.borderColor='#c62828'; errosDatas.push('Data da primeira parcela é obrigatória'); }
+            if (newLoanDate && newFirstPaymentDate) {
+                const d1 = new Date(newLoanDate + 'T12:00:00');
+                const d2 = new Date(newFirstPaymentDate + 'T12:00:00');
+                const a1 = d1.getFullYear(); const a2 = d2.getFullYear();
+                if (isNaN(d1.getTime()) || a1 < 2000 || a1 > 2099) { el1.style.borderColor='#c62828'; errosDatas.push('Data do empréstimo inválida — verifique o ano'); }
+                else if (isNaN(d2.getTime()) || a2 < 2000 || a2 > 2099) { el2.style.borderColor='#c62828'; errosDatas.push('Data da primeira parcela inválida — verifique o ano'); }
+                else if (d2 < d1) { el2.style.borderColor='#c62828'; errosDatas.push('A primeira parcela não pode ser anterior à data do empréstimo'); }
             }
-
-            if (!newFirstPaymentDate) {
-                alert('❌ Data do primeiro pagamento é obrigatória!');
-                return;
-            }
+            if (errosDatas.length > 0) { alert('⚠️ Corrija as datas:\n\n• ' + errosDatas.join('\n• ')); return; }
+            // ────────────────────────────────────────────────────────
 
             // Valida parcelas
             let totalParcelas = 0;

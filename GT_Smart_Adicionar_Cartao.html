@@ -231,6 +231,20 @@ import { auth, onAuthStateChanged, saveCard } from './firebase-config.js';
 
         document.getElementById('cardForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            // ── Validação de data de bônus ───────────────────────────
+            const bonusPrazoVal = document.getElementById('bonusPrazo').value;
+            const elBonus = document.getElementById('bonusPrazo');
+            elBonus.style.borderColor = '#e0e0e0';
+            if (bonusPrazoVal) {
+                const db = new Date(bonusPrazoVal + 'T12:00:00');
+                const ab = db.getFullYear();
+                if (isNaN(db.getTime()) || ab < 2000 || ab > 2099) {
+                    elBonus.style.borderColor = '#c62828';
+                    alert('⚠️ Prazo do bônus inválido — verifique a data.');
+                    return;
+                }
+            }
+            // ─────────────────────────────────────────────────────────
             const card = {
                 id: 'CARD' + Date.now(),
                 nome: document.getElementById('nome').value,
@@ -258,6 +272,6 @@ import { auth, onAuthStateChanged, saveCard } from './firebase-config.js';
         });
     </script>
 
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 11/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 9.0 | 12/03/2026</p>
 </body>
 </html>

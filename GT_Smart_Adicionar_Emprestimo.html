@@ -90,7 +90,7 @@
             </form>
         </div>
     
-    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 11/03/2026</p>
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 9.0 | 12/03/2026</p>
     </div>
 
     <script type="module">
@@ -131,8 +131,32 @@ import { auth, onAuthStateChanged, saveLoan } from './firebase-config.js';
             }
         };
 
+        // ── Validação de datas ──────────────────────────────────────
+        function validarDatasEmp() {
+            const erros = [];
+            const v1 = document.getElementById('loanDate').value;
+            const v2 = document.getElementById('firstPaymentDate').value;
+            const el1 = document.getElementById('loanDate');
+            const el2 = document.getElementById('firstPaymentDate');
+            el1.style.borderColor = '#e0e0e0';
+            el2.style.borderColor = '#e0e0e0';
+            if (!v1) { el1.style.borderColor = '#c62828'; erros.push('Data do empréstimo é obrigatória'); }
+            if (!v2) { el2.style.borderColor = '#c62828'; erros.push('Data da primeira parcela é obrigatória'); }
+            if (v1 && v2) {
+                const d1 = new Date(v1 + 'T12:00:00');
+                const d2 = new Date(v2 + 'T12:00:00');
+                const a1 = d1.getFullYear(); const a2 = d2.getFullYear();
+                if (isNaN(d1.getTime()) || a1 < 2000 || a1 > 2099) { el1.style.borderColor='#c62828'; erros.push('Data do empréstimo inválida — verifique o ano'); }
+                else if (isNaN(d2.getTime()) || a2 < 2000 || a2 > 2099) { el2.style.borderColor='#c62828'; erros.push('Data da primeira parcela inválida — verifique o ano'); }
+                else if (d2 < d1) { el2.style.borderColor='#c62828'; erros.push('A data da primeira parcela não pode ser anterior à data do empréstimo'); }
+            }
+            return erros;
+        }
+
         document.getElementById('loanForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const errosDatas = validarDatasEmp();
+            if (errosDatas.length > 0) { alert('⚠️ Corrija as datas:\n\n• ' + errosDatas.join('\n• ')); return; }
             const btn = document.getElementById('btnSalvar');
             btn.disabled = true;
             btn.textContent = '⏳ Salvando...';

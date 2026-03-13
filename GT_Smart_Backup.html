@@ -37,6 +37,18 @@
         .mensagem.erro { background: #fdecea; color: #c62828; border: 2px solid #e53935; }
         .progress-bar { height: 6px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-top: 12px; display: none; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #43a047, #66bb6a); width: 0%; transition: width 0.4s; border-radius: 4px; }
+
+        /* Campos de senha */
+        .senha-box { background: #f3f8ff; border: 2px solid #90caf9; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+        .senha-box .senha-titulo { font-size: 13px; font-weight: 700; color: #1565c0; margin-bottom: 8px; }
+        .senha-box .senha-desc { font-size: 11px; color: #777; margin-bottom: 10px; }
+        .senha-box label { font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 4px; margin-top: 8px; }
+        .senha-box input[type="password"] { width: 100%; padding: 10px 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .senha-box input[type="password"]:focus { outline: none; border-color: #1565c0; }
+        .senha-indicador { margin-top: 6px; font-size: 11px; font-weight: 600; }
+        .badge-criptografado { display: inline-block; background: #1b5e20; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+        .badge-aberto { display: inline-block; background: #f57f17; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+
         @media (max-width: 500px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
@@ -45,7 +57,7 @@
     <div class="header">
         <div>
             <h2>☁️ Backup & Restauração</h2>
-            <div class="header-sub">Basic 8.0 | 11/03/2026</div>
+            <div class="header-sub">Basic 9.0 | 12/03/2026</div>
         </div>
         <a href="GT_Smart_Menu.html" class="btn-back">← Menu</a>
     </div>
@@ -68,17 +80,30 @@
             <div class="stat-card"><div class="stat-emoji">💸</div><div class="stat-nome">DeFi Taxas</div><div class="stat-num loading" id="statFees">...</div></div>
         </div>
 
+        <!-- EXPORTAR -->
         <div class="secao">
             <div class="secao-titulo">⬇️ Fazer Backup</div>
             <div class="secao-desc">Baixa um arquivo JSON com <strong>todos os seus dados</strong>. Salve esse arquivo em lugar seguro — ele serve para restaurar tudo em caso de problema.</div>
+
+            <div class="senha-box">
+                <div class="senha-titulo">🔐 Proteção com senha <span class="badge-aberto" id="badgeStatus">SEM SENHA</span></div>
+                <div class="senha-desc">Opcional. Se preencher, o arquivo ficará criptografado e só abrirá com essa senha. Se deixar vazio, o backup é salvo sem proteção.</div>
+                <label>Senha para o backup</label>
+                <input type="password" id="senhaBkp" placeholder="Digite uma senha (opcional)" oninput="atualizarIndicador()">
+                <label>Confirmar senha</label>
+                <input type="password" id="senhaBkpConfirm" placeholder="Repita a senha" oninput="atualizarIndicador()">
+                <div class="senha-indicador" id="senhaIndicador"></div>
+            </div>
+
             <button class="btn-backup" id="btnFazerBackup" onclick="fazerBackup()">⬇️ Baixar Backup Agora</button>
             <div class="mensagem" id="msgBackup"></div>
             <div class="ultimo-backup" id="ultimoBackup">📅 <span id="ultimoBackupTexto"></span></div>
         </div>
 
+        <!-- RESTAURAR -->
         <div class="secao">
             <div class="secao-titulo">⬆️ Restaurar Backup</div>
-            <div class="secao-desc">Importa um arquivo de backup salvo anteriormente. Os dados atuais serão <strong>substituídos</strong> pelo conteúdo do arquivo.</div>
+            <div class="secao-desc">Importa um arquivo de backup salvo anteriormente. Os dados atuais serão <strong>substituídos</strong> pelo conteúdo do arquivo. Se o backup tiver senha, você será solicitado a digitá-la.</div>
             <div class="alerta-restore" id="alertaRestore">🚨 ATENÇÃO: Esta ação substitui os dados atuais pelos dados do backup. Certifique-se de que está importando o arquivo correto.</div>
             <button class="btn-restaurar" id="btnRestaurar" onclick="document.getElementById('inputRestore').click()">📁 Selecionar Arquivo de Backup</button>
             <input type="file" id="inputRestore" accept=".json" style="display:none;" onchange="restaurarBackup(this)">
@@ -89,10 +114,117 @@
     </div>
 </div>
 
-<a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+<!-- Modal de senha para restaurar -->
+<div id="modalSenha" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:14px;padding:28px 24px;width:90%;max-width:360px;margin:auto;text-align:center;margin-top:20vh;">
+        <div style="font-size:36px;margin-bottom:10px;">🔐</div>
+        <h3 style="font-size:17px;margin-bottom:6px;color:#333;">Backup Criptografado</h3>
+        <p style="font-size:12px;color:#666;margin-bottom:18px;">Este backup está protegido com senha. Digite a senha para restaurar.</p>
+        <input type="password" id="senhaRestaurar" placeholder="Digite a senha do backup" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px;">
+        <div id="erroSenhaRestaurar" style="color:#c62828;font-size:12px;font-weight:600;margin-bottom:10px;display:none;"></div>
+        <button onclick="confirmarSenhaRestaurar()" style="width:100%;padding:12px;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">🔓 Desbloquear e Restaurar</button>
+        <button onclick="cancelarModalSenha()" style="width:100%;padding:10px;background:#eee;color:#555;border:none;border-radius:8px;font-size:13px;cursor:pointer;">Cancelar</button>
+    </div>
+</div>
+
+<a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:99;">🏠 Menu</a>
 
 <script type="module">
     import { auth, onAuthStateChanged, exportFullBackup, importFullBackup, getLoans, getDebts, getCards, getEmpresas, getContracts, getDefiPools, getDefiBorrows, getDefiPositions } from './firebase-config.js';
+
+    // ============================================================
+    // CRIPTOGRAFIA — AES-GCM com chave derivada por PBKDF2
+    // ============================================================
+
+    async function derivarChave(senha, salt) {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(senha), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    async function criptografarBackup(jsonStr, senha) {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv   = crypto.getRandomValues(new Uint8Array(12));
+        const chave = await derivarChave(senha, salt);
+        const enc = new TextEncoder();
+        const cifrado = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chave, enc.encode(jsonStr));
+        return JSON.stringify({
+            gtSmart: true,
+            encrypted: true,
+            v: '1',
+            salt: bufToB64(salt),
+            iv:   bufToB64(iv),
+            data: bufToB64(new Uint8Array(cifrado))
+        });
+    }
+
+    async function descriptografarBackup(fileStr, senha) {
+        const obj = JSON.parse(fileStr);
+        if (!obj.encrypted) return fileStr; // não criptografado
+        const salt   = b64ToBuf(obj.salt);
+        const iv     = b64ToBuf(obj.iv);
+        const cifrado = b64ToBuf(obj.data);
+        const chave   = await derivarChave(senha, salt);
+        const dec = new TextDecoder();
+        const claro = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, chave, cifrado);
+        return dec.decode(claro);
+    }
+
+    function bufToB64(buf) { return btoa(String.fromCharCode(...buf)); }
+    function b64ToBuf(b64) { return Uint8Array.from(atob(b64), c => c.charCodeAt(0)); }
+
+    // ============================================================
+    // UI helpers
+    // ============================================================
+
+    window.atualizarIndicador = function() {
+        const s1 = document.getElementById('senhaBkp').value;
+        const s2 = document.getElementById('senhaBkpConfirm').value;
+        const ind = document.getElementById('senhaIndicador');
+        const badge = document.getElementById('badgeStatus');
+
+        if (!s1) {
+            ind.textContent = '';
+            badge.textContent = 'SEM SENHA';
+            badge.className = 'badge-aberto';
+            return;
+        }
+        if (s1.length < 6) {
+            ind.style.color = '#c62828';
+            ind.textContent = '⚠️ Senha muito curta (mínimo 6 caracteres)';
+            badge.textContent = 'SEM SENHA';
+            badge.className = 'badge-aberto';
+            return;
+        }
+        if (s2 && s1 !== s2) {
+            ind.style.color = '#c62828';
+            ind.textContent = '❌ As senhas não coincidem';
+            badge.textContent = 'SEM SENHA';
+            badge.className = 'badge-aberto';
+            return;
+        }
+        if (s1 === s2 && s1.length >= 6) {
+            ind.style.color = '#1b5e20';
+            ind.textContent = '✅ Senha válida — backup será criptografado';
+            badge.textContent = '🔐 CRIPTOGRAFADO';
+            badge.className = 'badge-criptografado';
+        } else {
+            ind.style.color = '#f57f17';
+            ind.textContent = '⏳ Confirme a senha acima';
+            badge.textContent = 'SEM SENHA';
+            badge.className = 'badge-aberto';
+        }
+    };
+
+    // ============================================================
+    // STATS
+    // ============================================================
 
     async function carregarStats() {
         try {
@@ -114,24 +246,70 @@
         }
     }
 
+    // ============================================================
+    // FAZER BACKUP
+    // ============================================================
+
     window.fazerBackup = async function() {
-        const btn = document.getElementById('btnFazerBackup');
-        const msg = document.getElementById('msgBackup');
+        const senha1 = document.getElementById('senhaBkp').value;
+        const senha2 = document.getElementById('senhaBkpConfirm').value;
+        const btn    = document.getElementById('btnFazerBackup');
+        const msg    = document.getElementById('msgBackup');
         msg.style.display = 'none';
+
+        // Validar senha se preenchida
+        if (senha1 && senha1.length < 6) {
+            msg.className = 'mensagem erro';
+            msg.textContent = '⚠️ A senha precisa ter pelo menos 6 caracteres.';
+            msg.style.display = 'block';
+            return;
+        }
+        if (senha1 && senha1 !== senha2) {
+            msg.className = 'mensagem erro';
+            msg.textContent = '❌ As senhas não coincidem. Verifique e tente novamente.';
+            msg.style.display = 'block';
+            return;
+        }
+
         btn.disabled = true;
         btn.textContent = '⏳ Preparando backup...';
+
         try {
             const resultado = await exportFullBackup();
             if (!resultado) throw new Error('Não foi possível gerar o backup.');
+
+            let conteudo = JSON.stringify(resultado, null, 2);
+            let sufixo = '';
+
+            if (senha1) {
+                btn.textContent = '⏳ Criptografando...';
+                conteudo = await criptografarBackup(conteudo, senha1);
+                sufixo = '_criptografado';
+            }
+
+            // Download do arquivo
+            const blob = new Blob([conteudo], { type: 'application/json' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            const dataHoje = new Date().toISOString().split('T')[0];
+            a.href = url;
+            a.download = 'gtsmart_backup_' + dataHoje + sufixo + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+
             const agora = new Date().toLocaleString('pt-BR');
             localStorage.setItem('gtLastBackup', agora);
             document.getElementById('ultimoBackupTexto').textContent = 'Último backup: ' + agora;
             document.getElementById('ultimoBackup').style.display = 'block';
-            btn.textContent = '✅ Backup baixado!';
+
+            btn.textContent = senha1 ? '✅ Backup criptografado baixado!' : '✅ Backup baixado!';
             msg.className = 'mensagem sucesso';
-            msg.textContent = '✅ Arquivo salvo! Guarde em local seguro — Google Drive, HD externo, etc.';
+            msg.textContent = senha1
+                ? '🔐 Arquivo salvo com criptografia! Guarde a senha — sem ela não será possível restaurar.'
+                : '✅ Arquivo salvo! Guarde em local seguro — Google Drive, HD externo, etc.';
             msg.style.display = 'block';
-            setTimeout(() => { btn.textContent = '⬇️ Baixar Backup Agora'; btn.disabled = false; }, 4000);
+
+            setTimeout(() => { btn.textContent = '⬇️ Baixar Backup Agora'; btn.disabled = false; }, 5000);
         } catch(e) {
             btn.textContent = '⬇️ Baixar Backup Agora';
             btn.disabled = false;
@@ -141,28 +319,94 @@
         }
     };
 
+    // ============================================================
+    // RESTAURAR BACKUP
+    // ============================================================
+
+    let _dadosParaRestaurar = null; // guarda o texto bruto do arquivo para usar após senha
+
     window.restaurarBackup = async function(input) {
         const file = input.files[0];
         if (!file) return;
-        const btn = document.getElementById('btnRestaurar');
-        const msg = document.getElementById('msgRestore');
+        const btn    = document.getElementById('btnRestaurar');
+        const msg    = document.getElementById('msgRestore');
         const alerta = document.getElementById('alertaRestore');
-        const progress = document.getElementById('progressBar');
-        const fill = document.getElementById('progressFill');
         msg.style.display = 'none';
         alerta.style.display = 'block';
+
         const confirmado = confirm('⚠️ ATENÇÃO!\n\nVocê está prestes a restaurar:\n"' + file.name + '"\n\nOs dados atuais serão substituídos.\n\nTem certeza?');
         if (!confirmado) { input.value = ''; alerta.style.display = 'none'; return; }
+
+        try {
+            const texto = await file.text();
+            const obj   = JSON.parse(texto);
+
+            if (obj.encrypted) {
+                // Arquivo criptografado — pedir senha via modal
+                _dadosParaRestaurar = texto;
+                document.getElementById('senhaRestaurar').value = '';
+                document.getElementById('erroSenhaRestaurar').style.display = 'none';
+                document.getElementById('modalSenha').style.display = 'flex';
+                input.value = '';
+                alerta.style.display = 'none';
+                return;
+            }
+
+            // Arquivo não criptografado — restaurar direto
+            await executarRestore(texto, btn, msg, alerta);
+        } catch(e) {
+            alerta.style.display = 'none';
+            btn.disabled = false;
+            msg.className = 'mensagem erro';
+            msg.textContent = '❌ Erro ao ler o arquivo: ' + e.message;
+            msg.style.display = 'block';
+        }
+        input.value = '';
+    };
+
+    window.confirmarSenhaRestaurar = async function() {
+        const senha  = document.getElementById('senhaRestaurar').value;
+        const errDiv = document.getElementById('erroSenhaRestaurar');
+        errDiv.style.display = 'none';
+
+        if (!senha) {
+            errDiv.textContent = '⚠️ Digite a senha!';
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        const btn  = document.getElementById('btnRestaurar');
+        const msg  = document.getElementById('msgRestore');
+        const alerta = document.getElementById('alertaRestore');
+
+        try {
+            const claro = await descriptografarBackup(_dadosParaRestaurar, senha);
+            document.getElementById('modalSenha').style.display = 'none';
+            _dadosParaRestaurar = null;
+            await executarRestore(claro, btn, msg, alerta);
+        } catch(e) {
+            errDiv.textContent = '❌ Senha incorreta ou arquivo corrompido.';
+            errDiv.style.display = 'block';
+        }
+    };
+
+    window.cancelarModalSenha = function() {
+        document.getElementById('modalSenha').style.display = 'none';
+        _dadosParaRestaurar = null;
+    };
+
+    async function executarRestore(jsonStr, btn, msg, alerta) {
+        const progress = document.getElementById('progressBar');
+        const fill     = document.getElementById('progressFill');
         btn.disabled = true;
         btn.textContent = '⏳ Restaurando...';
         progress.style.display = 'block';
         fill.style.width = '20%';
+
         try {
-            const texto = await file.text();
-            fill.style.width = '40%';
-            const dados = JSON.parse(texto);
+            const dados = JSON.parse(jsonStr);
             if (!dados.data || dados.system !== 'GT Smart Equity') throw new Error('Arquivo inválido. Use um backup gerado pelo GT Smart.');
-            fill.style.width = '65%';
+            fill.style.width = '60%';
             const ok = await importFullBackup(dados);
             fill.style.width = '100%';
             if (!ok) throw new Error('Erro ao importar os dados.');
@@ -181,8 +425,11 @@
             msg.textContent = '❌ Erro: ' + e.message;
             msg.style.display = 'block';
         }
-        input.value = '';
-    };
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
