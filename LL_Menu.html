@@ -41,6 +41,16 @@
         .badge-green { background: #2e7d32; }
         .badge-orange { background: #e65100; }
 
+        /* Alerta de parcelas vencidas */
+        .alerta-vencidas { background: #c62828; color: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; display: none; cursor: pointer; text-decoration: none; }
+        .alerta-vencidas:hover { background: #b71c1c; }
+        .alerta-vencidas .av-topo { display: flex; align-items: center; gap: 10px; }
+        .alerta-vencidas .av-icon { font-size: 28px; }
+        .alerta-vencidas .av-titulo { font-size: 15px; font-weight: 800; }
+        .alerta-vencidas .av-sub { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+        .alerta-vencidas .av-seta { margin-left: auto; font-size: 20px; opacity: 0.8; }
+        .kpi-card.kpi-alerta { background: rgba(198,40,40,0.55); }
+
         .version { text-align: center; color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 15px; }
 
         @media (max-width: 480px) {
@@ -57,6 +67,18 @@
             <p>Gestão Imobiliária GT Real Assets</p>
         </div>
 
+        <!-- Alerta de parcelas vencidas -->
+        <a href="LL_Installments.html" class="alerta-vencidas" id="alertaVencidas">
+            <div class="av-topo">
+                <div class="av-icon">🚨</div>
+                <div>
+                    <div class="av-titulo" id="alertaVencidasTitulo">Parcelas Vencidas</div>
+                    <div class="av-sub" id="alertaVencidasSub">Clique para ver detalhes</div>
+                </div>
+                <div class="av-seta">→</div>
+            </div>
+        </a>
+
         <!-- KPIs -->
         <div class="kpi-strip">
             <div class="kpi-card">
@@ -67,9 +89,9 @@
                 <div class="num" id="kpiBuyers">—</div>
                 <div class="lbl">Compradores</div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" id="kpiParcelasCard">
                 <div class="num" id="kpiParcelas">—</div>
-                <div class="lbl">Parcelas Vencendo</div>
+                <div class="lbl" id="kpiParcelasLabel">Próx. 30 dias</div>
             </div>
             <div class="kpi-card">
                 <div class="num" id="kpiRecebido">—</div>
@@ -130,7 +152,7 @@
             <a href="GT_Smart_Menu.html">← Voltar para GT Smart</a>
         </div>
 
-        <div class="version">Basic 2.0 | 11/03/2026</div>
+        <div class="version">Basic 3.0 | 13/03/2026</div>
     </div>
 
     <script type="module">
@@ -159,14 +181,46 @@
                 const buyersAtivos = buyers.filter(b => b.status !== 'CANCELLED').length;
                 document.getElementById('kpiBuyers').textContent = buyersAtivos;
 
-                // Parcelas vencendo nos próximos 30 dias
+                // Parcelas vencidas (mais de 24h da data de vencimento)
+                const limite24h = new Date(hoje.getTime() - 24 * 60 * 60 * 1000);
+                const vencidas = parcelas.filter(p => {
+                    if (p.status === 'PAID') return false;
+                    const venc = safeDate(p.dueDate);
+                    return venc && venc < limite24h;
+                });
+
+                // Parcelas vencendo nos próximos 30 dias (não vencidas)
                 const em30 = parcelas.filter(p => {
                     if (p.status === 'PAID') return false;
                     const venc = safeDate(p.dueDate);
+                    if (!venc) return false;
                     const dias = Math.floor((venc - hoje) / 86400000);
                     return dias >= 0 && dias <= 30;
                 }).length;
-                document.getElementById('kpiParcelas').textContent = em30;
+
+                // Se tem vencidas → mostrar alerta vermelho e KPI em vermelho
+                if (vencidas.length > 0) {
+                    const alerta = document.getElementById('alertaVencidas');
+                    alerta.style.display = 'block';
+                    document.getElementById('alertaVencidasTitulo').textContent =
+                        vencidas.length === 1
+                            ? '1 parcela vencida há mais de 24h'
+                            : vencidas.length + ' parcelas vencidas há mais de 24h';
+                    // Calcular valor total das vencidas
+                    const totalVenc = vencidas.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+                    document.getElementById('alertaVencidasSub').textContent =
+                        'Total pendente: $' + totalVenc.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' — Clique para ver detalhes';
+
+                    // KPI vira vermelho e mostra vencidas
+                    const card = document.getElementById('kpiParcelasCard');
+                    card.classList.add('kpi-alerta');
+                    document.getElementById('kpiParcelas').textContent = vencidas.length;
+                    document.getElementById('kpiParcelasLabel').textContent = 'Vencidas ⚠️';
+                } else {
+                    // Sem vencidas → mostra próximas 30 dias normalmente
+                    document.getElementById('kpiParcelas').textContent = em30;
+                    document.getElementById('kpiParcelasLabel').textContent = 'Próx. 30 dias';
+                }
 
                 // Total recebido no mês atual
                 const recMes = pagamentos
