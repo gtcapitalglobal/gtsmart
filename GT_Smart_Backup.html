@@ -57,7 +57,7 @@
     <div class="header">
         <div>
             <h2>☁️ Backup & Restauração</h2>
-            <div class="header-sub">Basic 9.0 | 12/03/2026</div>
+            <div class="header-sub">Basic 10.0 | 13/03/2026</div>
         </div>
         <a href="GT_Smart_Menu.html" class="btn-back">← Menu</a>
     </div>
@@ -130,7 +130,7 @@
 <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:99;">🏠 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, exportFullBackup, importFullBackup, getLoans, getDebts, getCards, getEmpresas, getContracts, getDefiPools, getDefiBorrows, getDefiPositions } from './firebase-config.js';
+    import { auth, onAuthStateChanged, exportFullBackup, importFullBackup, getLoans, getDebts, getCards, getEmpresas, getContracts, getDefiPools, getDefiBorrows, getDefiPositions, getUserSetting, saveUserSetting } from './firebase-config.js';
 
     // ============================================================
     // CRIPTOGRAFIA — AES-GCM com chave derivada por PBKDF2
@@ -298,7 +298,7 @@
             URL.revokeObjectURL(url);
 
             const agora = new Date().toLocaleString('pt-BR');
-            localStorage.setItem('gtLastBackup', agora);
+            await saveUserSetting('gtLastBackup', agora);
             document.getElementById('ultimoBackupTexto').textContent = 'Último backup: ' + agora;
             document.getElementById('ultimoBackup').style.display = 'block';
 
@@ -433,7 +433,7 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-        const ultimo = localStorage.getItem('gtLastBackup');
+        const ultimo = await getUserSetting('gtLastBackup');
         if (ultimo) {
             document.getElementById('ultimoBackupTexto').textContent = 'Último backup: ' + ultimo;
             document.getElementById('ultimoBackup').style.display = 'block';
