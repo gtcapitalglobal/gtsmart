@@ -285,19 +285,27 @@
             
             // Montar lista de parcelas
             const items = document.querySelectorAll('#listaParcelas .parcela-item');
-            let listaParcelas = '';
+            const totalParcelas = items.length;
+            let cronograma = '';
+            let count = 0;
             items.forEach(item => {
-                listaParcelas += `  ${item.textContent.trim()}\n`;
+                if (count < 5) {
+                    const txt = item.textContent.trim();
+                    // Reformat: "Parcela #1 - 27/03/2026 - $156.04" → "#1 — 27/03/2026 — $156.04"
+                    const reformatted = txt.replace(/^Parcela (#\d+) - (.+) - (.+)$/, '$1 — $2 — $3');
+                    cronograma += reformatted + '\n';
+                    count++;
+                }
             });
-            
-            const msg = `_Simulação_\n\n` +
-                `💰 *Resumo:*\n` +
-                `• Valor do Empréstimo: *${valorEmprestimo}*\n` +
-                `• Frequência: ${freqTexto}\n` +
-                `• Valor da Parcela: *${valorParcela}*\n` +
-                `• Total de Parcelas: *${numParcelas}*\n\n` +
-                `📅 *Cronograma:*\n${listaParcelas}\n` +
-                `Qualquer dúvida estou à disposição! 😊`;
+            const restante = totalParcelas - 5;
+            if (restante > 0) cronograma += `_(+ ${restante} parcelas)_\n`;
+
+            const msg = `🤝 *Simulação*\n\n` +
+                `💵 *Valor:* ${valorEmprestimo}\n` +
+                `📅 *Frequência:* ${freqTexto}\n` +
+                `💳 *Parcelas:* ${numParcelas}x de *${valorParcela}*\n\n` +
+                `---\n📋 *Cronograma:*\n${cronograma}\n` +
+                `---\n✅ _Qualquer dúvida estou à disposição!_`;
             
             const url = telefone 
                 ? `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`
