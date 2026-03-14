@@ -333,6 +333,29 @@
                 </div>
             </div>
 
+
+            <!-- Panorama Geral -->
+            <div class="panorama-section" id="panoramaSection">
+                <div class="panorama-title" onclick="togglePanorama()">
+                    <span>📊 Panorama Geral</span>
+                    <span id="panoramaArrow" style="font-size:12px;color:#888;">▼ Expandir</span>
+                </div>
+                <div id="panoramaBody" style="display:none;">
+                    <div class="panorama-tabs">
+                        <span class="pan-tab active" onclick="showPanTab('tabComp', this)">📋 Comparativo</span>
+                        <span class="pan-tab" onclick="showPanTab('tabFees', this)">📈 Fees/Mês</span>
+                        <span class="pan-tab" onclick="showPanTab('tabAlloc', this)">🥧 Alocação</span>
+                        <span class="pan-tab" onclick="showPanTab('tabDex', this)">🌐 Por DEX</span>
+                        <span class="pan-tab" onclick="showPanTab('tabPerf', this)">📈 Histórico</span>
+                    </div>
+                    <div class="pan-content show" id="tabComp"></div>
+                    <div class="pan-content" id="tabFees"></div>
+                    <div class="pan-content" id="tabAlloc"></div>
+                    <div class="pan-content" id="tabDex"></div>
+                    <div class="pan-content" id="tabPerf"></div>
+                </div>
+            </div>
+
             <!-- Meta de Fees Mensal -->
             <div class="meta-fees-bar" id="metaFeesBar" style="display:none;">
                 <span class="mf-label">🎯 Meta de Fees/mês:</span>
@@ -377,27 +400,6 @@
         </div>
 
 
-            <!-- Panorama Geral -->
-            <div class="panorama-section" id="panoramaSection">
-                <div class="panorama-title" onclick="togglePanorama()">
-                    <span>📊 Panorama Geral</span>
-                    <span id="panoramaArrow" style="font-size:12px;color:#888;">▼ Expandir</span>
-                </div>
-                <div id="panoramaBody" style="display:none;">
-                    <div class="panorama-tabs">
-                        <span class="pan-tab active" onclick="showPanTab('tabComp', this)">📋 Comparativo</span>
-                        <span class="pan-tab" onclick="showPanTab('tabFees', this)">📈 Fees/Mês</span>
-                        <span class="pan-tab" onclick="showPanTab('tabAlloc', this)">🥧 Alocação</span>
-                        <span class="pan-tab" onclick="showPanTab('tabDex', this)">🌐 Por DEX</span>
-                        <span class="pan-tab" onclick="showPanTab('tabPerf', this)">📈 Histórico</span>
-                    </div>
-                    <div class="pan-content show" id="tabComp"></div>
-                    <div class="pan-content" id="tabFees"></div>
-                    <div class="pan-content" id="tabAlloc"></div>
-                    <div class="pan-content" id="tabDex"></div>
-                    <div class="pan-content" id="tabPerf"></div>
-                </div>
-            </div>
 
         <!-- Pool Modal -->
         <div class="modal-overlay" id="poolModal">
@@ -1435,19 +1437,25 @@ let allCryptos = [];
                 const invB = p.investmentB || ((p.amountB||0)*(p.entryPriceB||0));
                 const inv = invA + invB;
                 const fees = getTotalFees(p);
-                const pnl = tvlP - inv + fees;
-                const roi = inv > 0 ? (pnl / inv * 100) : 0;
+                // Calcular dívida dos borrows (mesma lógica do card)
+                let debt = 0;
+                if (p.borrowIdA) { const bA = borrows.find(b => b.id === p.borrowIdA); if (bA) debt += parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA||0)/100) * getPrice(bA.cryptoId); }
+                if (p.borrowIdB) { const bB = borrows.find(b => b.id === p.borrowIdB); if (bB) debt += parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB||0)/100) * getPrice(bB.cryptoId); }
+                const pnl = tvlP - debt + fees - (inv - debt > 0 ? inv - debt : inv);
+                // PnL real = Pool atual - Dívida + Fees - Investimento líquido
+                const pnlReal = tvlP - debt + fees - inv;
+                const roi = inv > 0 ? (pnlReal / inv * 100) : 0;
                 const dStart = new Date(p.poolDate || p.createdAt);
                 const dias = Math.floor((new Date() - dStart) / (1000*60*60*24));
                 const roiAnual = dias > 0 ? roi * (365/dias) : 0;
                 const name = p.poolName || ((p.tokenASymbol||'?').toUpperCase() + '-' + (p.tokenBSymbol||'?').toUpperCase());
-                const pnlColor = pnl >= 0 ? '#2e7d32' : '#c62828';
+                const pnlColor = pnlReal >= 0 ? '#2e7d32' : '#c62828';
                 rows += '<tr>' +
                     '<td class="td-name">' + name + '<br><span style="font-size:9px;color:#888;">' + (p.dex||'DEX') + ' · ' + dias + 'd</span></td>' +
                     '<td>' + fmtUsd(inv) + '</td>' +
                     '<td>' + fmtUsd(tvlP) + '</td>' +
                     '<td style="color:#2e7d32;">' + fmtUsd(fees) + '</td>' +
-                    '<td style="color:' + pnlColor + ';font-weight:800;">' + (pnl>=0?'+':'') + fmtUsd(pnl) + '</td>' +
+                    '<td style="color:' + pnlColor + ';font-weight:800;">' + (pnlReal>=0?'+':'') + fmtUsd(pnlReal) + '</td>' +
                     '<td style="color:' + pnlColor + ';">' + (roi>=0?'+':'') + roi.toFixed(1) + '%</td>' +
                     '<td style="color:' + pnlColor + ';">' + (roiAnual>=0?'+':'') + roiAnual.toFixed(0) + '%</td>' +
                 '</tr>';
@@ -1759,14 +1767,12 @@ let allCryptos = [];
             // Mostrar qty salva (campo borrowQtyA) ou calcular da % salva
             (function() {
                 const pctEl = document.getElementById('poolBorrowQtyA');
-                // Campo agora exibe % — usar borrowPctA diretamente
                 if (p.borrowPctA) { pctEl.value = parseFloat(p.borrowPctA).toFixed(2); }
                 else { pctEl.value = ''; }
             })();
             document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
             (function() {
                 const pctEl = document.getElementById('poolBorrowQtyB');
-                // Campo agora exibe % — usar borrowPctB diretamente
                 if (p.borrowPctB) { pctEl.value = parseFloat(p.borrowPctB).toFixed(2); }
                 else { pctEl.value = ''; }
             })();
