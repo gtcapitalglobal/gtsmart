@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,12 +15,25 @@
         .btn-print { background: white; color: #0d47a1; border: none; padding: 7px 13px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
         .content { padding: 15px 20px; }
         .version { font-size: 10px; opacity: 0.5; text-align: right; padding: 4px 20px 8px; }
-
-        /* Loading */
         .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
-
-        /* KPI grid */
-        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .hero-box { background: linear-gradient(135deg, #0d47a1, #1565c0); border-radius: 14px; padding: 20px; color: white; margin-bottom: 16px; }
+        .hero-main-lbl { font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hero-main-val { font-size: 36px; font-weight: 900; margin: 4px 0 16px; }
+        .hero-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .hero-item { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; text-align: center; }
+        .hero-item .hl { font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .hero-item .hv { font-size: 17px; font-weight: 800; }
+        .hero-item .hs { font-size: 10px; opacity: 0.7; margin-top: 3px; }
+        .profit-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .profit-card { border-radius: 12px; padding: 14px; text-align: center; border: 2px solid transparent; }
+        .profit-card .pc-lbl { font-size: 10px; font-weight: 700; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .profit-card .pc-val { font-size: 22px; font-weight: 800; }
+        .profit-card .pc-sub { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+        .pc-green  { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+        .pc-blue   { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+        .pc-purple { background: #f3e5f5; color: #6a1b9a; border-color: #ce93d8; }
+        .pc-orange { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
         .kpi { border-radius: 12px; padding: 14px; text-align: center; }
         .kpi .lbl { font-size: 11px; font-weight: 700; opacity: 0.75; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .kpi .val { font-size: 24px; font-weight: 800; }
@@ -29,180 +42,180 @@
         .kpi-green  { background: #e8f5e9; color: #2e7d32; }
         .kpi-orange { background: #fff3e0; color: #e65100; }
         .kpi-red    { background: #fdecea; color: #c62828; }
-        .kpi-purple { background: #f3e5f5; color: #6a1b9a; }
-
-        /* Section title */
-        .section-title { font-size: 13px; font-weight: 800; color: #333; text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #e0e0e0; display: flex; align-items: center; gap: 8px; }
-
-        /* 2-col layout */
-        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .health-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .health-card { border-radius: 12px; padding: 14px; border: 2px solid #e0e0e0; }
+        .health-card .hc-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .health-card .hc-val { font-size: 18px; font-weight: 800; color: #333; }
+        .health-card .hc-sub { font-size: 11px; color: #666; margin-top: 4px; }
+        .section-title { font-size: 12px; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #e0e0e0; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .panel { border: 2px solid #e0e0e0; border-radius: 10px; padding: 14px; }
-        .panel h4 { font-size: 12px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 12px; }
-
-        /* Bar chart */
-        .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 100px; padding-bottom: 4px; }
+        .panel h4 { font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 100px; padding-bottom: 4px; }
         .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-        .bar-fill { width: 100%; background: linear-gradient(180deg, #1565c0, #42a5f5); border-radius: 4px 4px 0 0; min-height: 3px; transition: height 0.5s; }
+        .bar-fill { width: 100%; background: linear-gradient(180deg, #1565c0, #42a5f5); border-radius: 4px 4px 0 0; min-height: 3px; }
+        .bar-fill.highlight { background: linear-gradient(180deg, #e65100, #ff7043); }
         .bar-lbl { font-size: 9px; color: #888; font-weight: 600; }
         .bar-val { font-size: 9px; color: #1565c0; font-weight: 700; }
-
-        /* Status breakdown */
-        .status-list { display: flex; flex-direction: column; gap: 8px; }
+        .status-list { display: flex; flex-direction: column; gap: 10px; }
         .status-row { display: flex; justify-content: space-between; align-items: center; }
         .status-label { font-size: 13px; color: #444; display: flex; align-items: center; gap: 6px; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
         .status-val { font-size: 14px; font-weight: 800; }
         .status-bar-wrap { height: 6px; background: #f0f0f0; border-radius: 4px; margin-top: 3px; overflow: hidden; }
-        .status-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
-
-        /* Contracts table */
+        .status-bar-fill { height: 100%; border-radius: 4px; }
+        .highlight-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .hl-card { border-radius: 12px; padding: 14px; border: 2px solid #e0e0e0; }
+        .hl-card .hl-icon { font-size: 20px; margin-bottom: 6px; }
+        .hl-card .hl-lbl { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .hl-card .hl-val { font-size: 16px; font-weight: 800; color: #333; }
+        .hl-card .hl-sub { font-size: 11px; color: #888; margin-top: 3px; }
+        .inst-list { display: flex; flex-direction: column; gap: 6px; }
+        .inst-item { background: #f9f9f9; border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-left: 3px solid #ddd; }
+        .inst-item.overdue { border-left-color: #e53935; background: #fff8f8; }
+        .inst-item.soon    { border-left-color: #ffa000; background: #fffde7; }
+        .inst-item.ok      { border-left-color: #43a047; background: #f9fbe7; }
+        .inst-left .prop   { font-size: 13px; font-weight: 800; color: #333; }
+        .inst-left .buyer  { font-size: 11px; color: #888; margin-top: 2px; }
+        .inst-right { text-align: right; flex-shrink: 0; }
+        .inst-right .amt { font-size: 15px; font-weight: 800; color: #333; }
+        .inst-right .due { font-size: 11px; color: #888; margin-top: 2px; }
         .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
         .tbl th { background: #f5f5f5; padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase; }
         .tbl td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; }
         .tbl tr:last-child td { border-bottom: none; }
         .tbl tr:hover td { background: #f9f9f9; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-        .badge-green { background: #e8f5e9; color: #2e7d32; }
-        .badge-blue { background: #e3f2fd; color: #1565c0; }
-        .badge-red { background: #fdecea; color: #c62828; }
-        .badge-grey { background: #f5f5f5; color: #555; }
+        .badge-green  { background: #e8f5e9; color: #2e7d32; }
+        .badge-blue   { background: #e3f2fd; color: #1565c0; }
+        .badge-red    { background: #fdecea; color: #c62828; }
+        .badge-grey   { background: #f5f5f5; color: #555; }
         .badge-orange { background: #fff3e0; color: #e65100; }
-
-        /* Upcoming installments */
-        .inst-list { display: flex; flex-direction: column; gap: 6px; }
-        .inst-item { background: #f9f9f9; border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-left: 3px solid #ddd; }
-        .inst-item.overdue { border-left-color: #e53935; background: #fff8f8; }
-        .inst-item.soon { border-left-color: #ffa000; background: #fffde7; }
-        .inst-item.ok { border-left-color: #43a047; background: #f9fbe7; }
-        .inst-left .prop { font-size: 13px; font-weight: 800; color: #333; }
-        .inst-left .buyer { font-size: 11px; color: #888; margin-top: 2px; }
-        .inst-right { text-align: right; }
-        .inst-right .amt { font-size: 15px; font-weight: 800; color: #333; }
-        .inst-right .due { font-size: 11px; color: #888; margin-top: 2px; }
-
-        /* Receivable breakdown */
-        .recv-box { background: linear-gradient(135deg, #0d47a1, #1565c0); border-radius: 12px; padding: 16px; color: white; margin-bottom: 20px; }
-        .recv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
-        .recv-item { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; text-align: center; }
-        .recv-item .rl { font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .recv-item .rv { font-size: 18px; font-weight: 800; margin-top: 4px; }
-        .recv-main-label { font-size: 12px; opacity: 0.8; }
-        .recv-main-val { font-size: 32px; font-weight: 900; margin-top: 4px; }
-
+        .never-paid-item { background: #fdecea; border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #c62828; margin-bottom: 6px; }
         @media print {
             .no-print { display: none !important; }
             body { background: white !important; padding: 0 !important; }
             .container { box-shadow: none !important; }
         }
         @media (max-width: 600px) {
+            .hero-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .profit-box { grid-template-columns: repeat(2, 1fr) !important; }
             .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .health-row { grid-template-columns: 1fr !important; }
             .two-col { grid-template-columns: 1fr !important; }
-            .recv-grid { grid-template-columns: 1fr !important; }
+            .highlight-row { grid-template-columns: 1fr !important; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h2>📊 Dashboard Ledgerlands</h2>
-        <div class="header-right">
-            <button onclick="window.print()" class="btn-print no-print">🖨️ Imprimir</button>
-            <a href="LL_Menu.html" class="btn-back">← Voltar</a>
+        <h2>📊 Ledgerlands Dashboard</h2>
+        <div class="header-right no-print">
+            <button onclick="window.print()" class="btn-print">🖨️ Print</button>
+            <a href="LL_Menu.html" class="btn-back">← Menu</a>
         </div>
     </div>
-
-    <div class="content" id="mainContent">
-        <div class="loading" id="loadingMsg">⏳ Carregando dados...</div>
+    <div class="content">
+        <div class="loading" id="loadingMsg">⏳ Loading data...</div>
         <div id="dashContent" style="display:none;">
 
-            <!-- Receivable box -->
-            <div class="recv-box">
-                <div class="recv-main-label">💼 Total a Receber (Carteira Ativa)</div>
-                <div class="recv-main-val" id="totalReceber">$0</div>
-                <div class="recv-grid">
-                    <div class="recv-item">
-                        <div class="rl">Contratos CFD</div>
-                        <div class="rv" id="totalCFD">—</div>
-                    </div>
-                    <div class="recv-item">
-                        <div class="rl">Recebido Total</div>
-                        <div class="rv" id="totalRecebido">—</div>
-                    </div>
-                    <div class="recv-item">
-                        <div class="rl">Custo Base Total</div>
-                        <div class="rv" id="totalCusto">—</div>
-                    </div>
+            <!-- HERO -->
+            <div class="hero-box">
+                <div class="hero-main-lbl">💼 Total Still to Receive (Active Portfolio)</div>
+                <div class="hero-main-val" id="totalReceber">$0</div>
+                <div class="hero-grid">
+                    <div class="hero-item"><div class="hl">Active Contracts</div><div class="hv" id="heroCFD">—</div><div class="hs" id="heroTotalContratos"></div></div>
+                    <div class="hero-item"><div class="hl">Total Received</div><div class="hv" id="totalRecebido">—</div><div class="hs">payments + down</div></div>
+                    <div class="hero-item"><div class="hl">Total Investment</div><div class="hv" id="totalCusto">—</div><div class="hs">cost basis</div></div>
+                    <div class="hero-item"><div class="hl">Avg. Ticket</div><div class="hv" id="heroTicket">—</div><div class="hs">per contract</div></div>
                 </div>
             </div>
 
-            <!-- KPIs -->
+            <!-- PROFIT ROW -->
+            <div class="profit-box">
+                <div class="profit-card pc-green">
+                    <div class="pc-lbl">💰 Total Profit (est.)</div>
+                    <div class="pc-val" id="totalLucro">—</div>
+                    <div class="pc-sub">sale price − cost basis</div>
+                </div>
+                <div class="profit-card pc-blue">
+                    <div class="pc-lbl">📌 Still to Receive</div>
+                    <div class="pc-val" id="totalFalta">—</div>
+                    <div class="pc-sub">remaining balance</div>
+                </div>
+                <div class="profit-card pc-purple">
+                    <div class="pc-lbl">📈 ROI</div>
+                    <div class="pc-val" id="totalROI">—</div>
+                    <div class="pc-sub">return on investment</div>
+                </div>
+                <div class="profit-card pc-orange">
+                    <div class="pc-lbl">📅 Received This Month</div>
+                    <div class="pc-val" id="kpiMes">—</div>
+                    <div class="pc-sub" id="kpiMesSub"></div>
+                </div>
+            </div>
+
+            <!-- KPI ROW -->
             <div class="kpi-grid">
-                <div class="kpi kpi-blue">
-                    <div class="lbl">Contratos Ativos</div>
-                    <div class="val" id="kpiAtivos">—</div>
-                    <div class="sub" id="kpiTotalContratos"></div>
-                </div>
-                <div class="kpi kpi-green">
-                    <div class="lbl">Recebido Este Mês</div>
-                    <div class="val" id="kpiMes">—</div>
-                    <div class="sub" id="kpiMesSub"></div>
-                </div>
-                <div class="kpi kpi-orange">
-                    <div class="lbl">Parcelas Vencendo (30d)</div>
-                    <div class="val" id="kpiVencendo">—</div>
-                    <div class="sub" id="kpiVendendoSub"></div>
-                </div>
-                <div class="kpi kpi-red">
-                    <div class="lbl">Parcelas Vencidas</div>
-                    <div class="val" id="kpiVencidas">—</div>
-                    <div class="sub" id="kpiVencidasSub"></div>
-                </div>
+                <div class="kpi kpi-blue"><div class="lbl">Active Contracts</div><div class="val" id="kpiAtivos">—</div><div class="sub" id="kpiTotalContratos"></div></div>
+                <div class="kpi kpi-orange"><div class="lbl">Due in 30 Days</div><div class="val" id="kpiVencendo">—</div><div class="sub" id="kpiVendendoSub"></div></div>
+                <div class="kpi kpi-red"><div class="lbl">Overdue</div><div class="val" id="kpiVencidas">—</div><div class="sub" id="kpiVencidasSub"></div></div>
+                <div class="kpi kpi-green"><div class="lbl">On-Time Rate</div><div class="val" id="kpiOnTime">—</div><div class="sub">portfolio health</div></div>
             </div>
 
-            <!-- Charts row -->
+            <!-- HEALTH -->
+            <div class="health-row">
+                <div class="health-card"><div class="hc-title">⏱️ Next Payment Due</div><div class="hc-val" id="proximoVenc">—</div><div class="hc-sub" id="proximoVencSub"></div></div>
+                <div class="health-card"><div class="hc-title">⚠️ Biggest Overdue</div><div class="hc-val" id="maiorInadimplente">—</div><div class="hc-sub" id="maiorInadimplenteSub"></div></div>
+                <div class="health-card"><div class="hc-title">🏆 Best Month</div><div class="hc-val" id="melhorMes">—</div><div class="hc-sub" id="melhorMesSub"></div></div>
+            </div>
+
+            <!-- CHARTS -->
             <div class="two-col">
-                <!-- Monthly bar chart -->
                 <div class="panel">
-                    <h4>📈 Recebimentos — Últimos 12 Meses</h4>
+                    <h4>📈 Received — Last 12 Months</h4>
                     <div class="bar-chart" id="barChart"></div>
+                    <div style="font-size:11px;color:#888;margin-top:8px;" id="comparativoMes"></div>
                 </div>
-                <!-- Status breakdown -->
                 <div class="panel">
-                    <h4>📋 Contratos por Status</h4>
+                    <h4>📋 Contracts by Status</h4>
                     <div class="status-list" id="statusList"></div>
                 </div>
             </div>
 
-            <!-- Upcoming installments -->
-            <div class="section-title">⏰ Próximas Parcelas (30 dias)</div>
+            <!-- HIGHLIGHTS -->
+            <div class="highlight-row">
+                <div class="hl-card"><div class="hl-icon">📅</div><div class="hl-lbl">Due This Month</div><div class="hl-val" id="vencendoMes">—</div><div class="hl-sub" id="vencendoMesSub"></div></div>
+                <div class="hl-card"><div class="hl-icon">⏳</div><div class="hl-lbl">Avg. Time Remaining</div><div class="hl-val" id="tempoMedio">—</div><div class="hl-sub">across active contracts</div></div>
+                <div class="hl-card"><div class="hl-icon">🚫</div><div class="hl-lbl">Never Paid</div><div class="hl-val" id="nuncaPagou">—</div><div class="hl-sub" id="nuncaPagouSub"></div></div>
+            </div>
+
+            <!-- UPCOMING -->
+            <div class="section-title">⏰ Upcoming Installments (30 days)</div>
             <div class="inst-list" id="upcomingList" style="margin-bottom:20px;"></div>
 
-            <!-- Overdue -->
-            <div class="section-title">🚨 Parcelas Vencidas</div>
+            <!-- OVERDUE -->
+            <div class="section-title">🚨 Overdue Installments</div>
             <div class="inst-list" id="overdueList" style="margin-bottom:20px;"></div>
 
-            <!-- Contracts table -->
-            <div class="section-title">📄 Todos os Contratos Ativos</div>
-            <div style="overflow-x:auto; margin-bottom:20px;">
+            <!-- NEVER PAID -->
+            <div id="neverPaidSection" style="display:none;margin-bottom:20px;">
+                <div class="section-title">🚫 Contracts — No Payments Yet</div>
+                <div id="neverPaidList"></div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="section-title">📄 All Active Contracts</div>
+            <div style="overflow-x:auto;margin-bottom:20px;">
                 <table class="tbl">
-                    <thead>
-                        <tr>
-                            <th>Imóvel</th>
-                            <th>Comprador</th>
-                            <th>Tipo</th>
-                            <th>Preço</th>
-                            <th>Parcela</th>
-                            <th>Recebido</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Property</th><th>Buyer</th><th>Type</th><th>Sale Price</th><th>Installment</th><th>Received</th><th>Remaining</th><th>Status</th><th></th></tr></thead>
                     <tbody id="contratosBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
-    <div class="version">Basic 8.1 | 11/03/2026</div>
+    <div class="version">Basic 10.0 | 13/03/2026</div>
 </div>
 
 <a href="LL_Menu.html" class="no-print" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -210,189 +223,167 @@
 <script type="module">
     import { auth, onAuthStateChanged, getLLContracts, getLLPayments, getLLInstallments } from './firebase-config.js';
 
-    const fmt = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+    const fmt  = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const fmtPct = v => parseFloat(v || 0).toFixed(1) + '%';
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
-    const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '—'; };
-    const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const fmtData  = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '—'; };
+    const MONTHS   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-
         try {
-            const [contratos, pagamentos, parcelas] = await Promise.all([
-                getLLContracts(), getLLPayments(), getLLInstallments()
-            ]);
-
+            const [contratos, pagamentos, parcelas] = await Promise.all([getLLContracts(), getLLPayments(), getLLInstallments()]);
             document.getElementById('loadingMsg').style.display = 'none';
             document.getElementById('dashContent').style.display = 'block';
-
             render(contratos, pagamentos, parcelas);
         } catch(e) {
-            console.error(e);
-            document.getElementById('loadingMsg').textContent = '❌ Erro ao carregar dados.';
+            document.getElementById('loadingMsg').textContent = '❌ Error loading data.';
         }
     });
 
     function render(contratos, pagamentos, parcelas) {
         const hoje = new Date();
+        const mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
         const ativos = contratos.filter(c => c.status === 'Active');
 
-        // ---- Receivable box ----
-        const totalReceber = ativos.reduce((s, c) => {
+        const totalInvestido = contratos.reduce((s, c) => s + parseFloat(c.costBasis || 0), 0);
+        const totalVendas    = contratos.reduce((s, c) => s + parseFloat(c.contractPrice || 0), 0);
+        const totalLucro     = totalVendas - totalInvestido;
+        const roi            = totalInvestido > 0 ? (totalLucro / totalInvestido) * 100 : 0;
+
+        const totalRec = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0)
+                       + ativos.reduce((s, c) => s + parseFloat(c.downPayment || 0), 0);
+
+        const totalFalta = ativos.reduce((s, c) => {
             const price = parseFloat(c.contractPrice || 0);
-            const down = parseFloat(c.downPayment || 0);
-            const pago = pagamentos.filter(p => p.contractId === c.id).reduce((a, p) => a + parseFloat(p.principalAmount || p.amountTotal || 0), 0);
+            const down  = parseFloat(c.downPayment || 0);
+            const pago  = pagamentos.filter(p => p.contractId === c.id).reduce((a, p) => a + parseFloat(p.amountTotal || 0), 0);
             return s + Math.max(0, price - down - pago);
         }, 0);
-        document.getElementById('totalReceber').textContent = fmt(totalReceber);
 
-        const cfdCount = ativos.filter(c => c.saleType === 'CFD').length;
-        document.getElementById('totalCFD').textContent = cfdCount + ' contratos';
+        const avgTicket = ativos.length > 0 ? totalVendas / ativos.length : 0;
 
-        const totalRec = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
-        document.getElementById('totalRecebido').textContent = fmt2(totalRec);
+        document.getElementById('totalReceber').textContent       = fmt(totalFalta);
+        document.getElementById('heroCFD').textContent            = ativos.length;
+        document.getElementById('heroTotalContratos').textContent = contratos.length + ' total';
+        document.getElementById('totalRecebido').textContent      = fmt2(totalRec);
+        document.getElementById('totalCusto').textContent         = fmt2(totalInvestido);
+        document.getElementById('heroTicket').textContent         = fmt(avgTicket);
+        document.getElementById('totalLucro').textContent         = fmt2(totalLucro);
+        document.getElementById('totalFalta').textContent         = fmt2(totalFalta);
+        document.getElementById('totalROI').textContent           = fmtPct(roi);
 
-        const totalCusto = contratos.reduce((s, c) => s + parseFloat(c.costBasis || 0), 0);
-        document.getElementById('totalCusto').textContent = fmt2(totalCusto);
+        const recMes = pagamentos.filter(p => { const d = safeDate(p.paymentDate); return d && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; }).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+        const pgsMes = pagamentos.filter(p => { const d = safeDate(p.paymentDate); return d && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; }).length;
+        document.getElementById('kpiMes').textContent    = fmt(recMes);
+        document.getElementById('kpiMesSub').textContent = pgsMes + ' payment' + (pgsMes !== 1 ? 's' : '');
 
-        // ---- KPIs ----
-        document.getElementById('kpiAtivos').textContent = ativos.length;
+        document.getElementById('kpiAtivos').textContent         = ativos.length;
         document.getElementById('kpiTotalContratos').textContent = contratos.length + ' total';
 
-        const mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
-        const recMes = pagamentos.filter(p => {
-            const d = safeDate(p.paymentDate);
-            return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
-        }).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
-        document.getElementById('kpiMes').textContent = fmt(recMes);
-        const pgsMes = pagamentos.filter(p => {
-            const d = safeDate(p.paymentDate);
-            return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
-        }).length;
-        document.getElementById('kpiMesSub').textContent = pgsMes + ' pagamentos';
+        const prox30 = parcelas.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); if (!d) return false; const dias = Math.floor((d - hoje) / 86400000); return dias >= 0 && dias <= 30; });
+        document.getElementById('kpiVencendo').textContent    = prox30.length;
+        document.getElementById('kpiVendendoSub').textContent = fmt(prox30.reduce((s, p) => s + parseFloat(p.amount || 0), 0));
 
-        const prox30 = parcelas.filter(p => {
-            if (p.status === 'PAID') return false;
-            const d = safeDate(p.dueDate);
-            const dias = Math.floor((d - hoje) / 86400000);
-            return dias >= 0 && dias <= 30;
-        });
-        document.getElementById('kpiVencendo').textContent = prox30.length;
-        const valVenc = prox30.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
-        document.getElementById('kpiVendendoSub').textContent = fmt(valVenc);
+        const vencidas = parcelas.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); if (!d) return false; return d < hoje; });
+        document.getElementById('kpiVencidas').textContent    = vencidas.length;
+        document.getElementById('kpiVencidasSub').textContent = fmt(vencidas.reduce((s, p) => s + parseFloat(p.amount || 0), 0));
 
-        const vencidas = parcelas.filter(p => {
-            if (p.status === 'PAID') return false;
-            const d = safeDate(p.dueDate);
-            return d < hoje;
-        });
-        document.getElementById('kpiVencidas').textContent = vencidas.length;
-        const valVencidas = vencidas.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
-        document.getElementById('kpiVencidasSub').textContent = fmt(valVencidas);
+        const totalPend = parcelas.filter(p => p.status !== 'PAID').length;
+        const onTimeRate = totalPend > 0 ? Math.round(((totalPend - vencidas.length) / totalPend) * 100) : 100;
+        const onTimeEl = document.getElementById('kpiOnTime');
+        onTimeEl.textContent = onTimeRate + '%';
+        onTimeEl.style.color = onTimeRate >= 90 ? '#2e7d32' : onTimeRate >= 70 ? '#e65100' : '#c62828';
 
-        // ---- Bar chart — últimos 12 meses ----
+        const proxPend = parcelas.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); return d && d >= hoje; }).sort((a, b) => a.dueDate > b.dueDate ? 1 : -1)[0];
+        if (proxPend) {
+            const c = contratos.find(x => x.id === proxPend.contractId) || {};
+            const dias = Math.floor((safeDate(proxPend.dueDate) - hoje) / 86400000);
+            document.getElementById('proximoVenc').textContent    = fmtData(proxPend.dueDate);
+            document.getElementById('proximoVencSub').textContent = (c.buyerName || '—') + ' · ' + fmt2(proxPend.amount) + ' · in ' + dias + ' day' + (dias !== 1 ? 's' : '');
+        } else {
+            document.getElementById('proximoVenc').textContent = 'No upcoming';
+        }
+
+        const overdueByBuyer = {};
+        vencidas.forEach(p => { const c = contratos.find(x => x.id === p.contractId) || {}; const key = c.buyerName || 'Unknown'; overdueByBuyer[key] = (overdueByBuyer[key] || 0) + parseFloat(p.amount || 0); });
+        const topOverdue = Object.entries(overdueByBuyer).sort((a, b) => b[1] - a[1])[0];
+        if (topOverdue) {
+            document.getElementById('maiorInadimplente').textContent    = topOverdue[0];
+            document.getElementById('maiorInadimplenteSub').textContent = fmt2(topOverdue[1]) + ' overdue';
+        } else {
+            document.getElementById('maiorInadimplente').textContent    = 'None ✅';
+            document.getElementById('maiorInadimplenteSub').textContent = 'All contracts on time';
+        }
+
         const meses12 = [];
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(anoAtual, mesAtual - i, 1);
-            meses12.push({ mes: d.getMonth(), ano: d.getFullYear(), label: MESES[d.getMonth()], total: 0 });
+        for (let i = 11; i >= 0; i--) { const d = new Date(anoAtual, mesAtual - i, 1); meses12.push({ mes: d.getMonth(), ano: d.getFullYear(), label: MONTHS[d.getMonth()], total: 0 }); }
+        pagamentos.forEach(p => { const d = safeDate(p.paymentDate); if (!d) return; const item = meses12.find(m => m.mes === d.getMonth() && m.ano === d.getFullYear()); if (item) item.total += parseFloat(p.amountTotal || 0); });
+
+        const bestMonth = [...meses12].sort((a, b) => b.total - a.total)[0];
+        document.getElementById('melhorMes').textContent    = bestMonth && bestMonth.total > 0 ? fmt(bestMonth.total) : '—';
+        document.getElementById('melhorMesSub').textContent = bestMonth && bestMonth.total > 0 ? MONTHS[bestMonth.mes] + ' ' + bestMonth.ano : '';
+
+        const mesAtualData = meses12[11], mesAnteriorData = meses12[10];
+        if (mesAnteriorData && mesAnteriorData.total > 0) {
+            const diff = mesAtualData.total - mesAnteriorData.total;
+            const pctDiff = ((diff / mesAnteriorData.total) * 100).toFixed(1);
+            const cor = diff >= 0 ? '#2e7d32' : '#c62828';
+            document.getElementById('comparativoMes').innerHTML = 'vs last month: <strong style="color:' + cor + '">' + (diff >= 0 ? '▲' : '▼') + ' ' + Math.abs(pctDiff) + '% (' + (diff >= 0 ? '+' : '') + fmt(diff) + ')</strong>';
         }
-        pagamentos.forEach(p => {
-            const d = safeDate(p.paymentDate);
-            const item = meses12.find(m => m.mes === d.getMonth() && m.ano === d.getFullYear());
-            if (item) item.total += parseFloat(p.amountTotal || 0);
-        });
+
         const maxBar = Math.max(...meses12.map(m => m.total), 1);
-        const barHTML = meses12.map(m => {
+        document.getElementById('barChart').innerHTML = meses12.map(m => {
             const h = Math.round((m.total / maxBar) * 90);
-            const v = m.total >= 1000 ? '$' + (m.total/1000).toFixed(1) + 'k' : (m.total > 0 ? fmt(m.total) : '');
-            return `<div class="bar-col">
-                <div class="bar-val">${v}</div>
-                <div class="bar-fill" style="height:${h}px"></div>
-                <div class="bar-lbl">${m.label}</div>
-            </div>`;
+            const v = m.total >= 1000 ? '$' + (m.total / 1000).toFixed(1) + 'k' : (m.total > 0 ? fmt(m.total) : '');
+            const isBest = m === bestMonth && m.total > 0;
+            return '<div class="bar-col"><div class="bar-val" style="' + (isBest ? 'color:#e65100;' : '') + '">' + v + '</div><div class="bar-fill' + (isBest ? ' highlight' : '') + '" style="height:' + h + 'px"></div><div class="bar-lbl">' + m.label + '</div></div>';
         }).join('');
-        document.getElementById('barChart').innerHTML = barHTML;
 
-        // ---- Status breakdown ----
-        const statusMap = {
-            Active: { label: 'Active', cor: '#1565c0', corBar: '#1565c0' },
-            PaidOff: { label: 'Paid Off', cor: '#2e7d32', corBar: '#43a047' },
-            Default: { label: 'Default', cor: '#e65100', corBar: '#ff7043' },
-            Repossessed: { label: 'Repossessed', cor: '#c62828', corBar: '#ef5350' },
-        };
-        const total = contratos.length || 1;
-        let statusHTML = '';
-        for (const [key, cfg] of Object.entries(statusMap)) {
+        const statusMap = { Active: { label: 'Active', cor: '#1565c0' }, PaidOff: { label: 'Paid Off', cor: '#2e7d32' }, Default: { label: 'Default', cor: '#e65100' }, Repossessed: { label: 'Repossessed', cor: '#c62828' } };
+        const totalC = contratos.length || 1;
+        document.getElementById('statusList').innerHTML = Object.entries(statusMap).map(([key, cfg]) => {
             const count = contratos.filter(c => c.status === key).length;
-            if (count === 0) continue;
-            const pct = Math.round((count / total) * 100);
-            statusHTML += `<div>
-                <div class="status-row">
-                    <div class="status-label"><div class="status-dot" style="background:${cfg.cor}"></div>${cfg.label}</div>
-                    <div class="status-val" style="color:${cfg.cor}">${count} (${pct}%)</div>
-                </div>
-                <div class="status-bar-wrap"><div class="status-bar-fill" style="width:${pct}%;background:${cfg.corBar}"></div></div>
-            </div>`;
+            if (!count) return '';
+            const pct = Math.round((count / totalC) * 100);
+            return '<div><div class="status-row"><div class="status-label"><div class="status-dot" style="background:' + cfg.cor + '"></div>' + cfg.label + '</div><div class="status-val" style="color:' + cfg.cor + '">' + count + ' (' + pct + '%)</div></div><div class="status-bar-wrap"><div class="status-bar-fill" style="width:' + pct + '%;background:' + cfg.cor + '"></div></div></div>';
+        }).join('') || '<div style="color:#aaa;font-size:13px;">No data</div>';
+
+        const vencendoMes = parcelas.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); return d && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; });
+        document.getElementById('vencendoMes').textContent    = vencendoMes.length + ' installment' + (vencendoMes.length !== 1 ? 's' : '');
+        document.getElementById('vencendoMesSub').textContent = fmt(vencendoMes.reduce((s, p) => s + parseFloat(p.amount || 0), 0));
+
+        let totalMesesRest = 0, countAt = 0;
+        ativos.forEach(c => { const pend = parcelas.filter(p => p.contractId === c.id && p.status !== 'PAID' && (p.type || '').toLowerCase() !== 'balloon'); if (pend.length > 0) { totalMesesRest += pend.length; countAt++; } });
+        document.getElementById('tempoMedio').textContent = countAt > 0 ? Math.round(totalMesesRest / countAt) + ' months' : '—';
+
+        const nuncaPagou = ativos.filter(c => pagamentos.filter(p => p.contractId === c.id).length === 0);
+        document.getElementById('nuncaPagou').textContent    = nuncaPagou.length;
+        document.getElementById('nuncaPagouSub').textContent = nuncaPagou.length > 0 ? 'contracts with no payments' : 'All contracts have payments ✅';
+        if (nuncaPagou.length > 0) {
+            document.getElementById('neverPaidSection').style.display = 'block';
+            document.getElementById('neverPaidList').innerHTML = nuncaPagou.map(c => '<div class="never-paid-item"><div><strong>' + c.propertyId + '</strong> — ' + (c.buyerName || '—') + '</div><div style="font-size:12px;color:#c62828;font-weight:700;">' + fmt2(c.contractPrice) + '</div></div>').join('');
         }
-        document.getElementById('statusList').innerHTML = statusHTML || '<div style="color:#aaa;font-size:13px;">Sem dados</div>';
 
-        // ---- Upcoming installments ----
-        const sortedProx = prox30.sort((a, b) => a.dueDate > b.dueDate ? 1 : -1).slice(0, 8);
-        const upHTML = sortedProx.map(p => {
+        document.getElementById('upcomingList').innerHTML = prox30.sort((a, b) => a.dueDate > b.dueDate ? 1 : -1).slice(0, 10).map(p => {
             const c = contratos.find(x => x.id === p.contractId) || {};
-            const d = safeDate(p.dueDate);
-            const dias = Math.floor((d - hoje) / 86400000);
-            const cls = dias <= 5 ? 'soon' : 'ok';
-            return `<div class="inst-item ${cls}">
-                <div class="inst-left">
-                    <div class="prop">${p.propertyId || c.propertyId || '—'} <span style="font-weight:400;color:#888;font-size:11px;">${p.type === 'BALLOON' ? '🎈 Balloon' : ''}</span></div>
-                    <div class="buyer">${c.buyerName || '—'}</div>
-                </div>
-                <div class="inst-right">
-                    <div class="amt">${fmt2(p.amount)}</div>
-                    <div class="due">Vence ${fmtData(p.dueDate)} · ${dias}d</div>
-                </div>
-            </div>`;
-        }).join('');
-        document.getElementById('upcomingList').innerHTML = upHTML || '<div style="color:#aaa;font-size:13px;padding:10px;">Nenhuma parcela nos próximos 30 dias ✅</div>';
+            const dias = Math.floor((safeDate(p.dueDate) - hoje) / 86400000);
+            return '<div class="inst-item ' + (dias <= 5 ? 'soon' : 'ok') + '"><div class="inst-left"><div class="prop">' + (p.propertyId || c.propertyId || '—') + (p.type === 'BALLOON' ? ' <span style="font-size:11px;">🎈 Balloon</span>' : '') + '</div><div class="buyer">' + (c.buyerName || '—') + '</div></div><div class="inst-right"><div class="amt">' + fmt2(p.amount) + '</div><div class="due">' + fmtData(p.dueDate) + ' · ' + dias + 'd</div></div></div>';
+        }).join('') || '<div style="color:#aaa;font-size:13px;padding:10px;">No installments due in the next 30 days ✅</div>';
 
-        // ---- Overdue ----
-        const sortedOvd = vencidas.sort((a, b) => a.dueDate < b.dueDate ? 1 : -1).slice(0, 8);
-        const ovdHTML = sortedOvd.map(p => {
+        document.getElementById('overdueList').innerHTML = vencidas.sort((a, b) => a.dueDate < b.dueDate ? 1 : -1).slice(0, 10).map(p => {
             const c = contratos.find(x => x.id === p.contractId) || {};
-            const d = safeDate(p.dueDate);
-            const dias = Math.floor((hoje - d) / 86400000);
-            return `<div class="inst-item overdue">
-                <div class="inst-left">
-                    <div class="prop">${p.propertyId || c.propertyId || '—'}</div>
-                    <div class="buyer">${c.buyerName || '—'}</div>
-                </div>
-                <div class="inst-right">
-                    <div class="amt">${fmt2(p.amount)}</div>
-                    <div class="due" style="color:#c62828;">Venceu há ${dias} dias</div>
-                </div>
-            </div>`;
-        }).join('');
-        document.getElementById('overdueList').innerHTML = ovdHTML || '<div style="color:#aaa;font-size:13px;padding:10px;">Nenhuma parcela vencida ✅</div>';
+            const dias = Math.floor((hoje - safeDate(p.dueDate)) / 86400000);
+            return '<div class="inst-item overdue"><div class="inst-left"><div class="prop">' + (p.propertyId || c.propertyId || '—') + '</div><div class="buyer">' + (c.buyerName || '—') + '</div></div><div class="inst-right"><div class="amt">' + fmt2(p.amount) + '</div><div class="due" style="color:#c62828;">' + dias + ' day' + (dias !== 1 ? 's' : '') + ' overdue</div></div></div>';
+        }).join('') || '<div style="color:#aaa;font-size:13px;padding:10px;">No overdue installments ✅</div>';
 
-        // ---- Contracts table ----
         const badges = { Active: 'green', PaidOff: 'blue', Default: 'orange', Repossessed: 'red' };
-        const tipoLabel = { CFD: '📋 CFD', CASH: '💵 CASH' };
-        const bodyHTML = ativos.sort((a, b) => (a.propertyId > b.propertyId ? 1 : -1)).map(c => {
-            const recebido = pagamentos.filter(p => p.contractId === c.id).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
-            return `<tr>
-                <td><strong>${c.propertyId}</strong><br><span style="font-size:11px;color:#888;">${c.county || ''}, ${c.state || ''}</span></td>
-                <td>${c.buyerName || '—'}</td>
-                <td><span class="badge badge-blue">${tipoLabel[c.saleType] || c.saleType}</span></td>
-                <td>${fmt2(c.contractPrice)}</td>
-                <td>${c.saleType === 'CFD' ? fmt2(c.installmentAmount) : '—'}</td>
-                <td style="color:#2e7d32;font-weight:700;">${fmt2(recebido)}</td>
-                <td><span class="badge badge-${badges[c.status] || 'grey'}">${c.status}</span></td>
-                <td><a href="LL_Detalhe_Contrato.html?id=${c.id}" class="badge badge-blue" style="text-decoration:none;cursor:pointer;">Ver →</a></td>
-            </tr>`;
-        }).join('');
-        document.getElementById('contratosBody').innerHTML = bodyHTML || '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px;">Sem contratos ativos</td></tr>';
+        document.getElementById('contratosBody').innerHTML = ativos.sort((a, b) => a.propertyId > b.propertyId ? 1 : -1).map(c => {
+            const recebido = pagamentos.filter(p => p.contractId === c.id).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0) + parseFloat(c.downPayment || 0);
+            const restante = Math.max(0, parseFloat(c.contractPrice || 0) - recebido);
+            return '<tr><td><strong>' + c.propertyId + '</strong><br><span style="font-size:11px;color:#888;">' + (c.county || '') + (c.state ? ', ' + c.state : '') + '</span></td><td>' + (c.buyerName || '—') + '</td><td><span class="badge badge-blue">' + (c.saleType || '—') + '</span></td><td>' + fmt2(c.contractPrice) + '</td><td>' + (c.saleType === 'CFD' ? fmt2(c.installmentAmount) : '—') + '</td><td style="color:#2e7d32;font-weight:700;">' + fmt2(recebido) + '</td><td style="color:#e65100;font-weight:700;">' + fmt2(restante) + '</td><td><span class="badge badge-' + (badges[c.status] || 'grey') + '">' + c.status + '</span></td><td><a href="LL_Detalhe_Contrato.html?id=' + c.id + '" class="badge badge-blue" style="text-decoration:none;">View →</a></td></tr>';
+        }).join('') || '<tr><td colspan="9" style="text-align:center;color:#aaa;padding:20px;">No active contracts</td></tr>';
     }
 </script>
 </body>
