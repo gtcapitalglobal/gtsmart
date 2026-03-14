@@ -110,7 +110,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h2>📊 Ledgerlands Dashboard</h2>
+        <h2>📊 Ledgerlands Dashboard <span style="font-size:11px;font-weight:400;opacity:0.6;">v10.0 | 14/03/2026</span></h2>
         <div class="header-right no-print">
             <button onclick="window.print()" class="btn-print">🖨️ Print</button>
             <a href="LL_Menu.html" class="btn-back">← Menu</a>
@@ -129,7 +129,9 @@
                     <div class="hero-item" onclick="document.getElementById('tabelaContratos').scrollIntoView({behavior:'smooth'})" style="cursor:pointer;" title="Click to see breakdown">
                         <div class="hl">Total Received</div><div class="hv" id="totalRecebido">—</div><div class="hs">↓ click to see breakdown</div>
                     </div>
-                    <div class="hero-item"><div class="hl">Total Investment</div><div class="hv" id="totalCusto">—</div><div class="hs">cost basis</div></div>
+                    <div class="hero-item" onclick="document.getElementById('tabelaContratos').scrollIntoView({behavior:'smooth'})" style="cursor:pointer;" title="Click to see breakdown">
+                        <div class="hl">Total Investment</div><div class="hv" id="totalCusto">—</div><div class="hs">↓ click to see breakdown</div>
+                    </div>
                     <div class="hero-item"><div class="hl">Avg. Ticket</div><div class="hv" id="heroTicket">—</div><div class="hs">per contract</div></div>
                 </div>
             </div>
@@ -211,7 +213,7 @@
             <div class="section-title" id="tabelaContratos">📄 All Active Contracts</div>
             <div style="overflow-x:auto;margin-bottom:20px;">
                 <table class="tbl">
-                    <thead><tr><th>Property</th><th>Buyer</th><th>Type</th><th>Sale Price</th><th>Installment</th><th>Received</th><th>Remaining</th><th>Status</th><th></th></tr></thead>
+                    <thead><tr><th>Property</th><th>Buyer</th><th>Type</th><th>Sale Price</th><th>Cost Basis</th><th>Installment</th><th>Received</th><th>Remaining</th><th>Status</th><th></th></tr></thead>
                     <tbody id="contratosBody"></tbody>
                 </table>
             </div>
@@ -254,13 +256,15 @@
         const totalLucro     = totalVendas - totalInvestido;
         const roi            = totalInvestido > 0 ? (totalLucro / totalInvestido) * 100 : 0;
 
-        // Total received — pagamentos já incluem o down payment (não somar de novo)
-        const totalRec = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+        // Total received = pagamentos registrados + down payments dos contratos
+        const totalRec = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0)
+                       + ativos.reduce((s, c) => s + parseFloat(c.downPayment || 0), 0);
 
         const totalFalta = ativos.reduce((s, c) => {
             const price = parseFloat(c.contractPrice || 0);
+            const down  = parseFloat(c.downPayment || 0);
             const pago  = pagamentos.filter(p => p.contractId === c.id).reduce((a, p) => a + parseFloat(p.amountTotal || 0), 0);
-            return s + Math.max(0, price - pago);
+            return s + Math.max(0, price - down - pago);
         }, 0);
 
         const avgTicket = ativos.length > 0 ? totalVendas / ativos.length : 0;
@@ -381,9 +385,9 @@
 
         const badges = { Active: 'green', PaidOff: 'blue', Default: 'orange', Repossessed: 'red' };
         document.getElementById('contratosBody').innerHTML = ativos.sort((a, b) => a.propertyId > b.propertyId ? 1 : -1).map(c => {
-            const recebido = pagamentos.filter(p => p.contractId === c.id).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+            const recebido = pagamentos.filter(p => p.contractId === c.id).reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0) + parseFloat(c.downPayment || 0);
             const restante = Math.max(0, parseFloat(c.contractPrice || 0) - recebido);
-            return '<tr><td><strong>' + c.propertyId + '</strong><br><span style="font-size:11px;color:#888;">' + (c.county || '') + (c.state ? ', ' + c.state : '') + '</span></td><td>' + (c.buyerName || '—') + '</td><td><span class="badge badge-blue">' + (c.saleType || '—') + '</span></td><td>' + fmt2(c.contractPrice) + '</td><td>' + (c.saleType === 'CFD' ? fmt2(c.installmentAmount) : '—') + '</td><td style="color:#2e7d32;font-weight:700;">' + fmt2(recebido) + '</td><td style="color:#e65100;font-weight:700;">' + fmt2(restante) + '</td><td><span class="badge badge-' + (badges[c.status] || 'grey') + '">' + c.status + '</span></td><td><a href="LL_Detalhe_Contrato.html?id=' + c.id + '" class="badge badge-blue" style="text-decoration:none;">View →</a></td></tr>';
+            return '<tr><td><strong>' + c.propertyId + '</strong><br><span style="font-size:11px;color:#888;">' + (c.county || '') + (c.state ? ', ' + c.state : '') + '</span></td><td>' + (c.buyerName || '—') + '</td><td><span class="badge badge-blue">' + (c.saleType || '—') + '</span></td><td>' + fmt2(c.contractPrice) + '</td><td style="color:#555;">' + fmt2(c.costBasis) + '</td><td>' + (c.saleType === 'CFD' ? fmt2(c.installmentAmount) : '—') + '</td><td style="color:#2e7d32;font-weight:700;">' + fmt2(recebido) + '</td><td style="color:#e65100;font-weight:700;">' + fmt2(restante) + '</td><td><span class="badge badge-' + (badges[c.status] || 'grey') + '">' + c.status + '</span></td><td><a href="LL_Detalhe_Contrato.html?id=' + c.id + '" class="badge badge-blue" style="text-decoration:none;">View →</a></td></tr>';
         }).join('') || '<tr><td colspan="9" style="text-align:center;color:#aaa;padding:20px;">No active contracts</td></tr>';
     }
 </script>
