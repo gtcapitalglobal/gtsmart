@@ -198,14 +198,27 @@
         </label>
         <!-- Link gerado -->
         <div class="sq-link-box" id="sqLinkBox" style="display:none;">
-            <div class="sq-link-label">✅ Link gerado — envie ao cliente</div>
+            <div class="sq-link-label">✅ Link ready — send to client</div>
             <textarea class="sq-link-url" id="sqLinkUrl" rows="2" readonly></textarea>
-            <div style="display:flex;gap:8px;margin-top:8px;">
-                <button class="btn-copiar" onclick="copiarLink()" style="flex:1;">📋 Copiar Link</button>
-                <button onclick="abrirPortal()" style="flex:1;background:#006aff;color:white;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">🔗 Abrir Portal</button>
-            </div>
-            <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:6px;font-size:11px;color:#e65100;">
-                💡 Envie este link por WhatsApp ou email. O cliente paga com cartão diretamente, sem baixar nada.
+            <button class="btn-copiar" onclick="copiarLink()" style="margin-top:8px;">📋 Copy Link</button>
+
+            <!-- Send via -->
+            <div style="margin-top:14px;border-top:1px solid #c3dfc9;padding-top:12px;">
+                <div style="font-size:11px;font-weight:800;color:#555;text-transform:uppercase;margin-bottom:10px;">Send directly to client</div>
+
+                <!-- Phone -->
+                <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:11px;font-weight:700;color:#555;white-space:nowrap;min-width:50px;">📱 Phone</span>
+                    <input type="tel" id="sqPhone" placeholder="(305) 555-0000" style="flex:1;padding:8px 10px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#25d366'" onblur="this.style.borderColor='#e0e0e0'">
+                    <button onclick="enviarWhatsApp()" style="background:#25d366;color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">WhatsApp</button>
+                </div>
+
+                <!-- Email -->
+                <div style="display:flex;gap:6px;align-items:center;">
+                    <span style="font-size:11px;font-weight:700;color:#555;white-space:nowrap;min-width:50px;">✉️ Email</span>
+                    <input type="email" id="sqEmail" placeholder="client@email.com" style="flex:1;padding:8px 10px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#1565c0'" onblur="this.style.borderColor='#e0e0e0'">
+                    <button onclick="enviarEmail()" style="background:#1565c0;color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">Send Email</button>
+                </div>
             </div>
         </div>
         <input type="hidden" id="sqInstallmentId">
@@ -219,19 +232,19 @@
 <a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment, saveLLPayment } from './firebase-config.js';
+    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, getLLBuyers, updateLLInstallment, saveLLPayment } from './firebase-config.js';
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
     const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '—'; };
     const toDateInput = d => { if (!d) return ''; if (typeof d === 'string' && d.includes('T')) return d.split('T')[0]; return d; };
 
-    let parcelas = [], contratos = [], filtroAtivo = 'todas', searchTerm = '';
+    let parcelas = [], contratos = [], buyers = [], filtroAtivo = 'todas', searchTerm = '';
     let sqDados = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-        [parcelas, contratos] = await Promise.all([getLLInstallments(), getLLContracts()]);
+        [parcelas, contratos, buyers] = await Promise.all([getLLInstallments(), getLLContracts(), getLLBuyers()]);
         renderSummary(); renderTabela();
     });
 
@@ -316,6 +329,12 @@
         document.getElementById('btnGerarLink').disabled = false;
         document.getElementById('btnGerarLink').textContent = '💳 Gerar Link';
         document.getElementById('sqInfo').innerHTML = `<strong>${sqDados.propertyId}</strong> — Parcela #${sqDados.installmentNumber}<br>Comprador: <strong>${sqDados.buyerName}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(sqDados.amount)}</strong>`;
+        // Preencher telefone e email do cliente automaticamente
+        const buyer = buyers.find(b => b.id === c.buyerId) || {};
+        const phone = c.buyerPhone || c.phone || buyer.phone || buyer.telefone || '';
+        const email = c.buyerEmail || c.email || buyer.email || '';
+        document.getElementById('sqPhone').value = phone;
+        document.getElementById('sqEmail').value = email;
         document.getElementById('sqToggleLateFee').style.display = isOverdue ? 'flex' : 'none';
         document.getElementById('sqLinhaLateFee').style.display = 'none';
         atualizarResumoSq();
@@ -373,8 +392,52 @@
         const url = document.getElementById('sqLinkUrl').value; if (!url) return;
         navigator.clipboard.writeText(url).then(() => {
             const btn = document.querySelector('.btn-copiar');
-            btn.textContent='✅ Copiado!'; setTimeout(()=>{btn.textContent='📋 Copiar Link';},2000);
-        }).catch(()=>{ document.getElementById('sqLinkUrl').select(); document.execCommand('copy'); alert('✅ Link copiado!'); });
+            btn.textContent='✅ Copied!'; setTimeout(()=>{btn.textContent='📋 Copy Link';},2000);
+        }).catch(()=>{ document.getElementById('sqLinkUrl').select(); document.execCommand('copy'); alert('✅ Link copied!'); });
+    };
+
+    window.enviarWhatsApp = function() {
+        const url = document.getElementById('sqLinkUrl').value; if (!url) return;
+        let phone = document.getElementById('sqPhone').value.replace(/[^0-9]/g,'');
+        if (!phone) { alert('Please enter the client phone number.'); return; }
+        if (!phone.startsWith('1') && phone.length === 10) phone = '1' + phone;
+        const name = sqDados ? sqDados.buyerName : '';
+        const prop = sqDados ? sqDados.propertyId : '';
+        const inst = sqDados ? sqDados.installmentNumber : '';
+        const msg = encodeURIComponent('Hello ' + name + ',
+
+Here is your payment link for Property ' + prop + ' — Installment #' + inst + ':
+
+' + url + '
+
+You can pay securely with your credit or debit card. No account needed.
+
+Thank you,
+GT Lands');
+        window.open('https://wa.me/' + phone + '?text=' + msg, '_blank');
+    };
+
+    window.enviarEmail = function() {
+        const url = document.getElementById('sqLinkUrl').value; if (!url) return;
+        const email = document.getElementById('sqEmail').value.trim();
+        if (!email) { alert('Please enter the client email address.'); return; }
+        const prop = sqDados ? sqDados.propertyId : '';
+        const inst = sqDados ? sqDados.installmentNumber : '';
+        const name = sqDados ? sqDados.buyerName : '';
+        const subject = encodeURIComponent('Payment Link — Property ' + prop + ' Installment #' + inst);
+        const body = encodeURIComponent('Hello ' + name + ',
+
+Please use the link below to make your payment for Installment #' + inst + ' — Property ' + prop + ':
+
+' + url + '
+
+You can pay securely with your credit or debit card. No app or account needed.
+
+If you have any questions, please contact us.
+
+Thank you,
+GT Lands');
+        window.open('mailto:' + email + '?subject=' + subject + '&body=' + body, '_blank');
     };
 
     window.fecharModalSquare = function() { document.getElementById('modalSquare').classList.remove('open'); sqDados=null; };
