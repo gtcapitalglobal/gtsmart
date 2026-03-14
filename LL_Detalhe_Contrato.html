@@ -376,8 +376,8 @@
         const total = parcelas.filter(p => (p.type||'').toLowerCase() !== 'balloon').length;
         const pct = total > 0 ? Math.round((pagas / total) * 100) : 0;
 
-        const totalRecebido = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
-        const balance = parseFloat(contrato.installmentAmount || 0) * parseInt(contrato.installmentCount || 0);
+        const totalRecebido = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0) + parseFloat(contrato.downPayment || 0);
+        const balance = Math.max(0, parseFloat(contrato.contractPrice || 0) - totalRecebido);
         const lucro = parseFloat(contrato.contractPrice || 0) - parseFloat(contrato.costBasis || 0);
 
         // Marcar vencidas
