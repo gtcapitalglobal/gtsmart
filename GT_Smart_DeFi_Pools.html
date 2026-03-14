@@ -68,16 +68,17 @@
 
         .range-gauge { background: #f8f9fa; border-radius: 10px; padding: 12px; margin-bottom: 8px; }
         .range-gauge-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .range-bar-wrap { position: relative; height: 32px; margin: 0 20px; }
-        .range-bar { position: absolute; top: 12px; left: 0; right: 0; height: 8px; background: #e0e0e0; border-radius: 4px; }
-        .range-bar-fill { position: absolute; top: 12px; height: 8px; background: linear-gradient(90deg, #66bb6a, #43a047); border-radius: 4px; }
-        .range-marker { position: absolute; top: 4px; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transform: translateX(-12px); z-index: 2; }
-        .range-entry { position: absolute; top: 6px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid #1565c0; transform: translateX(-8px); z-index: 1; }
+        .range-bar-wrap { position: relative; height: 40px; margin: 0 20px; }
+        .range-bar { position: absolute; top: 16px; left: 0; right: 0; height: 8px; background: #e0e0e0; border-radius: 4px; }
+        .range-bar-fill { position: absolute; top: 16px; height: 8px; background: linear-gradient(90deg, #66bb6a, #43a047); border-radius: 4px; }
+        .range-marker { position: absolute; top: -8px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 14px solid #43a047; transform: translateX(-10px); z-index: 2; }
+        .range-marker.out { border-top-color: #c62828; }
+        .range-entry { position: absolute; top: 16px; width: 16px; height: 16px; border-radius: 50%; background: #378ADD; border: 2.5px solid white; transform: translateX(-8px); z-index: 1; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
         .range-labels { display: flex; justify-content: space-between; margin: 0 20px; font-size: 10px; color: #888; font-weight: 600; margin-top: 4px; }
         .range-legend { display: flex; justify-content: center; gap: 15px; margin-top: 6px; font-size: 10px; color: #666; }
         .range-legend span { display: flex; align-items: center; gap: 4px; }
         .range-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .range-tri { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 8px solid #1565c0; display: inline-block; }
+        .range-tri { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 8px solid #43a047; display: inline-block; }
         .pool-block-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
         .pool-block-row:last-child { border-bottom: none; }
         .pool-block-row .pbr-label { color: #888; font-weight: 600; }
@@ -1098,13 +1099,17 @@ let allCryptos = [];
                             '<div class="range-bar-wrap">' +
                                 '<div class="range-bar"></div>' +
                                 '<div class="range-bar-fill" style="left:' + barLeft + '%;width:' + barWidth + '%;"></div>' +
+                                '<div style="position:absolute;top:10px;left:' + barLeft + '%;width:2px;height:14px;background:#43a047;opacity:0.7;transform:translateX(-1px);"></div>' +
+                                '<div style="position:absolute;top:10px;left:' + barRight + '%;width:2px;height:14px;background:#43a047;opacity:0.7;transform:translateX(-1px);"></div>' +
+                                '<div style="position:absolute;top:32px;left:' + barLeft + '%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#43a047;">' + rMin + '</div>' +
+                                '<div style="position:absolute;top:32px;left:' + barRight + '%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#43a047;">' + rMax + '</div>' +
                                 entryHtml +
-                                '<div class="range-marker" style="left:' + currentPos + '%;background:' + currentColor + ';"></div>' +
+                                '<div class="range-marker' + (isInRange ? '' : ' out') + '" style="left:' + currentPos + '%;"></div>' +
                             '</div>' +
                             '<div class="range-labels"><span>' + rMin + '</span><span style="color:' + currentColor + ';font-weight:800;">' + ratio.toFixed(2) + '</span><span>' + rMax + '</span></div>' +
                             '<div class="range-legend">' +
-                                '<span><div class="range-dot" style="background:' + currentColor + ';"></div> Hoje</span>' +
-                                (entryRatio > 0 ? '<span><div class="range-tri"></div> Entrada (' + entryRatio.toFixed(2) + ')</span>' : '') +
+                                '<span><div class="range-tri' + (isInRange ? '' : ' out') + '" style="' + (!isInRange ? 'border-top-color:#c62828;' : '') + '"></div> Hoje</span>' +
+                                (entryRatio > 0 ? '<span><div class="range-dot" style="background:#378ADD;border:2px solid #ccc;"></div> Entrada (' + entryRatio.toFixed(2) + ')</span>' : '') +
                                 '<span><div class="range-dot" style="background:#43a047;border:2px solid #e0e0e0;width:8px;height:8px;"></div> Range</span>' +
                             '</div>' +
                         '</div>';
