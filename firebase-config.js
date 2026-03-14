@@ -238,6 +238,13 @@ async function exportFullBackup() {
     const cards     = await getCards();
     const empresas  = await getEmpresas();
 
+    // Despesas Empresariais
+    let despesas = [];
+    try {
+      const snap = await getDocs(collection(db, 'users', userId, 'despesas'));
+      despesas = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    } catch(e) { console.warn('despesas vazio ou erro:', e); }
+
     // DeFi Pools
     let defiPools = [];
     try {
@@ -315,6 +322,7 @@ async function exportFullBackup() {
         contracts,
         cards,
         empresas,
+        despesas,
         defiPools,
         defiBorrows,
         defiColateral,
@@ -333,6 +341,7 @@ async function exportFullBackup() {
         totalContracts: contracts.length,
         totalCards: cards.length,
         totalEmpresas: empresas.length,
+        totalDespesas: despesas.length,
         totalDefiPools: defiPools.length,
         totalDefiBorrows: defiBorrows.length,
         totalDefiColateral: defiColateral.length,
@@ -368,6 +377,7 @@ async function exportFullBackup() {
       contracts: contracts.length,
       cards: cards.length,
       empresas: empresas.length,
+      despesas: despesas.length,
       defiPools: defiPools.length,
       defiBorrows: defiBorrows.length,
       llBuyers: llBuyers.length,
@@ -424,6 +434,13 @@ async function importFullBackup(jsonData) {
     if (backup.data.empresas) {
       for (const empresa of backup.data.empresas) {
         await setDoc(doc(db, 'users', userId, 'empresas', empresa.id), empresa);
+      }
+    }
+
+    // Importar Despesas Empresariais
+    if (backup.data.despesas) {
+      for (const desp of backup.data.despesas) {
+        await setDoc(doc(db, 'users', userId, 'despesas', desp.id), desp);
       }
     }
 
