@@ -697,38 +697,68 @@ window.setAba = function(aba, btn) {
     if (isPainel) renderVencimentos();
 };
 
+// Calcula próxima data de vencimento mensal a partir de hoje
+function proximaDataMensal(diaPag) {
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth();
+    // Tenta neste mês
+    let candidato = new Date(ano, mes, diaPag);
+    if (candidato < hoje) {
+        // Já passou — próximo é no mês seguinte
+        candidato = new Date(ano, mes + 1, diaPag);
+    }
+    return candidato;
+}
+
 function renderVencimentos() {
     const hoje = new Date(); hoje.setHours(0,0,0,0);
-    const limite = new Date(hoje); limite.setDate(hoje.getDate() + 90);
 
-    const proximos = despesas
-        .filter(d => d.periodo === 'anual' && d.vencimento)
-        .map(d => {
+    const proximos = [];
+
+    despesas.forEach(d => {
+        if (d.periodo === 'anual' && d.vencimento) {
+            // Anuais: usa data de vencimento fixa
             const dias = diasAteVencimento(d.vencimento);
-            return { ...d, dias };
-        })
-        .filter(d => d.dias !== null && d.dias >= 0 && d.dias <= vencDias)
-        .sort((a,b) => a.dias - b.dias);
+            if (dias !== null && dias >= 0 && dias <= vencDias) {
+                proximos.push({ ...d, dias, proxData: d.vencimento });
+            }
+        } else if (d.periodo === 'mensal' && d.diaPag) {
+            // Mensais: calcula próximo dia de pagamento
+            const proxData = proximaDataMensal(d.diaPag);
+            const dias = Math.round((proxData - hoje) / 86400000);
+            if (dias >= 0 && dias <= vencDias) {
+                const dataStr = proxData.getFullYear() + '-' +
+                    String(proxData.getMonth()+1).padStart(2,'0') + '-' +
+                    String(proxData.getDate()).padStart(2,'0');
+                proximos.push({ ...d, dias, proxData: dataStr, isMensal: true });
+            }
+        }
+    });
+
+    proximos.sort((a,b) => a.dias - b.dias);
 
     const el = document.getElementById('vencimentosContent');
 
     if (proximos.length === 0) {
-        el.innerHTML = '<div class="venc-vazio">✅ Nenhuma despesa vencendo nos próximos ${vencDias} dias</div>';
+        el.innerHTML = `<div class="venc-vazio">✅ Nenhuma despesa vencendo nos próximos ${vencDias} dias</div>`;
         return;
     }
 
     // Agrupar por mês
     const grupos = {};
     proximos.forEach(d => {
-        const dt = new Date(d.vencimento + 'T00:00:00');
+        const dt = new Date(d.proxData + 'T00:00:00');
         const chave = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
         const titulo = dt.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
         if (!grupos[chave]) grupos[chave] = { titulo, items: [] };
         grupos[chave].items.push(d);
     });
 
+    const totalUSD = proximos.filter(d => d.moeda !== 'BRL').reduce((s,d) => s + d.valor, 0);
+
     let html = `<div style="margin-bottom:12px;padding:10px 14px;background:#f0f4ff;border-radius:10px;font-size:13px;color:#1a237e;font-weight:600;">
-        📅 ${proximos.length} despesa${proximos.length>1?'s':''} vencendo nos próximos ${vencDias} dias — Total: ${fmtUSD(proximos.reduce((s,d)=>s+d.valor,0))}
+        📅 ${proximos.length} despesa${proximos.length>1?'s':''} vencendo nos próximos ${vencDias} dias — Total: ${fmtUSD(totalUSD)}
     </div>`;
 
     Object.entries(grupos).sort().forEach(([, grupo]) => {
@@ -736,10 +766,12 @@ function renderVencimentos() {
             <div class="venc-mes-titulo">📆 ${grupo.titulo.charAt(0).toUpperCase() + grupo.titulo.slice(1)}</div>`;
 
         grupo.items.forEach(d => {
-            const cls = d.dias <= 15 ? 'urgente' : d.dias <= 30 ? 'atencao' : 'normal';
-            const dCls = d.dias <= 15 ? 'd-urgente' : d.dias <= 30 ? 'd-atencao' : 'd-normal';
-            const diasStr = d.dias === 0 ? 'HOJE' : d.dias === 1 ? '1 dia' : `${d.dias} dias`;
-            const dtFmt = new Date(d.vencimento + 'T00:00:00').toLocaleDateString('pt-BR');
+            const cls = d.dias <= 5 ? 'urgente' : d.dias <= 15 ? 'atencao' : 'normal';
+            const dCls = d.dias <= 5 ? 'd-urgente' : d.dias <= 15 ? 'd-atencao' : 'd-normal';
+            const dtFmt = new Date(d.proxData + 'T00:00:00').toLocaleDateString('pt-BR');
+            const tipoTag = d.isMensal
+                ? `<span class="tag" style="background:#e8f5e9;color:#2e7d32;">🔄 Mensal · Dia ${d.diaPag}</span>`
+                : `<span class="tag" style="background:#e3f2fd;color:#1565c0;">📆 Anual</span>`;
 
             let pagDisplay = '';
             if (d.cartaoId) pagDisplay = nomeCartao(d.cartaoId) || '';
@@ -754,8 +786,8 @@ function renderVencimentos() {
                     <div class="venc-nome">${d.nome}</div>
                     <div class="venc-meta">
                         ${d.empresa ? `<span class="tag tag-empresa">${d.empresa}</span>` : ''}
+                        ${tipoTag}
                         ${pagDisplay ? `<span class="tag">${pagDisplay}</span>` : ''}
-                        ${d.email ? `<span class="tag">${d.email}</span>` : ''}
                         ${d.trocar ? `<span class="venc-trocar">⚠️ Trocar</span>` : ''}
                     </div>
                     ${d.obs ? `<div style="font-size:11px;color:#888;margin-top:3px;">💬 ${d.obs}</div>` : ''}
