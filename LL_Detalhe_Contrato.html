@@ -377,7 +377,8 @@
         const pct = total > 0 ? Math.round((pagas / total) * 100) : 0;
 
         const totalRecebido = pagamentos.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0) + parseFloat(contrato.downPayment || 0);
-        const balance = Math.max(0, parseFloat(contrato.contractPrice || 0) - totalRecebido);
+        const balance = Math.max(0, parseFloat(contrato.contractPrice || 0) - parseFloat(contrato.downPayment || 0)); // valor financiado (fixo)
+        const remaining = Math.max(0, parseFloat(contrato.contractPrice || 0) - totalRecebido); // saldo atual
         const lucro = parseFloat(contrato.contractPrice || 0) - parseFloat(contrato.costBasis || 0);
 
         // Marcar vencidas
@@ -414,6 +415,7 @@
                     <div class="info-row"><span class="info-lbl">Cost Basis</span><span class="info-val">${fmt2(contrato.costBasis)}</span></div>
                     <div class="info-row"><span class="info-lbl">Est. Profit</span><span class="info-val green">${fmt2(lucro)}</span></div>
                     <div class="info-row"><span class="info-lbl">Total Received</span><span class="info-val green">${fmt2(totalRecebido)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Remaining Balance</span><span class="info-val" style="color:#e65100;font-weight:700;">${fmt2(remaining)}</span></div>
                     ${contrato.saleType === 'CFD' && total > 0 ? `
                     <div style="margin-top:10px;">
                         <div style="font-size:11px;color:#888;margin-bottom:4px;">Progress: ${pagas}/${total} installments paid</div>
