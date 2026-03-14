@@ -198,24 +198,23 @@
         </label>
         <!-- Link gerado -->
         <div class="sq-link-box" id="sqLinkBox" style="display:none;">
-            <div class="sq-link-label">✅ Link ready — send to client</div>
+            <div class="sq-link-label">✅ Link gerado — envie ao cliente</div>
             <textarea class="sq-link-url" id="sqLinkUrl" rows="2" readonly></textarea>
             <div style="display:flex;gap:8px;margin-top:8px;">
-                <button class="btn-copiar" onclick="copiarLink()" style="flex:1;">📋 Copy Link</button>
-                <button onclick="abrirPortal()" style="flex:1;background:#006aff;color:white;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">🔗 Open Portal</button>
+                <button class="btn-copiar" onclick="copiarLink()" style="flex:1;">📋 Copiar Link</button>
+                <button onclick="abrirPortal()" style="flex:1;background:#006aff;color:white;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">🔗 Abrir Portal</button>
             </div>
-            <!-- Send via WhatsApp / Email -->
-            <div style="margin-top:14px;border-top:1px solid #c3dfc9;padding-top:12px;">
-                <div style="font-size:11px;font-weight:800;color:#555;text-transform:uppercase;margin-bottom:10px;">📤 Send directly to client</div>
+            <div style="margin-top:12px;border-top:1px solid #c3dfc9;padding-top:12px;">
+                <div style="font-size:11px;font-weight:800;color:#555;text-transform:uppercase;margin-bottom:8px;">Send directly to client</div>
                 <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
-                    <span style="font-size:11px;font-weight:700;color:#555;white-space:nowrap;min-width:46px;">📱 Phone</span>
+                    <span style="font-size:11px;font-weight:700;color:#555;min-width:46px;">Phone</span>
                     <input type="tel" id="sqPhone" placeholder="(305) 555-0000" style="flex:1;padding:7px 10px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-                    <button onclick="enviarWhatsApp()" style="background:#25d366;color:white;border:none;padding:8px 11px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">WhatsApp</button>
+                    <button onclick="enviarWhatsApp()" style="background:#25d366;color:white;border:none;padding:8px 11px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">WhatsApp</button>
                 </div>
                 <div style="display:flex;gap:6px;align-items:center;">
-                    <span style="font-size:11px;font-weight:700;color:#555;white-space:nowrap;min-width:46px;">✉️ Email</span>
+                    <span style="font-size:11px;font-weight:700;color:#555;min-width:46px;">Email</span>
                     <input type="email" id="sqEmail" placeholder="client@email.com" style="flex:1;padding:7px 10px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-                    <button onclick="enviarEmail()" style="background:#1565c0;color:white;border:none;padding:8px 11px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">Send Email</button>
+                    <button onclick="enviarEmail()" style="background:#1565c0;color:white;border:none;padding:8px 11px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">Send Email</button>
                 </div>
             </div>
         </div>
@@ -384,53 +383,38 @@
         const url = document.getElementById('sqLinkUrl').value; if (!url) return;
         navigator.clipboard.writeText(url).then(() => {
             const btn = document.querySelector('.btn-copiar');
-            btn.textContent='✅ Copied!'; setTimeout(()=>{btn.textContent='📋 Copy Link';},2000);
-        }).catch(()=>{ document.getElementById('sqLinkUrl').select(); document.execCommand('copy'); alert('✅ Link copied!'); });
-    };
-
-    window.enviarWhatsApp = function() {
-        const url = document.getElementById('sqLinkUrl').value; if (!url) return;
-        let phone = (document.getElementById('sqPhone').value||'').replace(/[^0-9]/g,'');
-        if (!phone) { alert('Please enter the client phone number.'); return; }
-        if (phone.length === 10) phone = '1' + phone;
-        const name = sqDados ? sqDados.buyerName : '';
-        const prop = sqDados ? sqDados.propertyId : '';
-        const inst = sqDados ? sqDados.installmentNumber : '';
-        const msg = encodeURIComponent('Hello ' + name + ',
-
-Here is your payment link for Property ' + prop + ' — Installment #' + inst + ':
-
-' + url + '
-
-Pay securely with your credit or debit card. No account needed.
-
-Thank you,
-GT Lands');
-        window.open('https://wa.me/' + phone + '?text=' + msg, '_blank');
-    };
-
-    window.enviarEmail = function() {
-        const url = document.getElementById('sqLinkUrl').value; if (!url) return;
-        const email = (document.getElementById('sqEmail').value||'').trim();
-        if (!email) { alert('Please enter the client email address.'); return; }
-        const prop = sqDados ? sqDados.propertyId : '';
-        const inst = sqDados ? sqDados.installmentNumber : '';
-        const name = sqDados ? sqDados.buyerName : '';
-        const subject = encodeURIComponent('Payment Link — Property ' + prop + ' — Installment #' + inst);
-        const body = encodeURIComponent('Hello ' + name + ',
-
-Please use the link below to pay Installment #' + inst + ' for Property ' + prop + ':
-
-' + url + '
-
-Pay securely with your credit or debit card. No app or account needed.
-
-Thank you,
-GT Lands');
-        window.open('mailto:' + email + '?subject=' + subject + '&body=' + body, '_blank');
+            btn.textContent='✅ Copiado!'; setTimeout(()=>{btn.textContent='📋 Copiar Link';},2000);
+        }).catch(()=>{ document.getElementById('sqLinkUrl').select(); document.execCommand('copy'); alert('✅ Link copiado!'); });
     };
 
     window.fecharModalSquare = function() { document.getElementById('modalSquare').classList.remove('open'); sqDados=null; };
+
+    window.enviarWhatsApp = function() {
+        var url = document.getElementById('sqLinkUrl').value;
+        if (!url) return;
+        var rawPhone = document.getElementById('sqPhone').value || '';
+        var phone = rawPhone.replace(/[^0-9]/g, '');
+        if (!phone) { alert('Please enter the client phone number.'); return; }
+        if (phone.length === 10) { phone = '1' + phone; }
+        var name = sqDados ? sqDados.buyerName : '';
+        var prop = sqDados ? sqDados.propertyId : '';
+        var inst = sqDados ? sqDados.installmentNumber : '';
+        var msg = 'Hello ' + name + ', here is your payment link for Property ' + prop + ' - Installment #' + inst + ': ' + url + ' - Pay securely with your credit or debit card. Thank you, GT Lands';
+        window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    };
+
+    window.enviarEmail = function() {
+        var url = document.getElementById('sqLinkUrl').value;
+        if (!url) return;
+        var email = (document.getElementById('sqEmail').value || '').trim();
+        if (!email) { alert('Please enter the client email address.'); return; }
+        var prop = sqDados ? sqDados.propertyId : '';
+        var inst = sqDados ? sqDados.installmentNumber : '';
+        var name = sqDados ? sqDados.buyerName : '';
+        var subject = 'Payment Link - Property ' + prop + ' - Installment #' + inst;
+        var body = 'Hello ' + name + ', please use the link below to pay Installment #' + inst + ' for Property ' + prop + ': ' + url + ' - Pay securely with your credit or debit card. Thank you, GT Lands';
+        window.open('mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body), '_blank');
+    };
 
     // ============================================================
     // PAGAR / DESFAZER
