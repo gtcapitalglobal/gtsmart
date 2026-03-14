@@ -138,20 +138,20 @@
 
             <!-- PROFIT ROW -->
             <div class="profit-box">
-                <div class="profit-card pc-green">
+                <div class="profit-card pc-green" onclick="document.getElementById('tabelaContratos').scrollIntoView({behavior:'smooth'})" style="cursor:pointer;" title="Click to see breakdown">
                     <div class="pc-lbl">💰 Total Profit (est.)</div>
                     <div class="pc-val" id="totalLucro">—</div>
-                    <div class="pc-sub">sale price − cost basis</div>
+                    <div class="pc-sub">↓ sale price − cost basis</div>
                 </div>
                 <div class="profit-card pc-blue">
                     <div class="pc-lbl">📌 Still to Receive</div>
                     <div class="pc-val" id="totalFalta">—</div>
                     <div class="pc-sub">remaining balance</div>
                 </div>
-                <div class="profit-card pc-purple">
+                <div class="profit-card pc-purple" onclick="document.getElementById('tabelaContratos').scrollIntoView({behavior:'smooth'})" style="cursor:pointer;" title="Click to see breakdown">
                     <div class="pc-lbl">📈 ROI</div>
                     <div class="pc-val" id="totalROI">—</div>
-                    <div class="pc-sub">return on investment</div>
+                    <div class="pc-sub">↓ return on investment</div>
                 </div>
                 <div class="profit-card pc-orange">
                     <div class="pc-lbl">📅 Received This Month</div>
