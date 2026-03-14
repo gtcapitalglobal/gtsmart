@@ -334,6 +334,13 @@
         document.getElementById('btnGerarLink').textContent = '💳 Gerar Link';
         document.getElementById('sqInfo').innerHTML = `<strong>${sqDados.propertyId}</strong> — Parcela #${sqDados.installmentNumber}<br>Comprador: <strong>${sqDados.buyerName}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(sqDados.amount)}</strong>`;
         // Auto-fill — busca phone/email no buyer pelo nome
+        // Debug — ver dados disponíveis
+        console.log('=== SQUARE DEBUG ===');
+        console.log('buyers total:', buyers.length);
+        console.log('contrato:', JSON.stringify({buyerName: c.buyerName, buyerPhone: c.buyerPhone, buyerEmail: c.buyerEmail}));
+        console.log('parcela propertyId:', p.propertyId, 'contractId:', p.contractId);
+        if (buyers.length > 0) console.log('primeiro buyer:', JSON.stringify({fullName: buyers[0].fullName, phone: buyers[0].phone, email: buyers[0].email, propertyId: buyers[0].propertyId}));
+
         // Busca buyer por propertyId, contractId ou nome (ordem de prioridade)
         var buyer = buyers.find(function(b) {
             return b.propertyId && p.propertyId && b.propertyId === p.propertyId;
@@ -342,6 +349,7 @@
         }) || buyers.find(function(b) {
             return b.fullName && c.buyerName && b.fullName.toLowerCase().trim() === c.buyerName.toLowerCase().trim();
         }) || {};
+        console.log('buyer encontrado:', JSON.stringify({fullName: buyer.fullName, phone: buyer.phone, email: buyer.email}));
         var phone = c.buyerPhone || c.phone || buyer.phone || '';
         var email = c.buyerEmail || c.email || buyer.email || '';
         document.getElementById('sqPhone').value = phone;
