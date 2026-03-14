@@ -275,7 +275,9 @@
         btn.textContent = '⏳ Preparando backup...';
 
         try {
+            window._skipAutoDownload = true; // evita download duplo do firebase-config
             const resultado = await exportFullBackup();
+            window._skipAutoDownload = false;
             if (!resultado) throw new Error('Não foi possível gerar o backup.');
 
             let conteudo = JSON.stringify(resultado, null, 2);

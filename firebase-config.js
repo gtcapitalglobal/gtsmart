@@ -354,7 +354,11 @@ async function exportFullBackup() {
     a.href = url;
     a.download = `GT_Smart_Backup_COMPLETO_${new Date().toISOString().slice(0,10)}.json`;
     document.body.appendChild(a);
-    a.click();
+    // Download só ocorre quando chamado diretamente do Menu (sem senha)
+    // GT_Smart_Backup.html faz seu próprio download com suporte a criptografia
+    if (!window._skipAutoDownload) {
+        a.click();
+    }
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
