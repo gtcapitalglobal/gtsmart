@@ -1437,13 +1437,12 @@ let allCryptos = [];
                 const invB = p.investmentB || ((p.amountB||0)*(p.entryPriceB||0));
                 const inv = invA + invB;
                 const fees = getTotalFees(p);
-                // Calcular dívida dos borrows (mesma lógica do card)
+                // Calcular dívida dos borrows — mesma lógica do card
                 let debt = 0;
                 if (p.borrowIdA) { const bA = borrows.find(b => b.id === p.borrowIdA); if (bA) debt += parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA||0)/100) * getPrice(bA.cryptoId); }
                 if (p.borrowIdB) { const bB = borrows.find(b => b.id === p.borrowIdB); if (bB) debt += parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB||0)/100) * getPrice(bB.cryptoId); }
-                const pnl = tvlP - debt + fees - (inv - debt > 0 ? inv - debt : inv);
-                // PnL real = Pool atual - Dívida + Fees - Investimento líquido
-                const pnlReal = tvlP - debt + fees - inv;
+                // PnL = Pool - Dívida + Fees (igual ao card "LUCRO TOTAL")
+                const pnlReal = tvlP - debt + fees;
                 const roi = inv > 0 ? (pnlReal / inv * 100) : 0;
                 const dStart = new Date(p.poolDate || p.createdAt);
                 const dias = Math.floor((new Date() - dStart) / (1000*60*60*24));
