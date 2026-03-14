@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Despesas Empresariais</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a237e 0%, #283593 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1000px; margin: 5px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+
+        /* Header */
+        .header { background: linear-gradient(135deg, #1a237e, #283593); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 18px; }
+        .header-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .btn-add { background: white; color: #1a237e; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        .versao { font-size: 10px; opacity: 0.6; margin-top: 2px; }
+        .content { padding: 15px 20px; }
+
+        /* Summary cards */
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .summary-card { border-radius: 10px; padding: 12px; text-align: center; }
+        .summary-card .label { font-size: 10px; font-weight: 600; opacity: 0.85; margin-bottom: 4px; text-transform: uppercase; }
+        .summary-card .value { font-size: 16px; font-weight: 800; }
+        .s-mensal { background: #e8eaf6; color: #1a237e; }
+        .s-anual  { background: #e3f2fd; color: #0d47a1; }
+        .s-alerta { background: #fff3e0; color: #e65100; }
+        .s-total  { background: #e8f5e9; color: #1b5e20; }
+
+        /* Totais por moeda */
+        .moeda-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .moeda-card { flex: 1; border-radius: 10px; padding: 12px; text-align: center; background: #f5f5f5; }
+        .moeda-card .moeda-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .moeda-card .moeda-valor { font-size: 20px; font-weight: 800; color: #1a237e; }
+        .moeda-card .moeda-sub { font-size: 10px; color: #999; }
+
+        /* Alertas de vencimento */
+        .alerta-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; cursor: pointer; }
+        .alerta-vermelho { background: #fdecea; color: #c62828; border-left: 4px solid #e53935; }
+        .alerta-amarelo  { background: #fff8e1; color: #f57f17; border-left: 4px solid #ffc107; }
+        .alerta-azul     { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1976d2; }
+        .alerta-item .al-nome { font-weight: 700; flex: 1; }
+        .alerta-item .al-dias { font-size: 11px; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+        .alerta-item .al-obs  { font-size: 11px; opacity: 0.75; }
+
+        /* Totais por empresa */
+        .empresa-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .empresa-card { border-radius: 10px; padding: 12px 14px; background: #f5f5f5; }
+        .empresa-card .emp-nome { font-size: 11px; font-weight: 700; color: #666; margin-bottom: 4px; }
+        .empresa-card .emp-valor { font-size: 17px; font-weight: 800; color: #1a237e; }
+        .empresa-card .emp-sub { font-size: 10px; color: #999; margin-top: 2px; }
+
+        /* Filtros */
+        .filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .filter-btn { padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 600; cursor: pointer; color: #555; transition: all 0.2s; }
+        .filter-btn.active { background: #1a237e; color: white; border-color: #1a237e; }
+
+        /* Lista despesas */
+        .despesas-list { display: flex; flex-direction: column; gap: 8px; }
+        .despesa-item { border: 2px solid #e0e0e0; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; }
+        .despesa-item:hover { border-color: #1a237e; box-shadow: 0 3px 12px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .despesa-item.alerta-urgente { border-color: #e53935; }
+        .despesa-item.alerta-atencao { border-color: #ffc107; }
+        .desp-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .icon-mensal { background: #e8eaf6; }
+        .icon-anual  { background: #e3f2fd; }
+        .desp-info { flex: 1; min-width: 0; }
+        .desp-nome { font-size: 14px; font-weight: 700; color: #222; }
+        .desp-tags { font-size: 11px; color: #666; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+        .tag { background: #f0f0f0; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 600; color: #555; }
+        .tag-empresa { background: #e8eaf6; color: #1a237e; }
+        .tag-trocar  { background: #fff3e0; color: #e65100; }
+        .desp-obs { font-size: 11px; color: #888; margin-top: 3px; }
+        .desp-valor { text-align: right; flex-shrink: 0; min-width: 80px; }
+        .valor-principal { font-size: 15px; font-weight: 800; color: #1a237e; }
+        .valor-periodo { font-size: 10px; color: #888; }
+        .valor-mensal { font-size: 10px; color: #888; }
+        .vence-badge { font-size: 10px; padding: 2px 7px; border-radius: 8px; font-weight: 600; display: inline-block; margin-top: 3px; }
+        .vb-ok  { background: #e8f5e9; color: #2e7d32; }
+        .vb-30  { background: #fff8e1; color: #f57f17; }
+        .vb-15  { background: #fdecea; color: #c62828; }
+
+        /* Seção title */
+        .section-title { font-size: 12px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin: 15px 0 8px; }
+
+        /* Empty / loading */
+        .empty-state { text-align: center; padding: 40px 20px; color: #bbb; font-size: 14px; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal-header { background: linear-gradient(135deg, #1a237e, #283593); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0; position: sticky; top: 0; z-index: 1; }
+        .modal-header h3 { font-size: 16px; }
+        .btn-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 5px; text-transform: uppercase; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: 'Segoe UI', sans-serif; transition: border-color 0.2s; background: white; }
+        .form-group input:focus, .form-group select:focus { border-color: #1a237e; outline: none; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .check-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; cursor: pointer; }
+        .check-label input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+        .btn-save { background: #1a237e; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-save:hover { background: #283593; }
+        .btn-delete { background: #c62828; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; width: 100%; margin-top: 8px; }
+        .btn-delete:hover { background: #b71c1c; }
+        .divider { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .empresa-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+            .moeda-row { flex-direction: column; }
+            .header { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h2>💼 Despesas Empresariais</h2>
+            <div class="versao">Basic 1.0 | 14/03/2026</div>
+        </div>
+        <div class="header-right">
+            <button class="btn-add" onclick="abrirModal()">+ Nova Despesa</button>
+            <a href="GT_Smart_Menu.html" class="btn-back">← Voltar</a>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Resumo geral -->
+        <div class="summary-grid">
+            <div class="summary-card s-mensal">
+                <div class="label">📅 Mensais</div>
+                <div class="value" id="sumMensal">—</div>
+            </div>
+            <div class="summary-card s-anual">
+                <div class="label">📆 Anuais</div>
+                <div class="value" id="sumAnual">—</div>
+            </div>
+            <div class="summary-card s-alerta">
+                <div class="label">⚠️ Vencendo</div>
+                <div class="value" id="sumAlerta">—</div>
+            </div>
+            <div class="summary-card s-total">
+                <div class="label">💰 Equiv./Mês</div>
+                <div class="value" id="sumTotal">—</div>
+            </div>
+        </div>
+
+        <!-- Totais por moeda (só aparece se tiver BRL) -->
+        <div class="moeda-row" id="moedaRow" style="display:none;"></div>
+
+        <!-- Alertas de vencimento próximos -->
+        <div id="alertasSection"></div>
+
+        <!-- Totais por empresa -->
+        <div id="empresasSection"></div>
+
+        <!-- Filtros -->
+        <div class="filtros">
+            <button class="filter-btn active" onclick="setFiltro('todos',this)">Todos</button>
+            <button class="filter-btn" onclick="setFiltro('mensal',this)">Mensais</button>
+            <button class="filter-btn" onclick="setFiltro('anual',this)">Anuais</button>
+            <button class="filter-btn" onclick="setFiltro('usd',this)">USD</button>
+            <button class="filter-btn" onclick="setFiltro('brl',this)">BRL</button>
+            <button class="filter-btn" onclick="setFiltro('trocar',this)">⚠️ Trocar</button>
+        </div>
+
+        <!-- Lista -->
+        <div class="despesas-list" id="despesasList">
+            <div class="empty-state">⏳ Carregando...</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Botão flutuante -->
+<a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1a237e;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:998;">🏠 Menu</a>
+
+<!-- ==================== MODAL ==================== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitulo">Nova Despesa</h3>
+            <button class="btn-close" onclick="fecharModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="despesaId">
+
+            <div class="form-group">
+                <label>Nome da Despesa *</label>
+                <input type="text" id="fNome" placeholder="Ex: Claude, T-Mobile, DRIVERSNOTE...">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Periodicidade *</label>
+                    <select id="fPeriodo" onchange="toggleVencimento()">
+                        <option value="mensal">Mensal</option>
+                        <option value="anual">Anual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Moeda *</label>
+                    <select id="fMoeda">
+                        <option value="USD">USD ($)</option>
+                        <option value="BRL">BRL (R$)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Valor *</label>
+                    <input type="number" id="fValor" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div class="form-group" id="vencimentoGroup" style="display:none;">
+                    <label>Data de Vencimento</label>
+                    <input type="date" id="fVencimento">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Empresa que Paga *</label>
+                <select id="fEmpresa">
+                    <option value="GT Capital">GT Capital Global LLC</option>
+                    <option value="GT Real">GT Real Assets LLC</option>
+                    <option value="GT Smart">GT Smart Equity LLC</option>
+                    <option value="GT Tech">GT Tech Ventures LLC</option>
+                    <option value="GT Profit">GT Profit Ventures LLC</option>
+                    <option value="Pessoal">Pessoal (Gustavo / Telma)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Cartão / Forma de Pagamento</label>
+                <select id="fCartao">
+                    <option value="">— Sem cartão vinculado —</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="formaPagOutroGrp" style="display:none;">
+                <label>Especificar forma de pagamento</label>
+                <input type="text" id="fFormaPagOutro" placeholder="Ex: ACH, Zelle, PIX, Wells Fargo...">
+            </div>
+
+            <div class="form-group">
+                <label>Email / Conta Vinculada</label>
+                <input type="text" id="fEmail" placeholder="gustavo@gtcapital, gulude1@gmail...">
+            </div>
+
+            <div class="form-group">
+                <label>Observação / Alerta de Renovação</label>
+                <input type="text" id="fObs" placeholder="Ex: Trocar para Truist 4249 na renovação">
+            </div>
+
+            <div class="form-group">
+                <label class="check-label">
+                    <input type="checkbox" id="fTrocar">
+                    ⚠️ Marcar para atenção na renovação
+                </label>
+            </div>
+
+            <hr class="divider">
+            <button class="btn-save" onclick="salvarDespesa()">💾 Salvar Despesa</button>
+            <button class="btn-delete" id="btnDelete" style="display:none;" onclick="excluirDespesa()">🗑️ Excluir Despesa</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SCRIPT ==================== -->
+<script type="module">
+import { auth, onAuthStateChanged, db, getCards, showGTToast, showGTLoading, hideGTLoading } from './firebase-config.js';
+import { collection, getDocs, doc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+let userId = null;
+let despesas = [];
+let cartoes = [];
+let filtroAtivo = 'todos';
+
+// ── Formatadores ──────────────────────────────────────
+const fmtUSD = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtBRL = v => 'R$ ' + parseFloat(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtVal = (v, moeda) => moeda === 'BRL' ? fmtBRL(v) : fmtUSD(v);
+
+// ── Firebase CRUD despesas ────────────────────────────
+async function getDespesas() {
+    try {
+        const snap = await getDocs(collection(db, 'users', userId, 'despesas'));
+        return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    } catch(e) { console.error('getDespesas:', e); return []; }
+}
+
+async function saveDespesa(data) {
+    try {
+        const { id, ...fields } = data;
+        const ref = doc(db, 'users', userId, 'despesas', id);
+        await setDoc(ref, fields);
+        showGTToast('✅ Despesa salva!', 'sucesso');
+        return true;
+    } catch(e) { console.error('saveDespesa:', e); showGTToast('❌ Erro ao salvar despesa', 'erro'); return false; }
+}
+
+async function deleteDespesa(id) {
+    try {
+        await deleteDoc(doc(db, 'users', userId, 'despesas', id));
+        showGTToast('🗑️ Despesa removida', 'aviso');
+        return true;
+    } catch(e) { console.error('deleteDespesa:', e); showGTToast('❌ Erro ao remover', 'erro'); return false; }
+}
+
+// ── Helpers ──────────────────────────────────────────
+function diasAteVencimento(dataStr) {
+    if (!dataStr) return null;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const venc = new Date(dataStr + 'T00:00:00');
+    return Math.round((venc - hoje) / 86400000);
+}
+
+function valorMensalEquiv(d) {
+    return d.periodo === 'anual' ? (d.valor || 0) / 12 : (d.valor || 0);
+}
+
+function nomeCartao(cartaoId) {
+    const c = cartoes.find(x => x.id === cartaoId);
+    return c ? `💳 ${c.nome} ····${c.ultimos4 || '????'}` : null;
+}
+
+// ── Render central ────────────────────────────────────
+function renderTudo() {
+    renderSummary();
+    renderMoedas();
+    renderAlertas();
+    renderEmpresas();
+    renderLista();
+}
+
+function renderSummary() {
+    const usdDesp  = despesas.filter(d => d.moeda !== 'BRL');
+    const mensalUSD = usdDesp.filter(d => d.periodo === 'mensal').reduce((s,d) => s+(d.valor||0), 0);
+    const anualUSD  = usdDesp.filter(d => d.periodo === 'anual').reduce((s,d) => s+(d.valor||0), 0);
+    const totalMes  = usdDesp.reduce((s,d) => s + valorMensalEquiv(d), 0);
+
+    const alertas90 = despesas.filter(d => {
+        if (d.periodo !== 'anual') return false;
+        const dias = diasAteVencimento(d.vencimento);
+        return dias !== null && dias >= 0 && dias <= 90;
+    }).length;
+
+    document.getElementById('sumMensal').textContent = fmtUSD(mensalUSD);
+    document.getElementById('sumAnual').textContent  = fmtUSD(anualUSD);
+    document.getElementById('sumAlerta').textContent = alertas90 + (alertas90 === 1 ? ' despesa' : ' despesas');
+    document.getElementById('sumTotal').textContent  = fmtUSD(totalMes) + '/mês';
+}
+
+function renderMoedas() {
+    const temBRL = despesas.some(d => d.moeda === 'BRL');
+    const row = document.getElementById('moedaRow');
+    if (!temBRL) { row.style.display = 'none'; return; }
+
+    const mesUSD = despesas.filter(d => d.moeda !== 'BRL').reduce((s,d) => s + valorMensalEquiv(d), 0);
+    const mesBRL = despesas.filter(d => d.moeda === 'BRL').reduce((s,d) => s + valorMensalEquiv(d), 0);
+
+    row.style.display = 'flex';
+    row.innerHTML = `
+        <div class="moeda-card">
+            <div class="moeda-label">🇺🇸 USD</div>
+            <div class="moeda-valor">${fmtUSD(mesUSD)}</div>
+            <div class="moeda-sub">por mês (equiv.)</div>
+        </div>
+        <div class="moeda-card">
+            <div class="moeda-label">🇧🇷 BRL</div>
+            <div class="moeda-valor">${fmtBRL(mesBRL)}</div>
+            <div class="moeda-sub">por mês (equiv.)</div>
+        </div>`;
+}
+
+function renderAlertas() {
+    const sec = document.getElementById('alertasSection');
+    const proximos = despesas
+        .filter(d => d.periodo === 'anual' && d.vencimento)
+        .map(d => ({ ...d, dias: diasAteVencimento(d.vencimento) }))
+        .filter(d => d.dias !== null && d.dias >= 0 && d.dias <= 90)
+        .sort((a,b) => a.dias - b.dias);
+
+    if (proximos.length === 0) { sec.innerHTML = ''; return; }
+
+    let html = `<div class="section-title">⚠️ Vencimentos Próximos (90 dias)</div>`;
+    proximos.forEach(d => {
+        const cls  = d.dias <= 15 ? 'alerta-vermelho' : d.dias <= 30 ? 'alerta-amarelo' : 'alerta-azul';
+        const icn  = d.dias <= 15 ? '🔴' : d.dias <= 30 ? '⚠️' : '📅';
+        const dstr = d.dias === 0 ? 'Vence HOJE' : d.dias === 1 ? 'Amanhã' : `${d.dias} dias`;
+        html += `
+            <div class="alerta-item ${cls}" onclick="abrirModalEdicao('${d.id}')">
+                <span>${icn}</span>
+                <span class="al-nome">${d.nome}</span>
+                <span class="al-dias">${dstr}</span>
+                ${d.obs ? `<span class="al-obs">→ ${d.obs}</span>` : ''}
+            </div>`;
+    });
+    sec.innerHTML = html;
+}
+
+function renderEmpresas() {
+    const sec = document.getElementById('empresasSection');
+    const mapa = {};
+    despesas.filter(d => d.moeda !== 'BRL').forEach(d => {
+        const emp = d.empresa || 'Outros';
+        mapa[emp] = (mapa[emp] || 0) + valorMensalEquiv(d);
+    });
+    const lista = Object.entries(mapa).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+    if (lista.length === 0) { sec.innerHTML = ''; return; }
+
+    let html = `<div class="section-title">🏢 Total por Empresa (USD equiv./mês)</div><div class="empresa-grid">`;
+    lista.forEach(([nome, val]) => {
+        html += `
+            <div class="empresa-card">
+                <div class="emp-nome">${nome}</div>
+                <div class="emp-valor">${fmtUSD(val)}/mês</div>
+                <div class="emp-sub">${fmtUSD(val * 12)}/ano</div>
+            </div>`;
+    });
+    html += `</div>`;
+    sec.innerHTML = html;
+}
+
+function renderLista() {
+    let lista = [...despesas];
+    if (filtroAtivo === 'mensal') lista = lista.filter(d => d.periodo === 'mensal');
+    else if (filtroAtivo === 'anual') lista = lista.filter(d => d.periodo === 'anual');
+    else if (filtroAtivo === 'usd')   lista = lista.filter(d => d.moeda !== 'BRL');
+    else if (filtroAtivo === 'brl')   lista = lista.filter(d => d.moeda === 'BRL');
+    else if (filtroAtivo === 'trocar') lista = lista.filter(d => d.trocar);
+
+    // Ordenar: anuais com vencimento próximo primeiro, depois mensais por empresa
+    lista.sort((a,b) => {
+        if (a.periodo === 'anual' && b.periodo !== 'anual') return -1;
+        if (b.periodo === 'anual' && a.periodo !== 'anual') return 1;
+        if (a.periodo === 'anual' && b.periodo === 'anual') {
+            const dA = diasAteVencimento(a.vencimento) ?? 9999;
+            const dB = diasAteVencimento(b.vencimento) ?? 9999;
+            return dA - dB;
+        }
+        return (a.empresa||'').localeCompare(b.empresa||'');
+    });
+
+    const el = document.getElementById('despesasList');
+    if (lista.length === 0) {
+        el.innerHTML = `<div class="empty-state">Nenhuma despesa encontrada 💼</div>`;
+        return;
+    }
+
+    let html = '';
+    lista.forEach(d => {
+        const dias = d.periodo === 'anual' ? diasAteVencimento(d.vencimento) : null;
+        let itemCls = '', venceBadge = '';
+
+        if (dias !== null && dias >= 0) {
+            if (dias <= 15)      { itemCls = 'alerta-urgente'; venceBadge = `<span class="vence-badge vb-15">🔴 ${dias}d</span>`; }
+            else if (dias <= 30) { itemCls = 'alerta-atencao'; venceBadge = `<span class="vence-badge vb-30">⚠️ ${dias}d</span>`; }
+            else if (dias <= 90) { venceBadge = `<span class="vence-badge vb-ok">📅 ${dias}d</span>`; }
+        }
+
+        const iconCls = d.periodo === 'anual' ? 'icon-anual' : 'icon-mensal';
+        const emoji   = d.periodo === 'anual' ? '📆' : '📅';
+
+        // Forma de pagamento a exibir
+        let pagDisplay = '';
+        if (d.cartaoId) pagDisplay = nomeCartao(d.cartaoId) || '';
+        else if (d.formaPag) pagDisplay = d.formaPag;
+
+        // Valor mensal equivalente (para anuais)
+        const mesEquiv = d.periodo === 'anual' ? `≈ ${fmtVal(d.valor/12, d.moeda)}/mês` : '';
+
+        html += `
+        <div class="despesa-item ${itemCls}" onclick="abrirModalEdicao('${d.id}')">
+            <div class="desp-icon ${iconCls}">${emoji}</div>
+            <div class="desp-info">
+                <div class="desp-nome">${d.nome}</div>
+                <div class="desp-tags">
+                    ${d.empresa  ? `<span class="tag tag-empresa">${d.empresa}</span>` : ''}
+                    ${pagDisplay ? `<span class="tag">${pagDisplay}</span>` : ''}
+                    ${d.email    ? `<span class="tag">${d.email}</span>` : ''}
+                    ${d.trocar   ? `<span class="tag tag-trocar">⚠️ Trocar</span>` : ''}
+                </div>
+                ${d.obs ? `<div class="desp-obs">💬 ${d.obs}</div>` : ''}
+            </div>
+            <div class="desp-valor">
+                <div class="valor-principal">${fmtVal(d.valor, d.moeda)}</div>
+                <div class="valor-periodo">${d.periodo === 'anual' ? 'anual' : '/mês'}</div>
+                ${mesEquiv ? `<div class="valor-mensal">${mesEquiv}</div>` : ''}
+                ${venceBadge}
+            </div>
+        </div>`;
+    });
+    el.innerHTML = html;
+}
+
+// ── Modal ─────────────────────────────────────────────
+window.abrirModal = function() {
+    document.getElementById('modalTitulo').textContent = 'Nova Despesa';
+    document.getElementById('despesaId').value = '';
+    document.getElementById('fNome').value = '';
+    document.getElementById('fPeriodo').value = 'mensal';
+    document.getElementById('fMoeda').value = 'USD';
+    document.getElementById('fValor').value = '';
+    document.getElementById('fVencimento').value = '';
+    document.getElementById('fEmpresa').value = 'GT Capital';
+    document.getElementById('fCartao').value = '';
+    document.getElementById('fFormaPagOutro').value = '';
+    document.getElementById('fEmail').value = '';
+    document.getElementById('fObs').value = '';
+    document.getElementById('fTrocar').checked = false;
+    document.getElementById('vencimentoGroup').style.display = 'none';
+    document.getElementById('formaPagOutroGrp').style.display = 'none';
+    document.getElementById('btnDelete').style.display = 'none';
+    document.getElementById('modalOverlay').classList.add('open');
+};
+
+window.abrirModalEdicao = function(id) {
+    const d = despesas.find(x => x.id === id);
+    if (!d) return;
+
+    document.getElementById('modalTitulo').textContent = 'Editar Despesa';
+    document.getElementById('despesaId').value = d.id;
+    document.getElementById('fNome').value = d.nome || '';
+    document.getElementById('fPeriodo').value = d.periodo || 'mensal';
+    document.getElementById('fMoeda').value = d.moeda || 'USD';
+    document.getElementById('fValor').value = d.valor || '';
+    document.getElementById('fVencimento').value = d.vencimento || '';
+    document.getElementById('fEmpresa').value = d.empresa || 'GT Capital';
+    document.getElementById('fEmail').value = d.email || '';
+    document.getElementById('fObs').value = d.obs || '';
+    document.getElementById('fTrocar').checked = !!d.trocar;
+    document.getElementById('vencimentoGroup').style.display = d.periodo === 'anual' ? 'block' : 'none';
+    document.getElementById('btnDelete').style.display = 'block';
+
+    // Preencher forma de pagamento
+    if (d.cartaoId && cartoes.find(c => c.id === d.cartaoId)) {
+        document.getElementById('fCartao').value = d.cartaoId;
+        document.getElementById('formaPagOutroGrp').style.display = 'none';
+        document.getElementById('fFormaPagOutro').value = '';
+    } else if (d.formaPag) {
+        document.getElementById('fCartao').value = '__outro__';
+        document.getElementById('fFormaPagOutro').value = d.formaPag;
+        document.getElementById('formaPagOutroGrp').style.display = 'block';
+    } else {
+        document.getElementById('fCartao').value = '';
+        document.getElementById('fFormaPagOutro').value = '';
+        document.getElementById('formaPagOutroGrp').style.display = 'none';
+    }
+
+    document.getElementById('modalOverlay').classList.add('open');
+};
+
+window.fecharModal = function() {
+    document.getElementById('modalOverlay').classList.remove('open');
+};
+
+window.toggleVencimento = function() {
+    const p = document.getElementById('fPeriodo').value;
+    document.getElementById('vencimentoGroup').style.display = p === 'anual' ? 'block' : 'none';
+};
+
+window.salvarDespesa = async function() {
+    const nome = document.getElementById('fNome').value.trim();
+    if (!nome) { showGTToast('Informe o nome da despesa', 'erro'); return; }
+    const valor = parseFloat(document.getElementById('fValor').value);
+    if (!valor || valor <= 0) { showGTToast('Informe um valor válido', 'erro'); return; }
+
+    const cartaoSel = document.getElementById('fCartao').value;
+    let cartaoId = '';
+    let formaPag = '';
+    if (cartaoSel === '__outro__') {
+        formaPag = document.getElementById('fFormaPagOutro').value.trim();
+    } else if (cartaoSel) {
+        cartaoId = cartaoSel;
+    }
+
+    const id = document.getElementById('despesaId').value || ('DESP' + Date.now());
+    const data = {
+        id, nome, valor,
+        periodo:    document.getElementById('fPeriodo').value,
+        moeda:      document.getElementById('fMoeda').value,
+        vencimento: document.getElementById('fVencimento').value || '',
+        empresa:    document.getElementById('fEmpresa').value,
+        cartaoId,
+        formaPag,
+        email:      document.getElementById('fEmail').value.trim(),
+        obs:        document.getElementById('fObs').value.trim(),
+        trocar:     document.getElementById('fTrocar').checked,
+        atualizadoEm: new Date().toISOString()
+    };
+
+    const ok = await saveDespesa(data);
+    if (ok) {
+        fecharModal();
+        despesas = await getDespesas();
+        renderTudo();
+    }
+};
+
+window.excluirDespesa = async function() {
+    const id = document.getElementById('despesaId').value;
+    if (!id) return;
+    const d = despesas.find(x => x.id === id);
+    if (!confirm(`Excluir "${d?.nome}"?\nEsta ação não pode ser desfeita.`)) return;
+    const ok = await deleteDespesa(id);
+    if (ok) {
+        fecharModal();
+        despesas = await getDespesas();
+        renderTudo();
+    }
+};
+
+window.setFiltro = function(f, btn) {
+    filtroAtivo = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLista();
+};
+
+// Fechar modal ao clicar fora
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) fecharModal();
+});
+
+// Mostrar/ocultar campo "outro" no select de cartão
+document.getElementById('fCartao').addEventListener('change', function() {
+    document.getElementById('formaPagOutroGrp').style.display = this.value === '__outro__' ? 'block' : 'none';
+});
+
+// ── Popular select de cartões ─────────────────────────
+function popularCartoes() {
+    const sel = document.getElementById('fCartao');
+    // Limpa e adiciona opção padrão
+    sel.innerHTML = '';
+    const optVazio = document.createElement('option');
+    optVazio.value = '';
+    optVazio.textContent = '— Sem cartão vinculado —';
+    sel.appendChild(optVazio);
+
+    // Cartões cadastrados
+    cartoes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `💳 ${c.nome} ····${c.ultimos4 || '????'}${c.banco ? ' (' + c.banco + ')' : ''}`;
+        sel.appendChild(opt);
+    });
+
+    // Opção "outro"
+    const optOutro = document.createElement('option');
+    optOutro.value = '__outro__';
+    optOutro.textContent = '✏️ Outro (digitar)';
+    sel.appendChild(optOutro);
+}
+
+// ── Inicialização ─────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+    userId = user.uid;
+    showGTLoading('Carregando despesas...');
+    [despesas, cartoes] = await Promise.all([getDespesas(), getCards()]);
+    hideGTLoading();
+    popularCartoes();
+    renderTudo();
+});
+</script>
+</body>
+</html>
