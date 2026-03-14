@@ -326,6 +326,11 @@
         document.getElementById('btnGerarLink').disabled = false;
         document.getElementById('btnGerarLink').textContent = '💳 Gerar Link';
         document.getElementById('sqInfo').innerHTML = `<strong>${sqDados.propertyId}</strong> — Parcela #${sqDados.installmentNumber}<br>Comprador: <strong>${sqDados.buyerName}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(sqDados.amount)}</strong>`;
+        // Auto-fill telefone e email do contrato
+        var phone = c.buyerPhone || c.phone || c.telefone || '';
+        var email = c.buyerEmail || c.email || '';
+        document.getElementById('sqPhone').value = phone;
+        document.getElementById('sqEmail').value = email;
         document.getElementById('sqToggleLateFee').style.display = isOverdue ? 'flex' : 'none';
         document.getElementById('sqLinhaLateFee').style.display = 'none';
         atualizarResumoSq();
