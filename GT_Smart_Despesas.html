@@ -188,11 +188,16 @@
         <!-- Abas -->
         <div class="abas">
             <button class="aba aba-active" onclick="setAba('lista',this)">📋 Todas as Despesas</button>
-            <button class="aba" onclick="setAba('vencimentos',this)">📅 Vencimentos 90 dias</button>
+            <button class="aba" onclick="setAba('vencimentos',this)">📅 Vencimentos</button>
         </div>
 
         <!-- PAINEL VENCIMENTOS -->
         <div id="painelVencimentos" style="display:none;">
+            <div class="filtros" style="margin-bottom:12px;">
+                <button class="filter-btn active" onclick="setVencFiltro(30,this)">🔴 30 dias</button>
+                <button class="filter-btn" onclick="setVencFiltro(60,this)">⚠️ 60 dias</button>
+                <button class="filter-btn" onclick="setVencFiltro(90,this)">📅 90 dias</button>
+            </div>
             <div id="vencimentosContent"></div>
         </div>
 
@@ -265,6 +270,10 @@
                 <div class="form-group" id="vencimentoGroup" style="display:none;">
                     <label>Data de Vencimento</label>
                     <input type="date" id="fVencimento">
+                </div>
+                <div class="form-group" id="diaPagGroup">
+                    <label>Dia do Pagamento (mensal)</label>
+                    <input type="number" id="fDiaPag" min="1" max="31" placeholder="Ex: 15 (dia 15 de cada mês)">
                 </div>
             </div>
 
@@ -428,12 +437,12 @@ function renderAlertas() {
     const proximos = despesas
         .filter(d => d.periodo === 'anual' && d.vencimento)
         .map(d => ({ ...d, dias: diasAteVencimento(d.vencimento) }))
-        .filter(d => d.dias !== null && d.dias >= 0 && d.dias <= 90)
+        .filter(d => d.dias !== null && d.dias >= 0 && d.dias <= vencDias)
         .sort((a,b) => a.dias - b.dias);
 
     if (proximos.length === 0) { sec.innerHTML = ''; return; }
 
-    let html = `<div class="section-title">⚠️ Vencimentos Próximos (90 dias)</div>`;
+    let html = ``;
     proximos.forEach(d => {
         const cls  = d.dias <= 15 ? 'alerta-vermelho' : d.dias <= 30 ? 'alerta-amarelo' : 'alerta-azul';
         const icn  = d.dias <= 15 ? '🔴' : d.dias <= 30 ? '⚠️' : '📅';
@@ -511,6 +520,7 @@ function renderLista() {
 
         const iconCls = d.periodo === 'anual' ? 'icon-anual' : 'icon-mensal';
         const emoji   = d.periodo === 'anual' ? '📆' : '📅';
+        const diaBadge = (d.periodo === 'mensal' && d.diaPag) ? `<span class="tag" style="background:#e8f5e9;color:#2e7d32;">📅 Dia ${d.diaPag}</span>` : '';
 
         // Forma de pagamento a exibir
         let pagDisplay = '';
@@ -527,6 +537,7 @@ function renderLista() {
                 <div class="desp-nome">${d.nome}</div>
                 <div class="desp-tags">
                     ${d.empresa  ? `<span class="tag tag-empresa">${d.empresa}</span>` : ''}
+                    ${diaBadge}
                     ${pagDisplay ? `<span class="tag">${pagDisplay}</span>` : ''}
                     ${d.email    ? `<span class="tag">${d.email}</span>` : ''}
                     ${d.trocar   ? `<span class="tag tag-trocar">⚠️ Trocar</span>` : ''}
@@ -560,6 +571,8 @@ window.abrirModal = function() {
     document.getElementById('fObs').value = '';
     document.getElementById('fTrocar').checked = false;
     document.getElementById('vencimentoGroup').style.display = 'none';
+    document.getElementById('diaPagGroup').style.display = 'block';
+    document.getElementById('fDiaPag').value = '';
     document.getElementById('formaPagOutroGrp').style.display = 'none';
     document.getElementById('btnDelete').style.display = 'none';
     document.getElementById('modalOverlay').classList.add('open');
@@ -581,6 +594,8 @@ window.abrirModalEdicao = function(id) {
     document.getElementById('fObs').value = d.obs || '';
     document.getElementById('fTrocar').checked = !!d.trocar;
     document.getElementById('vencimentoGroup').style.display = d.periodo === 'anual' ? 'block' : 'none';
+    document.getElementById('diaPagGroup').style.display = d.periodo === 'mensal' ? 'block' : 'none';
+    document.getElementById('fDiaPag').value = d.diaPag || '';
     document.getElementById('btnDelete').style.display = 'block';
 
     // Preencher forma de pagamento
@@ -608,6 +623,7 @@ window.fecharModal = function() {
 window.toggleVencimento = function() {
     const p = document.getElementById('fPeriodo').value;
     document.getElementById('vencimentoGroup').style.display = p === 'anual' ? 'block' : 'none';
+    document.getElementById('diaPagGroup').style.display = p === 'mensal' ? 'block' : 'none';
 };
 
 window.salvarDespesa = async function() {
@@ -637,6 +653,7 @@ window.salvarDespesa = async function() {
         email:      document.getElementById('fEmail').value.trim(),
         obs:        document.getElementById('fObs').value.trim(),
         trocar:     document.getElementById('fTrocar').checked,
+        diaPag:     document.getElementById('fDiaPag').value ? parseInt(document.getElementById('fDiaPag').value) : null,
         atualizadoEm: new Date().toISOString()
     };
 
@@ -662,6 +679,15 @@ window.excluirDespesa = async function() {
 };
 
 // ── Abas ──────────────────────────────────────────────
+let vencDias = 30; // default 30 dias
+
+window.setVencFiltro = function(dias, btn) {
+    vencDias = dias;
+    document.querySelectorAll('#painelVencimentos .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderVencimentos();
+};
+
 window.setAba = function(aba, btn) {
     document.querySelectorAll('.aba').forEach(b => b.classList.remove('aba-active'));
     btn.classList.add('aba-active');
@@ -681,13 +707,13 @@ function renderVencimentos() {
             const dias = diasAteVencimento(d.vencimento);
             return { ...d, dias };
         })
-        .filter(d => d.dias !== null && d.dias >= 0 && d.dias <= 90)
+        .filter(d => d.dias !== null && d.dias >= 0 && d.dias <= vencDias)
         .sort((a,b) => a.dias - b.dias);
 
     const el = document.getElementById('vencimentosContent');
 
     if (proximos.length === 0) {
-        el.innerHTML = '<div class="venc-vazio">✅ Nenhuma despesa vencendo nos próximos 90 dias</div>';
+        el.innerHTML = '<div class="venc-vazio">✅ Nenhuma despesa vencendo nos próximos ${vencDias} dias</div>';
         return;
     }
 
@@ -702,7 +728,7 @@ function renderVencimentos() {
     });
 
     let html = `<div style="margin-bottom:12px;padding:10px 14px;background:#f0f4ff;border-radius:10px;font-size:13px;color:#1a237e;font-weight:600;">
-        📅 ${proximos.length} despesa${proximos.length>1?'s':''} vencendo nos próximos 90 dias — Total: ${fmtUSD(proximos.reduce((s,d)=>s+d.valor,0))}
+        📅 ${proximos.length} despesa${proximos.length>1?'s':''} vencendo nos próximos ${vencDias} dias — Total: ${fmtUSD(proximos.reduce((s,d)=>s+d.valor,0))}
     </div>`;
 
     Object.entries(grupos).sort().forEach(([, grupo]) => {
