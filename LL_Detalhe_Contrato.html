@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ledgerlands — Detalhe do Contrato</title>
+    <title>Ledgerlands — Contract Details</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); min-height: 100vh; padding: 15px; }
@@ -145,32 +145,32 @@
         <h2>📋 <span id="headerTitulo">Contrato</span></h2>
         <div class="header-right">
             <button class="btn-pdf" onclick="gerarPDF()">🖨️ PDF</button>
-            <button class="btn-act" onclick="abrirEditar()">✏️ Editar</button>
-            <button class="btn-act" onclick="abrirPagamento()">+ Pagamento</button>
-            <a href="LL_Contracts.html" class="btn-back">← Contratos</a>
+            <button class="btn-act" onclick="abrirEditar()">✏️ Edit</button>
+            <button class="btn-act" onclick="abrirPagamento()">+ Payment</button>
+            <a href="LL_Contracts.html" class="btn-back">← Contracts</a>
         </div>
     </div>
     <div class="content" id="mainContent">
-        <div style="text-align:center;padding:40px;color:#aaa;">⏳ Carregando...</div>
+        <div style="text-align:center;padding:40px;color:#aaa;">⏳ Loading...</div>
     </div>
 </div>
 
-<!-- Modal Editar Contrato -->
+<!-- Edit Contract Modal -->
 <div class="modal-overlay" id="modalEditar">
     <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto;">
         <button class="modal-close" onclick="fecharModalEditar()">✕</button>
-        <h3>✏️ Editar Contrato</h3>
+        <h3>✏️ Edit Contract</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div class="form-group">
                 <label>Property ID</label>
                 <input type="text" id="ePropertyId">
             </div>
             <div class="form-group">
-                <label>Nome do Comprador</label>
+                <label>Buyer Name</label>
                 <input type="text" id="eBuyerName">
             </div>
             <div class="form-group">
-                <label>Tipo de Venda</label>
+                <label>Sale Type</label>
                 <select id="eSaleType">
                     <option value="CFD">CFD</option>
                     <option value="CASH">Cash</option>
@@ -180,8 +180,8 @@
             <div class="form-group">
                 <label>Status</label>
                 <select id="eStatus">
-                    <option value="Active">Ativo</option>
-                    <option value="PaidOff">Pago</option>
+                    <option value="Active">Active</option>
+                    <option value="PaidOff">Paid Off</option>
                     <option value="Default">Inadimplente</option>
                     <option value="Repossessed">Reintegrado</option>
                 </select>
@@ -191,15 +191,15 @@
                 <input type="text" id="eCounty">
             </div>
             <div class="form-group">
-                <label>Estado</label>
+                <label>State</label>
                 <input type="text" id="eState">
             </div>
             <div class="form-group">
-                <label>Data do Contrato</label>
+                <label>Contract Date</label>
                 <input type="date" id="eContractDate">
             </div>
             <div class="form-group">
-                <label>Preço de Venda ($)</label>
+                <label>Sale Price ($)</label>
                 <input type="number" id="eContractPrice">
             </div>
             <div class="form-group">
@@ -211,19 +211,19 @@
                 <input type="number" id="eCostBasis">
             </div>
             <div class="form-group">
-                <label>Parcela Mensal ($)</label>
+                <label>Monthly Installment ($)</label>
                 <input type="number" id="eInstallmentAmount">
             </div>
             <div class="form-group">
-                <label>Nº de Parcelas</label>
+                <label>Number of Installments</label>
                 <input type="number" id="eInstallmentCount">
             </div>
             <div class="form-group">
-                <label>1ª Parcela (data)</label>
+                <label>1st Installment (date)</label>
                 <input type="date" id="eFirstInstallmentDate">
             </div>
             <div class="form-group">
-                <label>Parcelas pagas por transferência</label>
+                <label>Installments paid by transfer</label>
                 <input type="number" id="eInstallmentsPaidByTransfer" min="0" placeholder="0">
             </div>
             <div class="form-group">
@@ -231,11 +231,11 @@
                 <input type="number" id="eBalloonAmount">
             </div>
             <div class="form-group">
-                <label>Data do Balloon</label>
+                <label>Balloon Date</label>
                 <input type="date" id="eBalloonDate">
             </div>
             <div class="form-group">
-                <label>Status Escritura (Deed)</label>
+                <label>Deed Status</label>
                 <select id="eDeedStatus">
                     <option value="">—</option>
                     <option value="Pending">Pending</option>
@@ -253,29 +253,29 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Link da Pasta (Google Drive)</label>
+            <label>Folder Link (Google Drive)</label>
             <input type="text" id="eDocumentFolderLink" placeholder="https://drive.google.com/...">
         </div>
         <div class="form-group">
-            <label>Observações</label>
+            <label>Notes</label>
             <input type="text" id="eNotes">
         </div>
-        <button class="btn-save" onclick="salvarEdicao()">💾 Salvar Alterações</button>
+        <button class="btn-save" onclick="salvarEdicao()">💾 Save Changes</button>
     </div>
 </div>
 
-<!-- Modal Pagamento -->
+<!-- Payment Modal -->
 <div class="modal-overlay" id="modalPagamento">
     <div class="modal">
         <button class="modal-close" onclick="fecharModal()">✕</button>
-        <h3>Registrar Pagamento</h3>
+        <h3>Register Payment</h3>
         <div class="form-group">
-            <label>Data do Pagamento *</label>
+            <label>Payment Date *</label>
             <input type="date" id="pDate">
         </div>
         <div class="form-row">
             <div class="form-group">
-                <label>Total Recebido (USD) *</label>
+                <label>Total Received (USD) *</label>
                 <input type="number" id="pTotal" placeholder="220.00" oninput="splitPagamento()">
             </div>
             <div class="form-group">
@@ -288,7 +288,7 @@
         </div>
         <div class="form-row">
             <div class="form-group">
-                <label>Canal</label>
+                <label>Channel</label>
                 <select id="pChannel">
                     <option>Zelle</option>
                     <option>ACH</option>
@@ -299,7 +299,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Recebido por</label>
+                <label>Received by</label>
                 <select id="pReceivedBy">
                     <option value="GT_REAL">GT Real Assets Bank</option>
                     <option value="LEGACY">Legacy Account</option>
@@ -308,10 +308,10 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Memo / Observação</label>
-            <input type="text" id="pMemo" placeholder="ex: parcela #5, novembro">
+            <label>Memo / Note</label>
+            <input type="text" id="pMemo" placeholder="ex: installment #5, November">
         </div>
-        <button class="btn-save" onclick="salvarPagamento()">💾 Salvar Pagamento</button>
+        <button class="btn-save" onclick="salvarPagamento()">💾 Save Payment</button>
     </div>
 </div>
 
@@ -342,7 +342,7 @@
         ]);
 
         contrato = todos.find(c => c.id === contratoId);
-        if (!contrato) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ Contrato não encontrado.</div>'; return; }
+        if (!contrato) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ Contract not found.</div>'; return; }
 
         buyer = allBuyers.find(b =>
             b.contractId === contratoId ||
@@ -391,32 +391,32 @@
         document.getElementById('mainContent').innerHTML = `
             <div class="grid2">
                 <div class="info-card">
-                    <div class="card-title">📋 Contrato</div>
+                    <div class="card-title">📋 Contract</div>
                     <div class="info-row"><span class="info-lbl">Property ID</span><span class="info-val blue">${contrato.propertyId || '—'}</span></div>
-                    <div class="info-row"><span class="info-lbl">Comprador</span><span class="info-val">${contrato.buyerName || '—'}</span></div>
-                    <div class="info-row"><span class="info-lbl">Tipo</span><span class="info-val">${contrato.saleType || '—'}</span></div>
-                    <div class="info-row"><span class="info-lbl">County / Estado</span><span class="info-val">${contrato.county || '—'}${contrato.state ? ', ' + contrato.state : ''}</span></div>
-                    <div class="info-row"><span class="info-lbl">Data do Contrato</span><span class="info-val">${fmtData(contrato.contractDate)}</span></div>
-                    <div class="info-row"><span class="info-lbl">Status</span><span class="info-val"><span class="status s-${contrato.status}">${contrato.status === 'Active' ? 'Ativo' : contrato.status}</span></span></div>
-                    ${contrato.documentFolderLink ? `<div class="info-row"><span class="info-lbl">Documentos</span><span class="info-val"><a href="${contrato.documentFolderLink}" target="_blank" style="color:#1565c0;">Abrir Drive ↗</a></span></div>` : ''}
-                    ${contrato.notes ? `<div class="info-row"><span class="info-lbl">Obs.</span><span class="info-val">${contrato.notes}</span></div>` : ''}
+                    <div class="info-row"><span class="info-lbl">Buyer</span><span class="info-val">${contrato.buyerName || '—'}</span></div>
+                    <div class="info-row"><span class="info-lbl">Type</span><span class="info-val">${contrato.saleType || '—'}</span></div>
+                    <div class="info-row"><span class="info-lbl">County / State</span><span class="info-val">${contrato.county || '—'}${contrato.state ? ', ' + contrato.state : ''}</span></div>
+                    <div class="info-row"><span class="info-lbl">Contract Date</span><span class="info-val">${fmtData(contrato.contractDate)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Status</span><span class="info-val"><span class="status s-${contrato.status}">${contrato.status === 'Active' ? 'Active' : contrato.status}</span></span></div>
+                    ${contrato.documentFolderLink ? `<div class="info-row"><span class="info-lbl">Documents</span><span class="info-val"><a href="${contrato.documentFolderLink}" target="_blank" style="color:#1565c0;">Open Drive ↗</a></span></div>` : ''}
+                    ${contrato.notes ? `<div class="info-row"><span class="info-lbl">Notes</span><span class="info-val">${contrato.notes}</span></div>` : ''}
                 </div>
 
                 <div class="info-card">
-                    <div class="card-title">💰 Financeiro</div>
-                    <div class="info-row"><span class="info-lbl">Preço de Venda</span><span class="info-val">${fmt2(contrato.contractPrice)}</span></div>
+                    <div class="card-title">💰 Financials</div>
+                    <div class="info-row"><span class="info-lbl">Sale Price</span><span class="info-val">${fmt2(contrato.contractPrice)}</span></div>
                     <div class="info-row"><span class="info-lbl">Down Payment</span><span class="info-val">${fmt2(contrato.downPayment)}</span></div>
                     ${contrato.saleType === 'CFD' ? `
-                    <div class="info-row"><span class="info-lbl">Parcela Mensal</span><span class="info-val">${fmt2(contrato.installmentAmount)} × ${contrato.installmentCount}</span></div>
+                    <div class="info-row"><span class="info-lbl">Monthly Installment</span><span class="info-val">${fmt2(contrato.installmentAmount)} × ${contrato.installmentCount}</span></div>
                     <div class="info-row"><span class="info-lbl">Balance Total</span><span class="info-val">${fmt2(balance)}</span></div>
                     ` : ''}
-                    ${contrato.balloonAmount > 0 ? `<div class="info-row"><span class="info-lbl">Balloon</span><span class="info-val">${fmt2(contrato.balloonAmount)} em ${fmtData(contrato.balloonDate)}</span></div>` : ''}
+                    ${contrato.balloonAmount > 0 ? `<div class="info-row"><span class="info-lbl">Balloon</span><span class="info-val">${fmt2(contrato.balloonAmount)} on ${fmtData(contrato.balloonDate)}</span></div>` : ''}
                     <div class="info-row"><span class="info-lbl">Cost Basis</span><span class="info-val">${fmt2(contrato.costBasis)}</span></div>
-                    <div class="info-row"><span class="info-lbl">Lucro Estimado</span><span class="info-val green">${fmt2(lucro)}</span></div>
-                    <div class="info-row"><span class="info-lbl">Total Recebido</span><span class="info-val green">${fmt2(totalRecebido)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Est. Profit</span><span class="info-val green">${fmt2(lucro)}</span></div>
+                    <div class="info-row"><span class="info-lbl">Total Received</span><span class="info-val green">${fmt2(totalRecebido)}</span></div>
                     ${contrato.saleType === 'CFD' && total > 0 ? `
                     <div style="margin-top:10px;">
-                        <div style="font-size:11px;color:#888;margin-bottom:4px;">Progresso: ${pagas}/${total} parcelas pagas</div>
+                        <div style="font-size:11px;color:#888;margin-bottom:4px;">Progress: ${pagas}/${total} installments paid</div>
                         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
                         <div class="progress-pct">${pct}%</div>
                     </div>
@@ -428,40 +428,40 @@
             ${contrato.saleType === 'CFD' ? `
             <div style="margin-bottom:20px;">
                 <div class="section-title">
-                    📅 Parcelas (${pagas}/${total} pagas)
-                    <span style="font-size:12px;font-weight:400;color:#888;">${parcelas.filter(p => p._overdue).length} em atraso</span>
+                    📅 Installments (${pagas}/${total} paid)
+                    <span style="font-size:12px;font-weight:400;color:#888;">${parcelas.filter(p => p._overdue).length} overdue</span>
                 </div>
-                ${parcelas.length === 0 ? '<div class="empty">Nenhuma parcela cadastrada. Edite o contrato e clique em "Salvar + Gerar Parcelas".</div>' : `
+                ${parcelas.length === 0 ? '<div class="empty">No installments found. Edit the contract and click "Save + Generate Installments".</div>' : `
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>#</th><th>Vencimento</th><th>Valor</th><th>Tipo</th><th>Status</th><th>Pago em</th><th>Ação</th></tr></thead>
+                        <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Type</th><th>Status</th><th>Paid On</th><th>Action</th></tr></thead>
                         <tbody>
                             ${contrato.downPayment > 0 ? `
                                 <tr class="pago" style="background:#f0fdf4;">
                                     <td style="color:#166534;font-weight:700;">—</td>
                                     <td>${fmtData(contrato.contractDate)}</td>
                                     <td>${fmt2(contrato.downPayment)}</td>
-                                    <td><span class="inst-status" style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">Entrada</span></td>
-                                    <td><span class="inst-status is-PAID">Pago</span></td>
+                                    <td><span class="inst-status" style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">Down Payment</span></td>
+                                    <td><span class="inst-status is-PAID">Paid</span></td>
                                     <td style="font-size:11px;color:#aaa;">${fmtData(contrato.contractDate)}</td>
                                     <td></td>
                                 </tr>` : ''}
                             ${parcelas.map(p => {
                                 const isBalloon = (p.type||'').toLowerCase() === 'balloon';
-                                const tipoLabel = isBalloon ? 'Balloon' : 'regular';
+                                const tipoLabel = isBalloon ? 'Balloon' : 'Regular';
                                 const tipoClass = isBalloon ? 'is-BALLOON' : 'is-regular';
                                 return `
                                 <tr class="${p.status === 'PAID' ? 'pago' : p._overdue ? 'vencida' : ''}${isBalloon ? '" style="background:#fff8e1;' : ''}">
                                     <td>${isBalloon ? '🎈' : p.installmentNumber}</td>
-                                    <td>${fmtData(p.dueDate)}${p._overdue && p.status !== 'PAID' ? ' <span style="color:#c62828;font-size:10px;font-weight:700;">ATRASADA</span>' : ''}</td>
+                                    <td>${fmtData(p.dueDate)}${p._overdue && p.status !== 'PAID' ? ' <span style="color:#c62828;font-size:10px;font-weight:700;">OVERDUE</span>' : ''}</td>
                                     <td>${fmt2(p.amount)}</td>
                                     <td><span class="inst-status ${tipoClass}">${tipoLabel}</span></td>
-                                    <td><span class="inst-status is-${p.status}">${p.status === 'PAID' ? 'Pago' : p._overdue ? 'Atrasado' : 'Pendente'}</span></td>
+                                    <td><span class="inst-status is-${p.status}">${p.status === 'PAID' ? 'Paid' : p._overdue ? 'Overdue' : 'Pending'}</span></td>
                                     <td style="font-size:11px;color:#aaa;">${p.status === 'PAID' ? fmtData(p.paidDate) : '—'}</td>
                                     <td>
                                         ${p.status !== 'PAID' 
-                                            ? `<button class="btn-sm btn-pagar" onclick="marcarPago('${p.id}')">✅ Marcar pago</button>` 
-                                            : `<button class="btn-sm btn-despagar" onclick="marcarPendente('${p.id}')">↩️ Desfazer</button>`
+                                            ? `<button class="btn-sm btn-pagar" onclick="marcarPago('${p.id}')">✅ Mark paid</button>` 
+                                            : `<button class="btn-sm btn-despagar" onclick="marcarPending('${p.id}')">↩️ Undo</button>`
                                         }
                                     </td>
                                 </tr>
@@ -476,8 +476,8 @@
             <!-- Pagamentos -->
             <div>
                 <div class="section-title">
-                    💰 Pagamentos Recebidos
-                    <button class="btn-pag-novo" onclick="abrirPagamento()">+ Novo</button>
+                    💰 Payments Received
+                    <button class="btn-pag-novo" onclick="abrirPagamento()">+ New</button>
                 </div>
                 ${(() => {
                     const dpVal = parseFloat(contrato.downPayment || 0);
@@ -504,41 +504,41 @@
                             <button class="btn-sm btn-despagar" onclick="excluirPagamento('${p.id}')">🗑️</button>
                         </div>
                     `).join('');
-                    return dpRow + pagsHtml || '<div class="empty">Nenhum pagamento registrado ainda.</div>';
+                    return dpRow + pagsHtml || '<div class="empty">No payments recorded yet.</div>';
                 })()}
             </div>
             <!-- Enviar -->
             <div class="wa-section">
-                <div class="wa-title">📤 Enviar para o Cliente</div>
+                <div class="wa-title">📤 Send to Client</div>
 
                 <!-- Abas de canal -->
                 <div class="wa-canal-tabs">
-                    <button class="wa-tab wa-tab-wa ativo" onclick="selecionarCanal('wa')">📱 WhatsApp</button>
-                    <button class="wa-tab wa-tab-sms" onclick="selecionarCanal('sms')">💬 SMS</button>
-                    <button class="wa-tab wa-tab-email" onclick="selecionarCanal('email')">✉️ Email</button>
+                    <button class="wa-tab wa-tab-wa ativo" onclick="selecionarChannel('wa')">📱 WhatsApp</button>
+                    <button class="wa-tab wa-tab-sms" onclick="selecionarChannel('sms')">💬 SMS</button>
+                    <button class="wa-tab wa-tab-email" onclick="selecionarChannel('email')">✉️ Email</button>
                 </div>
 
                 <!-- Painel WhatsApp -->
                 <div class="canal-panel ativo" id="painelWa">
                     <div class="wa-phone-row">
-                        <label>Telefone:</label>
+                        <label>Phone:</label>
                         <input type="tel" id="waPhone" placeholder="+1 (305) 000-0000">
                     </div>
                     <div class="wa-btns">
-                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('wa','cobranca')">🔴 Cobrança de Atraso</button>
-                        <button class="btn-wa btn-wa-extrato" onclick="enviar('wa','extrato')">📄 Extrato Completo</button>
+                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('wa','cobranca')">🔴 Late Payment Notice</button>
+                        <button class="btn-wa btn-wa-extrato" onclick="enviar('wa','extrato')">📄 Full Statement</button>
                     </div>
                 </div>
 
                 <!-- Painel SMS -->
                 <div class="canal-panel" id="painelSms">
                     <div class="wa-phone-row">
-                        <label>Telefone:</label>
+                        <label>Phone:</label>
                         <input type="tel" id="smsPhone" placeholder="+1 (305) 000-0000">
                     </div>
                     <div class="wa-btns">
-                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('sms','cobranca')">🔴 Cobrança de Atraso</button>
-                        <button class="btn-wa btn-wa-sms-extrato" onclick="enviar('sms','extrato')">📄 Extrato Completo</button>
+                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('sms','cobranca')">🔴 Late Payment Notice</button>
+                        <button class="btn-wa btn-wa-sms-extrato" onclick="enviar('sms','extrato')">📄 Full Statement</button>
                     </div>
                 </div>
 
@@ -549,8 +549,8 @@
                         <input type="email" id="emailAddr" placeholder="cliente@email.com">
                     </div>
                     <div class="wa-btns">
-                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('email','cobranca')">🔴 Cobrança de Atraso</button>
-                        <button class="btn-wa btn-wa-email-extrato" onclick="enviar('email','extrato')">📄 Extrato Completo</button>
+                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('email','cobranca')">🔴 Late Payment Notice</button>
+                        <button class="btn-wa btn-wa-email-extrato" onclick="enviar('email','extrato')">📄 Full Statement</button>
                     </div>
                 </div>
             </div>
@@ -565,7 +565,7 @@
         renderTudo();
     };
 
-    window.marcarPendente = async function(id) {
+    window.marcarPending = async function(id) {
         await updateLLInstallment(id, { status: 'PENDING', paidDate: '' });
         const p = parcelas.find(x => x.id === id);
         if (p) { p.status = 'PENDING'; p.paidDate = ''; }
@@ -625,7 +625,7 @@
             documentFolderLink: document.getElementById('eDocumentFolderLink').value.trim(),
             notes: document.getElementById('eNotes').value.trim(),
         };
-        if (!dados.propertyId || !dados.buyerName) { alert('Property ID e Nome do Comprador são obrigatórios!'); return; }
+        if (!dados.propertyId || !dados.buyerName) { alert('Property ID and Buyer Name are required!'); return; }
         const ok = await updateLLContract(contratoId, dados);
         if (ok !== false) {
             Object.assign(contrato, dados);
@@ -653,7 +653,7 @@
     window.salvarPagamento = async function() {
         const paymentDate = document.getElementById('pDate').value;
         const amountTotal = document.getElementById('pTotal').value;
-        if (!paymentDate || !amountTotal) { alert('❌ Data e valor são obrigatórios!'); return; }
+        if (!paymentDate || !amountTotal) { alert('❌ Date and amount are required!'); return; }
 
         const lateFee = parseFloat(document.getElementById('pLateFee').value) || 0;
         const principal = Math.max(0, parseFloat(amountTotal) - lateFee);
@@ -679,14 +679,14 @@
     };
 
     window.excluirPagamento = async function(id) {
-        if (!confirm('Excluir este pagamento?')) return;
+        if (!confirm('Delete this payment?')) return;
         const { deleteLLPayment: del } = await import('./firebase-config.js');
         await del(id);
         pagamentos = pagamentos.filter(p => p.id !== id);
         renderTudo();
     };
 
-    window.selecionarCanal = function(canal) {
+    window.selecionarChannel = function(canal) {
         document.querySelectorAll('.wa-tab').forEach(t => t.classList.remove('ativo'));
         document.querySelectorAll('.canal-panel').forEach(p => p.classList.remove('ativo'));
         document.querySelector('.wa-tab-' + canal).classList.add('ativo');
@@ -732,8 +732,8 @@
         const sep = '━━━━━━━━━━━━━━━━━━━━━━';
         const propAddr = contrato.propertyAddress || contrato.address || '';
         const contractDate = fmtData(contrato.contractDate);
-        const proximaPendente = parcelas.filter(p => p.status !== 'PAID' && (p.type||'').toLowerCase() !== 'balloon').sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
-        const proximaDataStr = proximaPendente ? fmtData(proximaPendente.dueDate) : null;
+        const proximaPending = parcelas.filter(p => p.status !== 'PAID' && (p.type||'').toLowerCase() !== 'balloon').sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
+        const proximaDataStr = proximaPending ? fmtData(proximaPending.dueDate) : null;
 
         let msg = '';
         if (tipo === 'cobranca') {
