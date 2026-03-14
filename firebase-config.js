@@ -371,7 +371,8 @@ async function exportFullBackup() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    return {
+    // Retorna o objeto backup completo para o GT_Smart_Backup.html usar
+    backup._counts = {
       loans: loans.length,
       debts: debts.length,
       contracts: contracts.length,
@@ -386,6 +387,7 @@ async function exportFullBackup() {
       llPayments: llPayments.length,
       llProperties: llProperties.length
     };
+    return backup;
   } catch (e) {
     console.error('Erro no backup:', e);
     return null;
