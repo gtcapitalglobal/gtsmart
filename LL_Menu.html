@@ -102,25 +102,30 @@
 
         <!-- Módulos principais -->
         <div class="modules-grid">
-            <a href="LL_Buyers.html" class="mod-card destaque">
-                <div class="icon">👥</div>
-                <div class="name">Compradores</div>
-                <div class="desc">Pipeline de clientes e status</div>
+            <a href="LL_Dashboard.html" class="mod-card destaque">
+                <div class="icon">📊</div>
+                <div class="name">Dashboard</div>
+                <div class="desc">KPIs, revenue & portfolio overview</div>
             </a>
             <a href="LL_Contracts.html" class="mod-card">
                 <div class="icon">📋</div>
                 <div class="name">Contratos</div>
                 <div class="desc">CFD e CASH — gestão completa</div>
             </a>
+            <a href="LL_Installments.html" class="mod-card">
+                <div class="icon">📅</div>
+                <div class="name">Parcelas</div>
+                <div class="desc">Cronograma e parcelas vencendo</div>
+            </a>
             <a href="LL_Payments.html" class="mod-card">
                 <div class="icon">💰</div>
                 <div class="name">Pagamentos</div>
                 <div class="desc">Registrar e consultar recebimentos</div>
             </a>
-            <a href="LL_Installments.html" class="mod-card">
-                <div class="icon">📅</div>
-                <div class="name">Parcelas</div>
-                <div class="desc">Cronograma e parcelas vencendo</div>
+            <a href="LL_Buyers.html" class="mod-card">
+                <div class="icon">👥</div>
+                <div class="name">Compradores</div>
+                <div class="desc">Pipeline de clientes e status</div>
             </a>
             <a href="LL_Alertas.html" class="mod-card" style="border-color:#c62828;">
                 <div class="icon">🚨</div>
@@ -131,11 +136,6 @@
                 <div class="icon">🏡</div>
                 <div class="name">Imóveis</div>
                 <div class="desc">Cadastro de propriedades</div>
-            </a>
-            <a href="LL_Dashboard.html" class="mod-card">
-                <div class="icon">📊</div>
-                <div class="name">Dashboard</div>
-                <div class="desc">KPIs, receita e fluxo de caixa</div>
             </a>
             <a href="LL_TaxSchedule.html" class="mod-card">
                 <div class="icon">🧾</div>
@@ -223,13 +223,17 @@
                     document.getElementById('kpiParcelasLabel').textContent = 'Próx. 30 dias';
                 }
 
-                // Total recebido no mês atual
+                // Total recebido no mês atual (pagamentos + down payments de contratos assinados esse mês)
                 const recMes = pagamentos
                     .filter(p => {
                         const d = safeDate(p.paymentDate);
-                        return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+                        return d && d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
                     })
-                    .reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+                    .reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0)
+                    + contratos.filter(c => {
+                        const d = safeDate(c.contractDate);
+                        return d && d.getMonth() === mesAtual && d.getFullYear() === anoAtual && parseFloat(c.downPayment || 0) > 0;
+                    }).reduce((s, c) => s + parseFloat(c.downPayment || 0), 0);
                 document.getElementById('kpiRecebido').textContent = fmt(recMes);
             } catch(e) {
                 console.error('Erro ao carregar KPIs:', e);
