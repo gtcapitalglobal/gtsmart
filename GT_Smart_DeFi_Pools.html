@@ -473,8 +473,8 @@
                     <option value="">— Nenhum —</option>
                 </select>
                 <div id="borrowLinkDetailsA" style="display:none;">
-                    <div class="modal-label">Quantidade usada deste Borrow <span style="font-weight:400;color:#aaa;font-size:11px;">(o % é calculado automaticamente)</span></div>
-                    <input type="number" class="modal-input" id="poolBorrowQtyA" placeholder="Ex: 2589.30" step="any" min="0" oninput="updateBorrowLinkA()">
+                    <div class="modal-label">% usado deste Borrow <span style="font-weight:400;color:#aaa;font-size:11px;">(a quantidade é calculada automaticamente)</span></div>
+                    <input type="number" class="modal-input" id="poolBorrowQtyA" placeholder="Ex: 68.05 (% do borrow)" step="any" min="0" max="100" oninput="updateBorrowLinkA()">
                     <div class="modal-preview" id="borrowLinkPreviewA" style="margin-top:6px;"></div>
                 </div>
 
@@ -483,8 +483,8 @@
                     <option value="">— Nenhum —</option>
                 </select>
                 <div id="borrowLinkDetailsB" style="display:none;">
-                    <div class="modal-label">Quantidade usada deste Borrow <span style="font-weight:400;color:#aaa;font-size:11px;">(o % é calculado automaticamente)</span></div>
-                    <input type="number" class="modal-input" id="poolBorrowQtyB" placeholder="Ex: 2589.30" step="any" min="0" oninput="updateBorrowLinkB()">
+                    <div class="modal-label">% usado deste Borrow <span style="font-weight:400;color:#aaa;font-size:11px;">(a quantidade é calculada automaticamente)</span></div>
+                    <input type="number" class="modal-input" id="poolBorrowQtyB" placeholder="Ex: 68.05 (% do borrow)" step="any" min="0" max="100" oninput="updateBorrowLinkB()">
                     <div class="modal-preview" id="borrowLinkPreviewB" style="margin-top:6px;"></div>
                 </div>
 
@@ -671,16 +671,16 @@ let allCryptos = [];
             const borrow = borrows.find(b => b.id === borrowId);
             if (!borrow) return;
 
-            const qtyInput = parseFloat(document.getElementById('poolBorrowQty' + side).value) || 0;
+            // Input agora é % — calcula quantidade a partir do %
+            const pctInput = parseFloat(document.getElementById('poolBorrowQty' + side).value) || 0;
             const sym = (borrow.cryptoSymbol || '?').toUpperCase();
             const totalBorrow = parseFloat(borrow.amount || 0);
-            const pct = totalBorrow > 0 ? (qtyInput / totalBorrow) * 100 : 0;
+            const qty = (pctInput / 100) * totalBorrow;
             const price = getPrice(borrow.cryptoId);
-            const debtUsd = qtyInput * price;
+            const debtUsd = qty * price;
 
-            preview.innerHTML = qtyInput > 0 ?
-                '🏦 Usando <strong>' + qtyInput.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) +
-                ' = <strong>' + pct.toFixed(2) + '% do borrow</strong>' +
+            preview.innerHTML = pctInput > 0 ?
+                '🏦 Usando <strong>' + pctInput.toFixed(2) + '% do borrow</strong> = <strong>' + qty.toLocaleString('en-US', {maximumFractionDigits:4}) + ' ' + sym + '</strong> de ' + totalBorrow.toLocaleString('en-US', {maximumFractionDigits:4}) +
                 '<br>💰 Dívida: ' + fmtUsd(debtUsd) : '';
         }
 
@@ -1690,23 +1690,23 @@ let allCryptos = [];
                 currentAmountB: parseFloat(document.getElementById('tokenBCurrentAmount').value) || 0,
                 lastQtyUpdate: (parseFloat(document.getElementById('tokenACurrentAmount').value) || parseFloat(document.getElementById('tokenBCurrentAmount').value)) ? new Date().toISOString() : (editingId ? (pools.find(p => p.id === editingId)?.lastQtyUpdate || '') : ''),
                 borrowIdA: document.getElementById('poolBorrowIdA').value || '',
-                borrowPctA: (function() {
+                borrowPctA: parseFloat(document.getElementById('poolBorrowQtyA').value) || 0,
+                borrowQtyA: (function() {
                     const bId = document.getElementById('poolBorrowIdA').value;
-                    const qty = parseFloat(document.getElementById('poolBorrowQtyA').value) || 0;
+                    const pct = parseFloat(document.getElementById('poolBorrowQtyA').value) || 0;
                     const b = borrows.find(x => x.id === bId);
                     const total = b ? parseFloat(b.amount || 0) : 0;
-                    return total > 0 ? (qty / total) * 100 : 0;
+                    return (pct / 100) * total;
                 })(),
-                borrowQtyA: parseFloat(document.getElementById('poolBorrowQtyA').value) || 0,
                 borrowIdB: document.getElementById('poolBorrowIdB').value || '',
-                borrowPctB: (function() {
+                borrowPctB: parseFloat(document.getElementById('poolBorrowQtyB').value) || 0,
+                borrowQtyB: (function() {
                     const bId = document.getElementById('poolBorrowIdB').value;
-                    const qty = parseFloat(document.getElementById('poolBorrowQtyB').value) || 0;
+                    const pct = parseFloat(document.getElementById('poolBorrowQtyB').value) || 0;
                     const b = borrows.find(x => x.id === bId);
                     const total = b ? parseFloat(b.amount || 0) : 0;
-                    return total > 0 ? (qty / total) * 100 : 0;
+                    return (pct / 100) * total;
                 })(),
-                borrowQtyB: parseFloat(document.getElementById('poolBorrowQtyB').value) || 0,
                 rangeMin: parseFloat(document.getElementById('poolRangeMin').value) || 0,
                 rangeMax: parseFloat(document.getElementById('poolRangeMax').value) || 0,
                 chain: document.getElementById('poolChain').value,
@@ -1758,21 +1758,17 @@ let allCryptos = [];
             document.getElementById('poolBorrowIdA').value = p.borrowIdA || '';
             // Mostrar qty salva (campo borrowQtyA) ou calcular da % salva
             (function() {
-                const qtyEl = document.getElementById('poolBorrowQtyA');
-                if (p.borrowQtyA) { qtyEl.value = p.borrowQtyA; }
-                else if (p.borrowIdA && p.borrowPctA) {
-                    const bA = borrows.find(b => b.id === p.borrowIdA);
-                    if (bA) qtyEl.value = (parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA)/100)).toFixed(4);
-                } else { qtyEl.value = ''; }
+                const pctEl = document.getElementById('poolBorrowQtyA');
+                // Campo agora exibe % — usar borrowPctA diretamente
+                if (p.borrowPctA) { pctEl.value = parseFloat(p.borrowPctA).toFixed(2); }
+                else { pctEl.value = ''; }
             })();
             document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
             (function() {
-                const qtyEl = document.getElementById('poolBorrowQtyB');
-                if (p.borrowQtyB) { qtyEl.value = p.borrowQtyB; }
-                else if (p.borrowIdB && p.borrowPctB) {
-                    const bB = borrows.find(b => b.id === p.borrowIdB);
-                    if (bB) qtyEl.value = (parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB)/100)).toFixed(4);
-                } else { qtyEl.value = ''; }
+                const pctEl = document.getElementById('poolBorrowQtyB');
+                // Campo agora exibe % — usar borrowPctB diretamente
+                if (p.borrowPctB) { pctEl.value = parseFloat(p.borrowPctB).toFixed(2); }
+                else { pctEl.value = ''; }
             })();
             document.getElementById('poolRangeMin').value = p.rangeMin || '';
             document.getElementById('poolRangeMax').value = p.rangeMax || '';
