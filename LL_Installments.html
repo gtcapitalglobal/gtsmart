@@ -244,7 +244,15 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-        [parcelas, contratos, buyers] = await Promise.all([getLLInstallments(), getLLContracts(), getLLBuyers()]);
+        try {
+            [parcelas, contratos, buyers] = await Promise.all([
+                getLLInstallments(),
+                getLLContracts(),
+                getLLBuyers().catch(() => [])
+            ]);
+        } catch(e) {
+            console.error('Erro ao carregar dados:', e);
+        }
         renderSummary(); renderTabela();
     });
 
