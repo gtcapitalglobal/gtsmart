@@ -82,6 +82,10 @@
         .inst-right .due { font-size: 11px; color: #888; margin-top: 2px; }
         .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
         .tbl th { background: #f5f5f5; padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase; }
+        .tbl th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+        .tbl th.sortable:hover { background: #e8e8e8; color: #1565c0; }
+        .tbl th.sort-asc::after { content: ' ▲'; color: #1565c0; }
+        .tbl th.sort-desc::after { content: ' ▼'; color: #1565c0; }
         .tbl td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; }
         .tbl tr:last-child td { border-bottom: none; }
         .tbl tr:hover td { background: #f9f9f9; }
@@ -212,8 +216,21 @@
             <!-- TABLE -->
             <div class="section-title" id="tabelaContratos">📄 All Active Contracts</div>
             <div style="overflow-x:auto;margin-bottom:20px;">
-                <table class="tbl">
-                    <thead><tr><th>Property</th><th>Buyer</th><th>Type</th><th>Sale Price</th><th>Cost Basis</th><th>Installment</th><th>Received</th><th>Remaining</th><th>Profit</th><th>ROI</th><th>Status</th><th></th></tr></thead>
+                <table class="tbl" id="tblContratos">
+                    <thead><tr>
+                        <th class="sortable" onclick="sortTable('propertyId')">Property</th>
+                        <th class="sortable" onclick="sortTable('buyerName')">Buyer</th>
+                        <th>Type</th>
+                        <th class="sortable" onclick="sortTable('contractPrice')">Sale Price</th>
+                        <th class="sortable" onclick="sortTable('costBasis')">Cost Basis</th>
+                        <th>Installment</th>
+                        <th class="sortable" onclick="sortTable('received')">Received</th>
+                        <th class="sortable" onclick="sortTable('remaining')">Remaining</th>
+                        <th class="sortable" onclick="sortTable('profit')">Profit</th>
+                        <th class="sortable" onclick="sortTable('roi')">ROI</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr></thead>
                     <tbody id="contratosBody"></tbody>
                 </table>
             </div>
@@ -389,9 +406,40 @@
             const restante = Math.max(0, parseFloat(c.contractPrice || 0) - recebido);
             const profit   = parseFloat(c.contractPrice || 0) - parseFloat(c.costBasis || 0);
             const roi      = parseFloat(c.costBasis || 0) > 0 ? ((profit / parseFloat(c.costBasis)) * 100).toFixed(1) + '%' : '—';
-            return '<tr><td><strong>' + c.propertyId + '</strong><br><span style="font-size:11px;color:#888;">' + (c.county || '') + (c.state ? ', ' + c.state : '') + '</span></td><td>' + (c.buyerName || '—') + '</td><td><span class="badge badge-blue">' + (c.saleType || '—') + '</span></td><td>' + fmt2(c.contractPrice) + '</td><td style="color:#555;">' + fmt2(c.costBasis) + '</td><td>' + (c.saleType === 'CFD' ? fmt2(c.installmentAmount) : '—') + '</td><td style="color:#2e7d32;font-weight:700;">' + fmt2(recebido) + '</td><td style="color:#e65100;font-weight:700;">' + fmt2(restante) + '</td><td style="color:#2e7d32;font-weight:700;">' + fmt2(profit) + '</td><td style="color:#6a1b9a;font-weight:700;">' + roi + '</td><td><span class="badge badge-' + (badges[c.status] || 'grey') + '">' + c.status + '</span></td><td><a href="LL_Detalhe_Contrato.html?id=' + c.id + '" class="badge badge-blue" style="text-decoration:none;">View →</a></td></tr>';
+            const roiNum   = parseFloat(c.costBasis || 0) > 0 ? (profit / parseFloat(c.costBasis)) * 100 : 0;
+            return '<tr data-property="' + c.propertyId + '" data-buyer="' + (c.buyerName||'') + '" data-price="' + (c.contractPrice||0) + '" data-cost="' + (c.costBasis||0) + '" data-received="' + recebido + '" data-remaining="' + restante + '" data-profit="' + profit + '" data-roi="' + roiNum + '"><td><strong>' + c.propertyId + '</strong><br><span style="font-size:11px;color:#888;">' + (c.county || '') + (c.state ? ', ' + c.state : '') + '</span></td><td>' + (c.buyerName || '—') + '</td><td><span class="badge badge-blue">' + (c.saleType || '—') + '</span></td><td>' + fmt2(c.contractPrice) + '</td><td style="color:#555;">' + fmt2(c.costBasis) + '</td><td>' + (c.saleType === 'CFD' ? fmt2(c.installmentAmount) : '—') + '</td><td style="color:#2e7d32;font-weight:700;">' + fmt2(recebido) + '</td><td style="color:#e65100;font-weight:700;">' + fmt2(restante) + '</td><td style="color:#2e7d32;font-weight:700;">' + fmt2(profit) + '</td><td style="color:#6a1b9a;font-weight:700;">' + roi + '</td><td><span class="badge badge-' + (badges[c.status] || 'grey') + '">' + c.status + '</span></td><td><a href="LL_Detalhe_Contrato.html?id=' + c.id + '" class="badge badge-blue" style="text-decoration:none;">View →</a></td></tr>';
         }).join('') || '<tr><td colspan="9" style="text-align:center;color:#aaa;padding:20px;">No active contracts</td></tr>';
     }
+    // ===== SORT TABLE =====
+    let sortCol = 'propertyId', sortAsc = true;
+    window.sortTable = function(col) {
+        if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+
+        // Atualizar ícones nos headers
+        document.querySelectorAll('#tblContratos th').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+        });
+        const colMap = { propertyId: 0, buyerName: 1, contractPrice: 3, costBasis: 4, received: 6, remaining: 7, profit: 8, roi: 9 };
+        const thIdx = colMap[col];
+        if (thIdx !== undefined) {
+            const th = document.querySelectorAll('#tblContratos th')[thIdx];
+            if (th) th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+        }
+
+        const tbody = document.querySelector('#tblContratos tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const dataAttr = { propertyId: 'property', buyerName: 'buyer', contractPrice: 'price', costBasis: 'cost', received: 'received', remaining: 'remaining', profit: 'profit', roi: 'roi' };
+        const attr = dataAttr[col] || 'property';
+        const isNum = ['price','cost','received','remaining','profit','roi'].includes(attr);
+
+        rows.sort((a, b) => {
+            const va = a.dataset[attr] || '';
+            const vb = b.dataset[attr] || '';
+            let cmp = isNum ? parseFloat(va) - parseFloat(vb) : va.localeCompare(vb);
+            return sortAsc ? cmp : -cmp;
+        });
+        rows.forEach(r => tbody.appendChild(r));
+    };
 </script>
 </body>
 </html>
