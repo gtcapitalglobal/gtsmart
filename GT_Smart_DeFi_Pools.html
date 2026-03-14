@@ -1552,7 +1552,7 @@ let allCryptos = [];
             editingId = null; selectedTokenA = null; selectedTokenB = null;
             document.getElementById('modalTitle').textContent = '🌊 Nova Pool';
             document.getElementById('poolName').value = '';
-            document.getElementById('poolDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('poolDate').value = (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
             document.getElementById('poolDex').value = 'Uniswap';
             document.getElementById('tokenASearch').value = '';
             document.getElementById('tokenASelected').textContent = 'Nenhum selecionado';
@@ -1680,7 +1680,7 @@ let allCryptos = [];
 
             const pool = {
                 poolName: document.getElementById('poolName').value || ((infoA?.symbol || '?').toUpperCase() + '-' + (infoB?.symbol || '?').toUpperCase()),
-                poolDate: document.getElementById('poolDate').value || new Date().toISOString().split('T')[0],
+                poolDate: document.getElementById('poolDate').value || (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })(),
                 tokenAId: selectedTokenA, tokenAName: infoA?.name || '', tokenASymbol: infoA?.symbol || '',
                 tokenBId: selectedTokenB, tokenBName: infoB?.name || '', tokenBSymbol: infoB?.symbol || '',
                 amountA: amtA || 0, amountB: amtB || 0,
@@ -1834,7 +1834,7 @@ let allCryptos = [];
 
         window.openFeeModal = function(poolId) {
             feeEditPoolId = poolId;
-            document.getElementById('feeDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('feeDate').value = (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
             document.getElementById('feeAmount').value = '';
             document.getElementById('feeModal').classList.add('show');
         };
@@ -1846,7 +1846,7 @@ let allCryptos = [];
         window.saveFeeCollection = async function() {
             const amount = parseFloat(document.getElementById('feeAmount').value);
             if (!amount || amount <= 0) { alert('Digite o valor!'); return; }
-            const date = document.getElementById('feeDate').value || new Date().toISOString().split('T')[0];
+            const date = document.getElementById('feeDate').value || (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
 
             const pool = pools.find(p => p.id === feeEditPoolId);
             if (!pool) return;

@@ -212,10 +212,10 @@ import { auth, onAuthStateChanged, saveDebt } from './firebase-config.js';
                 const isLast = i === numPayments - 1;
                 
                 if (isLast) {
-                    payments.push({ number: i+1, date: paymentDate.toISOString().split('T')[0], amount: interestAmount, paid: false, paidDate: null, negotiated: false, label: 'Juros' });
-                    payments.push({ number: i+2, date: paymentDate.toISOString().split('T')[0], amount: totalAmount, paid: false, paidDate: null, negotiated: false, label: 'Principal' });
+                    payments.push({ number: i+1, date: ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(paymentDate)), amount: interestAmount, paid: false, paidDate: null, negotiated: false, label: 'Juros' });
+                    payments.push({ number: i+2, date: ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(paymentDate)), amount: totalAmount, paid: false, paidDate: null, negotiated: false, label: 'Principal' });
                 } else {
-                    payments.push({ number: i+1, date: paymentDate.toISOString().split('T')[0], amount: interestAmount, paid: false, paidDate: null, negotiated: false, label: 'Juros' });
+                    payments.push({ number: i+1, date: ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(paymentDate)), amount: interestAmount, paid: false, paidDate: null, negotiated: false, label: 'Juros' });
                 }
                 paymentDate.setMonth(paymentDate.getMonth() + 1);
             }

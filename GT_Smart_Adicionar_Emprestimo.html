@@ -102,7 +102,7 @@ import { auth, onAuthStateChanged, saveLoan } from './firebase-config.js';
         });
 
         window.onload = function() {
-            document.getElementById('loanDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('loanDate').value = (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
 
             // Auto-preencher da calculadora
             const savedData = localStorage.getItem('gtSmartLoanData');
@@ -177,7 +177,7 @@ import { auth, onAuthStateChanged, saveLoan } from './firebase-config.js';
             for (let i = 1; i <= numPayments; i++) {
                 payments.push({
                     number: i,
-                    date: currentDate.toISOString().split('T')[0],
+                    date: ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(currentDate)),
                     amount: paymentAmount,
                     paid: false,
                     paidDate: null

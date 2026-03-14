@@ -290,7 +290,7 @@
     };
 
     window.abrirNovo = function() {
-        document.getElementById('pDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('pDate').value = (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
         document.getElementById('pTotal').value = '';
         document.getElementById('pLateFee').value = '';
         document.getElementById('pMemo').value = '';

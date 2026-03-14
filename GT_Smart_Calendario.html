@@ -214,7 +214,7 @@ onAuthStateChanged(auth, (user) => {
             cards = cards || [];
             renderCalendar();
             try {
-                const todayStr = new Date().toISOString().split('T')[0];
+                const todayStr = (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
                 showPayments(todayStr);
             } catch(e) { console.error('Erro showPayments:', e); }
         }
@@ -521,7 +521,7 @@ onAuthStateChanged(auth, (user) => {
             currentDate = new Date();
             selectedDateStr = '';
             renderCalendar();
-            showPayments(new Date().toISOString().split('T')[0]);
+            showPayments((() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })());
         };
     </script>
 </body>

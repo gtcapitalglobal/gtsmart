@@ -297,7 +297,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './fi
             payment.negotiatedDate = new Date().toISOString();
             loan.payments.push({
                 number: loan.payments.length + 1,
-                date: newDate.toISOString().split('T')[0],
+                date: ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(newDate)),
                 amount: newAmount,
                 paid: false,
                 interestAmount: interest,
@@ -324,7 +324,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan, deleteLoan } from './fi
             for (let i = 0; i < newPaymentsCount; i++) {
                 currentDate = new Date(currentDate);
                 currentDate.setDate(currentDate.getDate() + dayIncrement);
-                loan.payments.push({ number: loan.payments.length + 1, date: currentDate.toISOString().split('T')[0], amount: loan.paymentAmount, paid: false });
+                loan.payments.push({ number: loan.payments.length + 1, date: ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(currentDate)), amount: loan.paymentAmount, paid: false });
             }
             loan.numPayments = loan.payments.length;
             await salvarLoan();

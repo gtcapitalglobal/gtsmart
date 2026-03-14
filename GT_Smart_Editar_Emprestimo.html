@@ -286,7 +286,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-confi
             const formatDateForInput = (dateStr) => {
                 // Converte para formato YYYY-MM-DD para input type="date"
                 const date = new Date(dateStr);
-                return date.toISOString().split('T')[0];
+                return ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(date));
             };
 
             const formatDateDisplay = (dateStr) => {
@@ -369,7 +369,7 @@ import { auth, onAuthStateChanged, getLoans, updateLoan } from "./firebase-confi
                 currentDate.setDate(currentDate.getDate() + dayIncrement);
                 
                 // Atualiza a data (mantém paid, paidDate, amount, etc)
-                payment.date = currentDate.toISOString().split('T')[0];
+                payment.date = ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(currentDate));
             });
             
             // Re-renderiza para mostrar as mudanças

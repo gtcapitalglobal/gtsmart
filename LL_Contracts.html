@@ -353,7 +353,7 @@
         document.getElementById('cSaleType').value = 'CFD';
         document.getElementById('cStatus').value = 'Active';
         document.getElementById('cOriginType').value = 'DIRECT';
-        document.getElementById('cContractDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('cContractDate').value = (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
         toggleCFD();
         document.getElementById('calcBox').style.display = 'none';
         document.getElementById('modalContrato').classList.add('open');
@@ -492,7 +492,7 @@
         for (let i = 1; i <= count; i++) {
             const dueDate = new Date(firstDate);
             dueDate.setMonth(firstDate.getMonth() + (i - 1));
-            const dueDateStr = dueDate.toISOString().split('T')[0];
+            const dueDateStr = ((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(dueDate));
             instPromises.push(saveLLInstallment({
                 contractId,
                 propertyId: data.propertyId,

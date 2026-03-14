@@ -477,7 +477,7 @@ import { auth, onAuthStateChanged, getLoans, getDebts, getCards, getDefiPools, g
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Relatorio_GT_Smart_${today.toISOString().split('T')[0]}.txt`;
+            a.download = `Relatorio_GT_Smart_${((d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'))(today))}.txt`;
             a.click();
             URL.revokeObjectURL(url);
         };

@@ -277,10 +277,13 @@
         const p = parcelas.find(x => x.id === id); if (!p) return;
         const c = contratos.find(x => x.id === p.contractId) || {};
         document.getElementById('mpId').value = id;
-        document.getElementById('mpData').value = new Date().toISOString().split('T')[0];
+        // Data local (evita bug de fuso horário com toISOString)
+        const agora = new Date();
+        const dataLocal = agora.getFullYear() + '-' + String(agora.getMonth()+1).padStart(2,'0') + '-' + String(agora.getDate()).padStart(2,'0');
+        document.getElementById('mpData').value = dataLocal;
         document.getElementById('mpValor').value = parseFloat(p.amount||0).toFixed(2);
         document.getElementById('mpMemo').value = '';
-        document.getElementById('mpCanal').value = 'GT_REAL';
+        document.getElementById('mpCanal').value = 'ZELLE';
         document.getElementById('mpInfo').innerHTML = `<strong>${p.propertyId||c.propertyId||'—'}</strong> — Parcela #${p.installmentNumber||'—'}<br>Comprador: <strong>${c.buyerName||'—'}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(p.amount)}</strong>`;
         document.getElementById('modalPagar').classList.add('open');
     };

@@ -350,7 +350,7 @@ import { auth, onAuthStateChanged, getDebts, updateDebt, deleteDebt } from './fi
                 payment.paidDate = null;
             } else {
                 payment.paid = true;
-                payment.paidDate = new Date().toISOString().split('T')[0];
+                payment.paidDate = (() => { const _d = new Date(); return _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); })();
             }
             
             const paidCount = debt.payments.filter(p => p.paid).length;
