@@ -414,6 +414,7 @@
                     ${contrato.balloonAmount > 0 ? `<div class="info-row"><span class="info-lbl">Balloon</span><span class="info-val">${fmt2(contrato.balloonAmount)} on ${fmtData(contrato.balloonDate)}</span></div>` : ''}
                     <div class="info-row"><span class="info-lbl">Cost Basis</span><span class="info-val">${fmt2(contrato.costBasis)}</span></div>
                     <div class="info-row"><span class="info-lbl">Est. Profit</span><span class="info-val green">${fmt2(lucro)}</span></div>
+                    <div class="info-row"><span class="info-lbl">ROI</span><span class="info-val green">${parseFloat(contrato.costBasis) > 0 ? ((lucro / parseFloat(contrato.costBasis)) * 100).toFixed(1) + '%' : '—'}</span></div>
                     <div class="info-row"><span class="info-lbl">Total Received</span><span class="info-val green">${fmt2(totalRecebido)}</span></div>
                     <div class="info-row"><span class="info-lbl">Remaining Balance</span><span class="info-val" style="color:#e65100;font-weight:700;">${fmt2(remaining)}</span></div>
                     ${contrato.saleType === 'CFD' && total > 0 ? `
