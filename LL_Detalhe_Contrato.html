@@ -769,7 +769,9 @@
                 }
             });
             const historicoStr = allLinhas.length > 0 ? allLinhas.join('\n\n') : '—';
-            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n📊 *OVERVIEW*\n\n✅ Payments made: ${pagas} of ${total} (${pct}%)\n${motivacao}\n\n🎯 Contract total: ${totalContrato}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}\n\n${proximaDataStr ? '📆 Next payment: ' + proximaDataStr + ' · ' + proximaValor + '\n' : ''}${payoffDate ? '🏁 Expected payoff: ' + payoffDate + '\n' : ''}\n${sep}\n\n📋 *PAYMENT HISTORY*\n\n${historicoStr}\n\n${sep}\n\n${assinatura}`;
+        const br = '\n\u00A0\n'; // linha em branco forçada (funciona no WhatsApp)
+
+            msg = `Hi ${nome} 👋${br}${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}${br}📊 *OVERVIEW*${br}✅ Payments made: ${pagas} of ${total} (${pct}%)\n${motivacao}${br}🎯 Contract total: ${totalContrato}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}${br}${proximaDataStr ? '📆 Next payment: ' + proximaDataStr + ' · ' + proximaValor + '\n' : ''}${payoffDate ? '🏁 Expected payoff: ' + payoffDate : ''}${br}${sep}${br}📋 *PAYMENT HISTORY*${br}${historicoStr}${br}${sep}${br}${assinatura}`;
         }
 
         if (canal === 'wa') {
