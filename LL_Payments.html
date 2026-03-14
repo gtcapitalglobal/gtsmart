@@ -102,8 +102,8 @@
             <select class="filter-select" id="fRecv" onchange="renderTabela()">
                 <option value="">Todas contas</option>
                 <option value="GT_REAL">GT Real Assets</option>
-                <option value="LEGACY">Legacy</option>
                 <option value="PERSONAL">Personal</option>
+                <option value="OTHER">Outro</option>
             </select>
         </div>
 
@@ -170,8 +170,8 @@
                 <label>Recebido por</label>
                 <select id="pReceivedBy">
                     <option value="GT_REAL">GT Real Assets</option>
-                    <option value="LEGACY">Legacy</option>
                     <option value="PERSONAL">Personal</option>
+                    <option value="OTHER">Outro</option>
                 </select>
             </div>
         </div>
@@ -261,7 +261,7 @@
             return;
         }
 
-        const recvLabel = { GT_REAL: 'GT Real', GT_REAL_BANK: 'GT Real', LEGACY: 'Legacy', PERSONAL: 'Personal' };
+        const recvLabel = { GT_REAL: 'GT Real', GT_REAL_BANK: 'GT Real', LEGACY: 'Legacy', PERSONAL: 'Personal', OTHER: 'Outro' };
 
         tb.innerHTML = lista.map(p => `
             <tr>
