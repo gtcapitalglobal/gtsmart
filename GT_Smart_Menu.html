@@ -776,22 +776,32 @@
 
             let totalPagarValor = 0;
             let parcelasEmpHoje = 0, parcelasEmpAtrasadas = 0;
+            const nomesEmpHoje = [];
             loans.forEach(loan => {
                 if (loan.archived || loan.status === 'finished') return;
                 const proxima = (loan.payments || []).find(p => !p.paid && !p.negotiated);
                 if (!proxima) return;
                 const dt = parseLocalDate(proxima.date); if (!dt) return;
-                if (dt.getTime() === hoje.getTime()) { parcelasEmpHoje++; totalPagarValor += proxima.amount || 0; }
+                if (dt.getTime() === hoje.getTime()) {
+                    parcelasEmpHoje++;
+                    totalPagarValor += proxima.amount || 0;
+                    nomesEmpHoje.push((loan.clientName || 'Sem nome') + ' (' + fmt(proxima.amount || 0) + ')');
+                }
                 else if (dt < hoje) parcelasEmpAtrasadas++;
             });
 
             let parcelasDivHoje = 0, parcelasDivAtrasadas = 0;
+            const nomesDivHoje = [];
             debts.forEach(debt => {
                 if (debt.archived || debt.status === 'finished') return;
                 const proxima = (debt.payments || []).find(p => !p.paid && !p.negotiated);
                 if (!proxima) return;
                 const dt = parseLocalDate(proxima.date); if (!dt) return;
-                if (dt.getTime() === hoje.getTime()) { parcelasDivHoje++; totalPagarValor += proxima.amount || 0; }
+                if (dt.getTime() === hoje.getTime()) {
+                    parcelasDivHoje++;
+                    totalPagarValor += proxima.amount || 0;
+                    nomesDivHoje.push((debt.creditorName || debt.creditor || 'Sem nome') + ' (' + fmt(proxima.amount || 0) + ')');
+                }
                 else if (dt < hoje) parcelasDivAtrasadas++;
             });
 
@@ -819,8 +829,14 @@
                 dashPagar.className = 'dash-card verde';
             } else {
                 let linhas = [];
-                if (parcelasEmpHoje > 0) linhas.push('📋 ' + parcelasEmpHoje + ' parcela' + (parcelasEmpHoje > 1 ? 's' : '') + ' de empréstimo');
-                if (parcelasDivHoje > 0) linhas.push('💰 ' + parcelasDivHoje + ' parcela' + (parcelasDivHoje > 1 ? 's' : '') + ' de dívida');
+                if (parcelasEmpHoje > 0) {
+                    linhas.push('📋 ' + parcelasEmpHoje + ' parcela' + (parcelasEmpHoje > 1 ? 's' : '') + ' de empréstimo');
+                    nomesEmpHoje.forEach(n => linhas.push('&nbsp;&nbsp;&nbsp;↳ ' + n));
+                }
+                if (parcelasDivHoje > 0) {
+                    linhas.push('💰 ' + parcelasDivHoje + ' parcela' + (parcelasDivHoje > 1 ? 's' : '') + ' de dívida');
+                    nomesDivHoje.forEach(n => linhas.push('&nbsp;&nbsp;&nbsp;↳ ' + n));
+                }
                 if (cartoesHoje > 0) linhas.push('💳 ' + cartoesHoje + ' cartão(ões)');
                 if (totalPagarValor > 0) linhas.push('💵 Total: ' + fmt(totalPagarValor));
                 document.getElementById('totalPagar').innerHTML = linhas.join('<br>');
