@@ -72,6 +72,7 @@ const ARQUIVOS_CACHE = [
     '/LL_Payments.html',
     '/LL_Properties.html',
     '/LL_TaxSchedule.html',
+    '/LL_PaymentPortal.html',
 
     // Outros
     '/404.html',

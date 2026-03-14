@@ -44,6 +44,8 @@
         .badge-purple { background: #f3e5f5; color: #7b1fa2; }
         .btn-pagar { background: #2e7d32; color: white; border: none; padding: 5px 11px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .btn-pagar:hover { background: #1b5e20; }
+        .btn-square { background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; white-space: nowrap; }
+        .btn-square:hover { background: #0055cc; }
         .btn-despagar { background: #fff3e0; color: #e65100; border: 1px solid #e65100; padding: 5px 11px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .btn-editar { background: #e3f2fd; color: #1565c0; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
         .btn-excluir { background: #fdecea; color: #c62828; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px; }
@@ -60,6 +62,20 @@
         .btn-salvar { flex: 1; background: #1565c0; color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
         .btn-salvar-green { flex: 1; background: #2e7d32; color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
         .btn-cancelar { background: #f5f5f5; color: #555; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        /* SQUARE MODAL */
+        .sq-resumo { background: #f0f7ff; border: 2px solid #1565c0; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+        .sq-linha { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+        .sq-linha span { color: #555; }
+        .sq-linha strong { color: #333; }
+        .sq-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; padding-top: 8px; margin-top: 4px; border-top: 2px solid #1565c0; color: #1565c0; }
+        .sq-toggle { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #fff8e1; border: 2px solid #ffa000; border-radius: 8px; margin-bottom: 14px; cursor: pointer; font-size: 13px; font-weight: 700; color: #e65100; }
+        .sq-toggle input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+        .sq-link-box { background: #e8f5e9; border: 2px solid #2e7d32; border-radius: 10px; padding: 14px; margin-top: 14px; }
+        .sq-link-label { font-size: 11px; font-weight: 800; color: #2e7d32; margin-bottom: 8px; text-transform: uppercase; }
+        .sq-link-url { width: 100%; padding: 9px 12px; border: 2px solid #a5d6a7; border-radius: 8px; font-size: 12px; background: white; color: #333; word-break: break-all; resize: none; font-family: monospace; }
+        .btn-copiar { width: 100%; margin-top: 8px; background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .btn-square-gerar { flex: 1; background: #006aff; color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+        .btn-square-gerar:disabled { background: #90a4ae; cursor: not-allowed; }
         .empty { text-align: center; color: #aaa; padding: 30px; font-size: 14px; }
         .loading { text-align: center; color: #1565c0; padding: 30px; font-size: 14px; }
         @media (max-width: 600px) { .sum-grid { grid-template-columns: repeat(2, 1fr) !important; } }
@@ -92,14 +108,8 @@
             <table class="tbl">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Imóvel</th>
-                        <th>Comprador</th>
-                        <th>Tipo</th>
-                        <th>Vencimento</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Ações</th>
+                        <th>#</th><th>Imóvel</th><th>Comprador</th><th>Tipo</th>
+                        <th>Vencimento</th><th>Valor</th><th>Status</th><th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tbody">
@@ -109,7 +119,7 @@
         </div>
         <div class="empty" id="emptyMsg" style="display:none;">Nenhuma parcela encontrada.</div>
     </div>
-    <div class="version">Basic 9.0 | 11/03/2026</div>
+    <div class="version">Basic 11.0 | 14/03/2026</div>
 </div>
 
 <!-- MODAL PAGAR -->
@@ -123,16 +133,13 @@
         <div class="form-group">
             <label>Canal de Recebimento</label>
             <select id="mpCanal">
-                <option value="ZELLE">Zelle</option>
-                <option value="WIRE">Wire Transfer</option>
-                <option value="ACH">ACH</option>
-                <option value="CASH">Cash</option>
-                <option value="CHECK">Check</option>
-                <option value="CARD">Card</option>
-                <option value="OTHER">Outro</option>
+                <option value="ZELLE">Zelle</option><option value="WIRE">Wire Transfer</option>
+                <option value="ACH">ACH</option><option value="CASH">Cash</option>
+                <option value="CHECK">Check</option><option value="CARD">Card</option>
+                <option value="SQUARE">Square</option><option value="OTHER">Outro</option>
             </select>
         </div>
-        <div class="form-group"><label>Observação (opcional)</label><textarea id="mpMemo" rows="2" placeholder="Ex: Pix, cheque, transferência..."></textarea></div>
+        <div class="form-group"><label>Observação (opcional)</label><textarea id="mpMemo" rows="2" placeholder="Ex: Square, cheque, transferência..."></textarea></div>
         <div class="modal-footer">
             <button class="btn-cancelar" onclick="fecharModalPagar()">Cancelar</button>
             <button class="btn-salvar-green" onclick="confirmarPagar()">✅ Confirmar Pagamento</button>
@@ -163,7 +170,7 @@
     </div>
 </div>
 
-<!-- MODAL DETALHE PAGAMENTO -->
+<!-- MODAL DETALHE -->
 <div class="modal" id="modalDetalhe">
     <div class="modal-box">
         <div class="modal-title">📋 Detalhes da Parcela</div>
@@ -174,10 +181,45 @@
     </div>
 </div>
 
+<!-- MODAL SQUARE -->
+<div class="modal" id="modalSquare">
+    <div class="modal-box">
+        <div class="modal-title">💳 Pagamento via Cartão — Square</div>
+        <div class="modal-info" id="sqInfo"></div>
+        <div class="sq-resumo">
+            <div class="sq-linha"><span>Valor da parcela</span><strong id="sqValorBase">—</strong></div>
+            <div class="sq-linha"><span>Taxa cartão (4%)</span><strong id="sqTaxaCartao">—</strong></div>
+            <div class="sq-linha" id="sqLinhaLateFee" style="display:none;"><span>🚨 Taxa de atraso</span><strong style="color:#c62828;">+ $30.00</strong></div>
+            <div class="sq-total"><span>Total a cobrar</span><span id="sqTotal">—</span></div>
+        </div>
+        <label class="sq-toggle" id="sqToggleLateFee" style="display:none;">
+            <input type="checkbox" id="sqCheckLateFee" onchange="recalcularSquare()">
+            🚨 Incluir $30.00 de taxa por atraso
+        </label>
+        <!-- Link gerado -->
+        <div class="sq-link-box" id="sqLinkBox" style="display:none;">
+            <div class="sq-link-label">✅ Link gerado — envie ao cliente</div>
+            <textarea class="sq-link-url" id="sqLinkUrl" rows="2" readonly></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="btn-copiar" onclick="copiarLink()" style="flex:1;">📋 Copiar Link</button>
+                <button onclick="abrirPortal()" style="flex:1;background:#006aff;color:white;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">🔗 Abrir Portal</button>
+            </div>
+            <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:6px;font-size:11px;color:#e65100;">
+                💡 Envie este link por WhatsApp ou email. O cliente paga com cartão diretamente, sem baixar nada.
+            </div>
+        </div>
+        <input type="hidden" id="sqInstallmentId">
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="fecharModalSquare()">Fechar</button>
+            <button class="btn-square-gerar" id="btnGerarLink" onclick="gerarLinkSquare()">💳 Gerar Link</button>
+        </div>
+    </div>
+</div>
+
 <a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment, deleteLLInstallmentsByContract, saveLLPayment } from './firebase-config.js';
+    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment, saveLLPayment } from './firebase-config.js';
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
@@ -185,81 +227,65 @@
     const toDateInput = d => { if (!d) return ''; if (typeof d === 'string' && d.includes('T')) return d.split('T')[0]; return d; };
 
     let parcelas = [], contratos = [], filtroAtivo = 'todas', searchTerm = '';
+    let sqDados = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
         [parcelas, contratos] = await Promise.all([getLLInstallments(), getLLContracts()]);
-        renderSummary();
-        renderTabela();
+        renderSummary(); renderTabela();
     });
 
     function renderSummary() {
         const hoje = new Date();
-        const vencidas = parcelas.filter(p => p.status !== 'PAID' && safeDate(p.dueDate) < hoje).length;
-        const prox30 = parcelas.filter(p => {
-            if (p.status === 'PAID') return false;
-            const d = safeDate(p.dueDate);
-            const dias = d ? Math.floor((d - hoje) / 86400000) : 999;
-            return dias >= 0 && dias <= 30;
-        }).length;
-        const pendentes = parcelas.filter(p => p.status !== 'PAID').length;
-        const pagas = parcelas.filter(p => p.status === 'PAID').length;
-        document.getElementById('sumVencidas').textContent = vencidas;
-        document.getElementById('sumProx30').textContent = prox30;
-        document.getElementById('sumPendentes').textContent = pendentes;
-        document.getElementById('sumPagas').textContent = pagas;
+        document.getElementById('sumVencidas').textContent = parcelas.filter(p => p.status !== 'PAID' && safeDate(p.dueDate) < hoje).length;
+        document.getElementById('sumProx30').textContent = parcelas.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); const dias = d ? Math.floor((d-hoje)/86400000) : 999; return dias >= 0 && dias <= 30; }).length;
+        document.getElementById('sumPendentes').textContent = parcelas.filter(p => p.status !== 'PAID').length;
+        document.getElementById('sumPagas').textContent = parcelas.filter(p => p.status === 'PAID').length;
     }
 
-    function filtrar() {
-        searchTerm = document.getElementById('searchBox').value.toLowerCase();
-        renderTabela();
-    }
+    function filtrar() { searchTerm = document.getElementById('searchBox').value.toLowerCase(); renderTabela(); }
 
     window.setFiltro = function(f) {
         filtroAtivo = f;
         ['fTodas','fVencidas','fProx30','fProx90','fPagas'].forEach(id => document.getElementById(id).classList.remove('active'));
-        const map = { todas:'fTodas', vencidas:'fVencidas', prox30:'fProx30', prox90:'fProx90', pagas:'fPagas' };
-        document.getElementById(map[f]).classList.add('active');
+        ({todas:'fTodas',vencidas:'fVencidas',prox30:'fProx30',prox90:'fProx90',pagas:'fPagas'})[f] && document.getElementById(({todas:'fTodas',vencidas:'fVencidas',prox30:'fProx30',prox90:'fProx90',pagas:'fPagas'})[f]).classList.add('active');
         renderTabela();
     };
 
     function renderTabela() {
         const hoje = new Date();
-        let lista = [...parcelas].sort((a, b) => {
+        let lista = [...parcelas].sort((a,b) => {
             if (a.status !== 'PAID' && b.status === 'PAID') return -1;
             if (a.status === 'PAID' && b.status !== 'PAID') return 1;
-            const da = safeDate(a.dueDate) || new Date(0);
-            const db = safeDate(b.dueDate) || new Date(0);
-            return da - db;
+            return (safeDate(a.dueDate)||new Date(0)) - (safeDate(b.dueDate)||new Date(0));
         });
         if (filtroAtivo === 'vencidas') lista = lista.filter(p => p.status !== 'PAID' && safeDate(p.dueDate) < hoje);
-        else if (filtroAtivo === 'prox30') lista = lista.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); const dias = d ? Math.floor((d-hoje)/86400000) : 999; return dias >= 0 && dias <= 30; });
-        else if (filtroAtivo === 'prox90') lista = lista.filter(p => { if (p.status === 'PAID') return false; const d = safeDate(p.dueDate); const dias = d ? Math.floor((d-hoje)/86400000) : 999; return dias >= 0 && dias <= 90; });
+        else if (filtroAtivo === 'prox30') lista = lista.filter(p => { if (p.status==='PAID') return false; const d=safeDate(p.dueDate); const dias=d?Math.floor((d-hoje)/86400000):999; return dias>=0&&dias<=30; });
+        else if (filtroAtivo === 'prox90') lista = lista.filter(p => { if (p.status==='PAID') return false; const d=safeDate(p.dueDate); const dias=d?Math.floor((d-hoje)/86400000):999; return dias>=0&&dias<=90; });
         else if (filtroAtivo === 'pagas') lista = lista.filter(p => p.status === 'PAID');
-        if (searchTerm) lista = lista.filter(p => { const c = contratos.find(x => x.id === p.contractId) || {}; return (p.propertyId||'').toLowerCase().includes(searchTerm) || (c.buyerName||'').toLowerCase().includes(searchTerm); });
+        if (searchTerm) lista = lista.filter(p => { const c=contratos.find(x=>x.id===p.contractId)||{}; return (p.propertyId||'').toLowerCase().includes(searchTerm)||(c.buyerName||'').toLowerCase().includes(searchTerm); });
 
         const tbody = document.getElementById('tbody');
-        if (lista.length === 0) { tbody.innerHTML = ''; document.getElementById('emptyMsg').style.display = 'block'; return; }
+        if (!lista.length) { tbody.innerHTML=''; document.getElementById('emptyMsg').style.display='block'; return; }
         document.getElementById('emptyMsg').style.display = 'none';
 
         tbody.innerHTML = lista.map(p => {
-            const c = contratos.find(x => x.id === p.contractId) || {};
+            const c = contratos.find(x=>x.id===p.contractId)||{};
             const dVenc = safeDate(p.dueDate);
-            const isOverdue = p.status !== 'PAID' && dVenc && dVenc < hoje;
-            const diasDiff = dVenc ? Math.floor((dVenc - hoje) / 86400000) : 999;
-            const rowClass = isOverdue ? 'row-overdue' : (p.status === 'PAID' ? 'row-paid' : '');
-
+            const isOverdue = p.status!=='PAID' && dVenc && dVenc<hoje;
+            const diasDiff = dVenc ? Math.floor((dVenc-hoje)/86400000) : 999;
+            const rowClass = isOverdue ? 'row-overdue' : (p.status==='PAID' ? 'row-paid' : '');
             let badge, statusLabel;
-            if (p.status === 'PAID') { badge = 'green'; statusLabel = `✅ Pago${p.paidDate ? ' · ' + fmtData(p.paidDate) : ''}`; }
-            else if (isOverdue) { badge = 'red'; statusLabel = `🚨 ${Math.abs(diasDiff)}d atraso`; }
-            else if (diasDiff <= 5) { badge = 'orange'; statusLabel = `⚠️ ${diasDiff}d`; }
-            else if (diasDiff <= 30) { badge = 'blue'; statusLabel = `⏰ ${diasDiff}d`; }
-            else { badge = 'grey'; statusLabel = `📆 ${diasDiff}d`; }
-
-            const tipoBadge = p.type === 'BALLOON' ? '<span class="badge badge-purple">🎈 Balloon</span>' : p.type === 'DOWN_PAYMENT' ? '<span class="badge badge-blue">⬇️ Entrada</span>' : '<span class="badge badge-grey">Regular</span>';
-            const btnPrincipal = p.status === 'PAID' ? `<button class="btn-despagar" onclick="desfazerPagamento('${p.id}')">↩️ Desfazer</button>` : `<button class="btn-pagar" onclick="abrirPagar('${p.id}')">💰 Pagar</button>`;
-            const btnDetalhe = p.status === 'PAID' ? `<button class="btn-editar" onclick="abrirDetalhe('${p.id}')" title="Ver detalhes">📋</button>` : '';
-
+            if (p.status==='PAID') { badge='green'; statusLabel=`✅ Pago${p.paidDate?' · '+fmtData(p.paidDate):''}`; }
+            else if (isOverdue) { badge='red'; statusLabel=`🚨 ${Math.abs(diasDiff)}d atraso`; }
+            else if (diasDiff<=5) { badge='orange'; statusLabel=`⚠️ ${diasDiff}d`; }
+            else if (diasDiff<=30) { badge='blue'; statusLabel=`⏰ ${diasDiff}d`; }
+            else { badge='grey'; statusLabel=`📆 ${diasDiff}d`; }
+            const tipoBadge = p.type==='BALLOON'?'<span class="badge badge-purple">🎈 Balloon</span>':p.type==='DOWN_PAYMENT'?'<span class="badge badge-blue">⬇️ Entrada</span>':'<span class="badge badge-grey">Regular</span>';
+            let acoes = p.status==='PAID'
+                ? `<button class="btn-despagar" onclick="desfazerPagamento('${p.id}')">↩️ Desfazer</button><button class="btn-editar" onclick="abrirDetalhe('${p.id}')">📋</button>`
+                : `<button class="btn-pagar" onclick="abrirPagar('${p.id}')">💰 Pagar</button><button class="btn-square" onclick="abrirSquare('${p.id}')" title="Gerar link Square">💳</button>`;
+            acoes += `<button class="btn-editar" onclick="abrirEditar('${p.id}')">✏️</button><button class="btn-excluir" onclick="excluirParcela('${p.id}')">🗑️</button>`;
             return `<tr class="${rowClass}">
                 <td style="color:#999;font-size:12px;font-weight:700;">${p.installmentNumber||'—'}</td>
                 <td><a href="LL_Detalhe_Contrato.html?id=${p.contractId}" style="font-weight:700;color:#1565c0;text-decoration:none;">${p.propertyId||c.propertyId||'—'}</a></td>
@@ -268,82 +294,164 @@
                 <td style="white-space:nowrap;">${fmtData(p.dueDate)}</td>
                 <td style="font-weight:700;">${fmt2(p.amount)}</td>
                 <td><span class="badge badge-${badge}" style="white-space:nowrap;">${statusLabel}</span></td>
-                <td style="white-space:nowrap;">${btnPrincipal}${btnDetalhe}<button class="btn-editar" onclick="abrirEditar('${p.id}')" title="Editar">✏️</button><button class="btn-excluir" onclick="excluirParcela('${p.id}')" title="Excluir">🗑️</button></td>
+                <td style="white-space:nowrap;">${acoes}</td>
             </tr>`;
         }).join('');
     }
 
+    // ============================================================
+    // SQUARE
+    // ============================================================
+    window.abrirSquare = function(id) {
+        const p = parcelas.find(x=>x.id===id); if (!p) return;
+        const c = contratos.find(x=>x.id===p.contractId)||{};
+        const hoje = new Date();
+        const dVenc = safeDate(p.dueDate);
+        const isOverdue = dVenc && dVenc < hoje;
+        sqDados = { id, amount: parseFloat(p.amount||0), buyerName: c.buyerName||'', propertyId: p.propertyId||c.propertyId||'', installmentNumber: p.installmentNumber||'', isOverdue };
+        document.getElementById('sqInstallmentId').value = id;
+        document.getElementById('sqCheckLateFee').checked = false;
+        document.getElementById('sqLinkBox').style.display = 'none';
+        document.getElementById('sqLinkUrl').value = '';
+        document.getElementById('btnGerarLink').disabled = false;
+        document.getElementById('btnGerarLink').textContent = '💳 Gerar Link';
+        document.getElementById('sqInfo').innerHTML = `<strong>${sqDados.propertyId}</strong> — Parcela #${sqDados.installmentNumber}<br>Comprador: <strong>${sqDados.buyerName}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(sqDados.amount)}</strong>`;
+        document.getElementById('sqToggleLateFee').style.display = isOverdue ? 'flex' : 'none';
+        document.getElementById('sqLinhaLateFee').style.display = 'none';
+        atualizarResumoSq();
+        document.getElementById('modalSquare').classList.add('open');
+    };
+
+    window.recalcularSquare = function() {
+        atualizarResumoSq();
+        document.getElementById('sqLinkBox').style.display = 'none';
+        document.getElementById('sqLinkUrl').value = '';
+        document.getElementById('btnGerarLink').disabled = false;
+        document.getElementById('btnGerarLink').textContent = '💳 Gerar Link';
+    };
+
+    function atualizarResumoSq() {
+        if (!sqDados) return;
+        const base = sqDados.amount;
+        const taxa = base * 0.04;
+        const lateFee = document.getElementById('sqCheckLateFee').checked ? 30 : 0;
+        const total = base + taxa + lateFee;
+        document.getElementById('sqValorBase').textContent = fmt2(base);
+        document.getElementById('sqTaxaCartao').textContent = fmt2(taxa);
+        document.getElementById('sqLinhaLateFee').style.display = lateFee ? 'flex' : 'none';
+        document.getElementById('sqTotal').textContent = fmt2(total);
+        sqDados.total = total;
+    }
+
+    window.gerarLinkSquare = function() {
+        if (!sqDados) return;
+        const btn = document.getElementById('btnGerarLink');
+
+        // Gerar URL para o portal de pagamento próprio
+        const base  = Math.round(sqDados.amount * 100);
+        const late  = document.getElementById('sqCheckLateFee').checked ? 3000 : 0;
+        const desc  = encodeURIComponent('Installment #' + sqDados.installmentNumber + (late ? ' + Late Fee' : ''));
+        const prop  = encodeURIComponent(sqDados.propertyId);
+        const buyer = encodeURIComponent(sqDados.buyerName);
+        const inst  = encodeURIComponent(sqDados.installmentNumber);
+
+        const baseUrl = window.location.origin + '/LL_PaymentPortal.html';
+        const url = `${baseUrl}?prop=${prop}&buyer=${buyer}&inst=${inst}&base=${base}&late=${late}&desc=${desc}`;
+
+        document.getElementById('sqLinkUrl').value = url;
+        document.getElementById('sqLinkBox').style.display = 'block';
+        btn.textContent = '✅ Link Gerado!';
+        btn.disabled = true;
+    };
+
+    window.abrirPortal = function() {
+        const url = document.getElementById('sqLinkUrl').value;
+        if (url) window.open(url, '_blank');
+    };
+
+    window.copiarLink = function() {
+        const url = document.getElementById('sqLinkUrl').value; if (!url) return;
+        navigator.clipboard.writeText(url).then(() => {
+            const btn = document.querySelector('.btn-copiar');
+            btn.textContent='✅ Copiado!'; setTimeout(()=>{btn.textContent='📋 Copiar Link';},2000);
+        }).catch(()=>{ document.getElementById('sqLinkUrl').select(); document.execCommand('copy'); alert('✅ Link copiado!'); });
+    };
+
+    window.fecharModalSquare = function() { document.getElementById('modalSquare').classList.remove('open'); sqDados=null; };
+
+    // ============================================================
+    // PAGAR / DESFAZER
+    // ============================================================
     window.abrirPagar = function(id) {
-        const p = parcelas.find(x => x.id === id); if (!p) return;
-        const c = contratos.find(x => x.id === p.contractId) || {};
-        document.getElementById('mpId').value = id;
-        // Data local (evita bug de fuso horário com toISOString)
-        const agora = new Date();
-        const dataLocal = agora.getFullYear() + '-' + String(agora.getMonth()+1).padStart(2,'0') + '-' + String(agora.getDate()).padStart(2,'0');
-        document.getElementById('mpData').value = dataLocal;
-        document.getElementById('mpValor').value = parseFloat(p.amount||0).toFixed(2);
-        document.getElementById('mpMemo').value = '';
-        document.getElementById('mpCanal').value = 'ZELLE';
-        document.getElementById('mpInfo').innerHTML = `<strong>${p.propertyId||c.propertyId||'—'}</strong> — Parcela #${p.installmentNumber||'—'}<br>Comprador: <strong>${c.buyerName||'—'}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(p.amount)}</strong>`;
+        const p=parcelas.find(x=>x.id===id); if (!p) return;
+        const c=contratos.find(x=>x.id===p.contractId)||{};
+        document.getElementById('mpId').value=id;
+        const agora=new Date();
+        document.getElementById('mpData').value=agora.getFullYear()+'-'+String(agora.getMonth()+1).padStart(2,'0')+'-'+String(agora.getDate()).padStart(2,'0');
+        document.getElementById('mpValor').value=parseFloat(p.amount||0).toFixed(2);
+        document.getElementById('mpMemo').value=''; document.getElementById('mpCanal').value='ZELLE';
+        document.getElementById('mpInfo').innerHTML=`<strong>${p.propertyId||c.propertyId||'—'}</strong> — Parcela #${p.installmentNumber||'—'}<br>Comprador: <strong>${c.buyerName||'—'}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(p.amount)}</strong>`;
         document.getElementById('modalPagar').classList.add('open');
     };
 
     window.confirmarPagar = async function() {
-        const id = document.getElementById('mpId').value;
-        const data = document.getElementById('mpData').value;
-        const valor = parseFloat(document.getElementById('mpValor').value) || 0;
-        const canal = document.getElementById('mpCanal').value;
-        const memo = document.getElementById('mpMemo').value.trim();
-        if (!data || valor <= 0) { alert('❌ Data e valor são obrigatórios!'); return; }
-        const p = parcelas.find(x => x.id === id); if (!p) return;
-        const c = contratos.find(x => x.id === p.contractId) || {};
-        const ok = await updateLLInstallment(id, { status: 'PAID', paidDate: data, paidAmount: valor });
+        const id=document.getElementById('mpId').value;
+        const data=document.getElementById('mpData').value;
+        const valor=parseFloat(document.getElementById('mpValor').value)||0;
+        const canal=document.getElementById('mpCanal').value;
+        const memo=document.getElementById('mpMemo').value.trim();
+        if (!data||valor<=0) { alert('❌ Data e valor são obrigatórios!'); return; }
+        const p=parcelas.find(x=>x.id===id); if (!p) return;
+        const c=contratos.find(x=>x.id===p.contractId)||{};
+        const ok=await updateLLInstallment(id,{status:'PAID',paidDate:data,paidAmount:valor});
         if (!ok) return;
-        await saveLLPayment({ contractId: p.contractId, propertyId: p.propertyId||c.propertyId||'', installmentId: id, installmentNumber: p.installmentNumber||null, paymentDate: data, amountTotal: valor, principalAmount: valor, lateFeeAmount: 0, receivedBy: canal, channel: canal, memo: memo || `Parcela #${p.installmentNumber||'—'}` });
-        const idx = parcelas.findIndex(x => x.id === id);
-        if (idx >= 0) { parcelas[idx].status = 'PAID'; parcelas[idx].paidDate = data; parcelas[idx].paidAmount = valor; }
+        await saveLLPayment({contractId:p.contractId,propertyId:p.propertyId||c.propertyId||'',installmentId:id,installmentNumber:p.installmentNumber||null,paymentDate:data,amountTotal:valor,principalAmount:valor,lateFeeAmount:0,receivedBy:canal,channel:canal,memo:memo||`Parcela #${p.installmentNumber||'—'}`});
+        const idx=parcelas.findIndex(x=>x.id===id);
+        if (idx>=0) { parcelas[idx].status='PAID'; parcelas[idx].paidDate=data; parcelas[idx].paidAmount=valor; }
         fecharModalPagar(); renderSummary(); renderTabela();
     };
 
     window.desfazerPagamento = async function(id) {
         if (!confirm('Desfazer o pagamento desta parcela?\n\nAtenção: o registro em Pagamentos NÃO será removido automaticamente.')) return;
-        const ok = await updateLLInstallment(id, { status: 'PENDING', paidDate: null, paidAmount: null });
-        if (ok) { const idx = parcelas.findIndex(x => x.id === id); if (idx >= 0) { parcelas[idx].status = 'PENDING'; delete parcelas[idx].paidDate; delete parcelas[idx].paidAmount; } renderSummary(); renderTabela(); }
+        const ok=await updateLLInstallment(id,{status:'PENDING',paidDate:null,paidAmount:null});
+        if (ok) { const idx=parcelas.findIndex(x=>x.id===id); if (idx>=0) { parcelas[idx].status='PENDING'; delete parcelas[idx].paidDate; delete parcelas[idx].paidAmount; } renderSummary(); renderTabela(); }
     };
 
+    // EDITAR
     window.abrirEditar = function(id) {
-        const p = parcelas.find(x => x.id === id); if (!p) return;
-        const c = contratos.find(x => x.id === p.contractId) || {};
-        document.getElementById('meId').value = id;
-        document.getElementById('meData').value = toDateInput(p.dueDate);
-        document.getElementById('meValor').value = parseFloat(p.amount||0).toFixed(2);
-        document.getElementById('meTipo').value = p.type || 'REGULAR';
-        document.getElementById('meInfo').innerHTML = `<strong>${p.propertyId||c.propertyId||'—'}</strong> — Parcela #${p.installmentNumber||'—'}<br>Comprador: <strong>${c.buyerName||'—'}</strong>`;
+        const p=parcelas.find(x=>x.id===id); if (!p) return;
+        const c=contratos.find(x=>x.id===p.contractId)||{};
+        document.getElementById('meId').value=id;
+        document.getElementById('meData').value=toDateInput(p.dueDate);
+        document.getElementById('meValor').value=parseFloat(p.amount||0).toFixed(2);
+        document.getElementById('meTipo').value=p.type||'REGULAR';
+        document.getElementById('meInfo').innerHTML=`<strong>${p.propertyId||c.propertyId||'—'}</strong> — Parcela #${p.installmentNumber||'—'}<br>Comprador: <strong>${c.buyerName||'—'}</strong>`;
         document.getElementById('modalEditar').classList.add('open');
     };
 
     window.confirmarEditar = async function() {
-        const id = document.getElementById('meId').value;
-        const dueDate = document.getElementById('meData').value;
-        const amount = parseFloat(document.getElementById('meValor').value) || 0;
-        const type = document.getElementById('meTipo').value;
-        if (!dueDate || amount <= 0) { alert('❌ Data e valor são obrigatórios!'); return; }
-        const ok = await updateLLInstallment(id, { dueDate, amount, type });
-        if (ok) { const idx = parcelas.findIndex(x => x.id === id); if (idx >= 0) { parcelas[idx].dueDate = dueDate; parcelas[idx].amount = amount; parcelas[idx].type = type; } fecharModalEditar(); renderSummary(); renderTabela(); }
+        const id=document.getElementById('meId').value;
+        const dueDate=document.getElementById('meData').value;
+        const amount=parseFloat(document.getElementById('meValor').value)||0;
+        const type=document.getElementById('meTipo').value;
+        if (!dueDate||amount<=0) { alert('❌ Data e valor são obrigatórios!'); return; }
+        const ok=await updateLLInstallment(id,{dueDate,amount,type});
+        if (ok) { const idx=parcelas.findIndex(x=>x.id===id); if (idx>=0) { parcelas[idx].dueDate=dueDate; parcelas[idx].amount=amount; parcelas[idx].type=type; } fecharModalEditar(); renderSummary(); renderTabela(); }
     };
 
     window.excluirParcela = async function(id) {
-        const p = parcelas.find(x => x.id === id); if (!p) return;
-        const c = contratos.find(x => x.id === p.contractId) || {};
+        const p=parcelas.find(x=>x.id===id); if (!p) return;
+        const c=contratos.find(x=>x.id===p.contractId)||{};
         if (!confirm(`Excluir esta parcela?\n\nImóvel: ${p.propertyId||c.propertyId||'—'}\nParcela #${p.installmentNumber||'—'} · ${fmtData(p.dueDate)} · ${fmt2(p.amount)}\n\nEsta ação não pode ser desfeita.`)) return;
-        const ok = await updateLLInstallment(id, { _deleted: true, status: 'CANCELLED' });
-        if (ok) { parcelas = parcelas.filter(x => x.id !== id); renderSummary(); renderTabela(); }
+        const ok=await updateLLInstallment(id,{_deleted:true,status:'CANCELLED'});
+        if (ok) { parcelas=parcelas.filter(x=>x.id!==id); renderSummary(); renderTabela(); }
     };
 
+    // DETALHE
     window.abrirDetalhe = function(id) {
-        const p = parcelas.find(x => x.id === id); if (!p) return;
-        const c = contratos.find(x => x.id === p.contractId) || {};
-        document.getElementById('detalheConteudo').innerHTML = `
+        const p=parcelas.find(x=>x.id===id); if (!p) return;
+        const c=contratos.find(x=>x.id===p.contractId)||{};
+        document.getElementById('detalheConteudo').innerHTML=`
             <div style="display:grid;gap:10px;">
                 <div style="background:#f5f5f5;border-radius:8px;padding:12px;font-size:13px;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#666;">Imóvel</span><strong>${p.propertyId||c.propertyId||'—'}</strong></div>
@@ -361,12 +469,12 @@
         document.getElementById('modalDetalhe').classList.add('open');
     };
 
-    window.fecharModalPagar = function() { document.getElementById('modalPagar').classList.remove('open'); };
-    window.fecharModalEditar = function() { document.getElementById('modalEditar').classList.remove('open'); };
-    window.fecharModalDetalhe = function() { document.getElementById('modalDetalhe').classList.remove('open'); };
+    window.fecharModalPagar = () => document.getElementById('modalPagar').classList.remove('open');
+    window.fecharModalEditar = () => document.getElementById('modalEditar').classList.remove('open');
+    window.fecharModalDetalhe = () => document.getElementById('modalDetalhe').classList.remove('open');
 
-    ['modalPagar','modalEditar','modalDetalhe'].forEach(mid => {
-        document.getElementById(mid).addEventListener('click', e => { if (e.target === document.getElementById(mid)) document.getElementById(mid).classList.remove('open'); });
+    ['modalPagar','modalEditar','modalDetalhe','modalSquare'].forEach(mid => {
+        document.getElementById(mid).addEventListener('click', e => { if (e.target===document.getElementById(mid)) document.getElementById(mid).classList.remove('open'); });
     });
 </script>
 </body>

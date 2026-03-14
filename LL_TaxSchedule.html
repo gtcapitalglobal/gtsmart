@@ -156,7 +156,8 @@
             const pgContrato = pgAno.filter(p => p.contractId === c.id);
             if (pgContrato.length === 0 && !contratosComPag.has(c.id)) return;
 
-            const totalRecebido = pgContrato.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0);
+            const totalRecebido = pgContrato.reduce((s, p) => s + parseFloat(p.amountTotal || 0), 0)
+                                + ((c.contractDate || '').startsWith(String(anoSel)) ? parseFloat(c.downPayment || 0) : 0);
             const principal = pgContrato.reduce((s, p) => s + parseFloat(p.principalAmount || p.amountTotal || 0), 0);
             const lateFee = pgContrato.reduce((s, p) => s + parseFloat(p.lateFeeAmount || 0), 0);
             const nPag = pgContrato.length;
