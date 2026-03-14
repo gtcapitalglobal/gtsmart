@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Importar Despesas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a237e, #283593); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .box { background: white; border-radius: 16px; padding: 30px; max-width: 520px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h2 { font-size: 20px; color: #1a237e; margin-bottom: 6px; }
+        .sub { font-size: 13px; color: #888; margin-bottom: 20px; }
+        .log { background: #f5f5f5; border-radius: 10px; padding: 14px; font-size: 12px; color: #333; max-height: 320px; overflow-y: auto; line-height: 1.9; }
+        .ok   { color: #2e7d32; }
+        .erro { color: #c62828; }
+        .info { color: #1565c0; font-weight: 700; }
+        .btn  { display: none; width: 100%; margin-top: 16px; padding: 14px; background: #2e7d32; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>📥 Importar Despesas GT</h2>
+    <p class="sub">Importando 25 despesas da planilha para o Firebase. Use apenas uma vez.</p>
+    <div class="log" id="log">⏳ Aguardando autenticação...</div>
+    <a href="GT_Smart_Despesas.html" class="btn" id="btnVer">✅ Ver Despesas Importadas</a>
+</div>
+
+<script type="module">
+import { auth, onAuthStateChanged, db } from './firebase-config.js';
+import { collection, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const logEl = document.getElementById('log');
+function addLog(msg, tipo) {
+    logEl.innerHTML += '<div class="' + (tipo||'') + '">' + msg + '</div>';
+    logEl.scrollTop = logEl.scrollHeight;
+}
+
+const DESPESAS = [
+    { nome:'Payroll Gustavo e Telma',            periodo:'mensal', valor:5000,   venc:'', empresa:'GT Capital', pag:'Zelle',                    email:'',                  obs:'',                              trocar:false },
+    { nome:'Impostos Payroll',                    periodo:'mensal', valor:547,    venc:'', empresa:'GT Capital', pag:'',                         email:'',                  obs:'',                              trocar:false },
+    { nome:'Milhagem Uso do Carro (Gustavo)',     periodo:'mensal', valor:700,    venc:'', empresa:'GT Capital', pag:'Zelle',                    email:'',                  obs:'',                              trocar:false },
+    { nome:'Aluguel Home Office (Telma)',         periodo:'mensal', valor:722,    venc:'', empresa:'GT Capital', pag:'Zelle',                    email:'',                  obs:'',                              trocar:false },
+    { nome:'PAYROLL Wave',                        periodo:'mensal', valor:47,     venc:'', empresa:'GT Capital', pag:'Wells Fargo',              email:'gustavo@gtcapital', obs:'',                              trocar:false },
+    { nome:'T-Mobile (Go5G Business Plus 2-5)',  periodo:'mensal', valor:404,    venc:'', empresa:'GT Capital', pag:'Debit GT Capital',         email:'gulude1@gmail',     obs:'10 de desconto',                trocar:false },
+    { nome:'YouTube',                             periodo:'mensal', valor:7.99,   venc:'', empresa:'GT Capital', pag:'Wells Fargo / Google Play', email:'gulude1@gmail',    obs:'',                              trocar:false },
+    { nome:'Chat GPT',                            periodo:'mensal', valor:20,     venc:'', empresa:'GT Capital', pag:'Wells Fargo',              email:'',                  obs:'',                              trocar:false },
+    { nome:'Google Workspace (Business Standard)',periodo:'mensal', valor:16.80,  venc:'', empresa:'GT Capital', pag:'Wells Fargo',              email:'gustavo@gtcapital', obs:'',                              trocar:false },
+    { nome:'Manus AI',                            periodo:'mensal', valor:200,    venc:'', empresa:'GT Capital', pag:'Wells Fargo',              email:'gustavo@gtcapital', obs:'',                              trocar:false },
+    { nome:'Anderson (Platinum)',                 periodo:'mensal', valor:75,     venc:'', empresa:'GT Capital', pag:'ACH',                     email:'gustavo@gtcapital', obs:'',                              trocar:false },
+    { nome:'Wave Bookkeeping (GT Capital)',       periodo:'mensal', valor:190,    venc:'', empresa:'GT Capital', pag:'Wells Fargo',              email:'gustavo@gtcapital', obs:'',                              trocar:false },
+    { nome:'NAV (GT Capital)',                    periodo:'mensal', valor:49,     venc:'', empresa:'GT Capital', pag:'Wells Fargo',              email:'gustavo@gtcapital', obs:'',                              trocar:false },
+    { nome:'Luana - APP GT Lands',               periodo:'mensal', valor:29,     venc:'', empresa:'GT Real',    pag:'PIX',                     email:'',                  obs:'',                              trocar:false },
+    { nome:'NAV (GT Real)',                       periodo:'mensal', valor:49,     venc:'', empresa:'GT Real',    pag:'Credit GT Real',          email:'admin@gtrealassets',obs:'',                              trocar:false },
+    { nome:'Wave Bookkeeping (GT Real)',          periodo:'mensal', valor:190,    venc:'', empresa:'GT Real',    pag:'Credit GT Real',          email:'gustavo@gtcapital', obs:'',                              trocar:true  },
+    { nome:'DRIVERSNOTE',                         periodo:'anual',  valor:144,    venc:'2026-08-10', empresa:'GT Capital', pag:'Debit GT Capital', email:'gustavo@gtcapital', obs:'',                           trocar:false },
+    { nome:'Claude',                              periodo:'anual',  valor:287.35, venc:'2027-03-20', empresa:'GT Smart',   pag:'GT Smart',        email:'gustavo@gtcapital', obs:'',                           trocar:false },
+    { nome:'VPN Proton Plus',                     periodo:'anual',  valor:119.88, venc:'2026-08-22', empresa:'GT Capital', pag:'Paypal GT',       email:'gustavo@gtcapital', obs:'',                           trocar:false },
+    { nome:'LawDepot',                            periodo:'anual',  valor:107.88, venc:'2026-08-24', empresa:'GT Capital', pag:'Paypal GT',       email:'gustavo@gtcapital', obs:'',                           trocar:false },
+    { nome:'REGRID',                              periodo:'anual',  valor:100,    venc:'2026-11-22', empresa:'GT Capital', pag:'',                email:'gustavo@gtcapital', obs:'',                           trocar:false },
+    { nome:'Parcel Fair',                         periodo:'anual',  valor:475,    venc:'2026-09-28', empresa:'GT Capital', pag:'',                email:'gustavo@gtcapital', obs:'',                           trocar:true  },
+    { nome:'Simplifile',                          periodo:'anual',  valor:199,    venc:'2026-09-27', empresa:'GT Real',    pag:'Debit GT Real',   email:'gtgroupreal@gmail', obs:'',                           trocar:true  },
+    { nome:'Zoho Mail (Mail Lite)',               periodo:'anual',  valor:96,     venc:'2026-07-07', empresa:'GT Real',    pag:'Google Play',     email:'gtgroupreal@gmail', obs:'Usar Truist 4249 se renovar', trocar:true  },
+    { nome:'Open Phone (Start Plan)',             periodo:'anual',  valor:146.09, venc:'2026-07-18', empresa:'GT Real',    pag:'Debit GT Real',   email:'gtgroup3',           obs:'Usar Truist 4249 se renovar', trocar:true  },
+];
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        addLog('❌ Não autenticado. Faça login e reabra esta página.', 'erro');
+        return;
+    }
+
+    addLog('<span class="info">✅ Logado: ' + user.email + '</span>');
+    addLog('<span class="info">Importando ' + DESPESAS.length + ' despesas...</span>');
+    addLog('');
+
+    const colRef = collection(db, 'users', user.uid, 'despesas');
+    let ok = 0, erros = 0;
+
+    for (let i = 0; i < DESPESAS.length; i++) {
+        const d = DESPESAS[i];
+        try {
+            const id = 'DESP' + Date.now() + '_' + i;
+            await setDoc(doc(colRef, id), {
+                nome:         d.nome,
+                periodo:      d.periodo,
+                moeda:        'USD',
+                valor:        d.valor,
+                vencimento:   d.venc,
+                empresa:      d.empresa,
+                cartaoId:     '',
+                formaPag:     d.pag,
+                email:        d.email,
+                obs:          d.obs,
+                trocar:       d.trocar,
+                atualizadoEm: new Date().toISOString()
+            });
+            addLog('✅ ' + d.nome, 'ok');
+            ok++;
+        } catch(e) {
+            addLog('❌ ERRO: ' + d.nome + ' — ' + e.message, 'erro');
+            erros++;
+        }
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    addLog('');
+    addLog('<span class="info">══════════════════════════════</span>');
+    addLog('<span class="info">✅ ' + ok + ' salvas &nbsp;|&nbsp; ❌ ' + erros + ' erros</span>');
+    addLog('<span class="info">══════════════════════════════</span>');
+    if (ok > 0) document.getElementById('btnVer').style.display = 'block';
+});
+</script>
+</body>
+</html>
