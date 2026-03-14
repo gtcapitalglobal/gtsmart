@@ -108,6 +108,34 @@
         .btn-delete:hover { background: #b71c1c; }
         .divider { border: none; border-top: 1px solid #eee; margin: 14px 0; }
 
+
+        /* Abas */
+        .abas { display: flex; gap: 8px; margin-bottom: 15px; }
+        .aba { padding: 8px 18px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
+        .aba.aba-active { background: #1a237e; color: white; border-color: #1a237e; }
+
+        /* Painel vencimentos */
+        .venc-mes { margin-bottom: 18px; }
+        .venc-mes-titulo { font-size: 12px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 0; border-bottom: 2px solid #f0f0f0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .venc-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; margin-bottom: 6px; background: #fafafa; border: 1px solid #eee; cursor: pointer; transition: all 0.15s; }
+        .venc-row:hover { border-color: #1a237e; background: #f0f4ff; }
+        .venc-row.urgente { background: #fdecea; border-color: #ef9a9a; }
+        .venc-row.atencao { background: #fff8e1; border-color: #ffe082; }
+        .venc-row.normal  { background: #f3f9ff; border-color: #bbdefb; }
+        .venc-dias { width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+        .venc-dias .num { font-size: 20px; font-weight: 900; line-height: 1; }
+        .venc-dias .lab { font-size: 9px; font-weight: 700; opacity: 0.8; }
+        .venc-dias.d-urgente { background: #e53935; color: white; }
+        .venc-dias.d-atencao { background: #ffc107; color: #333; }
+        .venc-dias.d-normal  { background: #1976d2; color: white; }
+        .venc-info { flex: 1; min-width: 0; }
+        .venc-nome { font-size: 14px; font-weight: 700; color: #222; }
+        .venc-meta { font-size: 11px; color: #666; margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .venc-val { text-align: right; flex-shrink: 0; }
+        .venc-val .val { font-size: 15px; font-weight: 800; color: #1a237e; }
+        .venc-val .data { font-size: 10px; color: #888; margin-top: 2px; }
+        .venc-trocar { background: #fff3e0; color: #e65100; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+        .venc-vazio { text-align: center; padding: 40px; color: #bbb; font-size: 14px; }
         @media (max-width: 600px) {
             .summary-grid { grid-template-columns: repeat(2, 1fr); }
             .empresa-grid { grid-template-columns: repeat(2, 1fr); }
@@ -157,26 +185,40 @@
         <div class="moeda-row" id="moedaRow" style="display:none;"></div>
 
         <!-- Alertas de vencimento próximos -->
-        <div id="alertasSection"></div>
-
-        <!-- Totais por empresa -->
-        <div id="empresasSection"></div>
-
-        <!-- Filtros -->
-        <div class="filtros">
-            <button class="filter-btn active" onclick="setFiltro('todos',this)">Todos</button>
-            <button class="filter-btn" onclick="setFiltro('mensal',this)">Mensais</button>
-            <button class="filter-btn" onclick="setFiltro('anual',this)">Anuais</button>
-            <button class="filter-btn" onclick="setFiltro('usd',this)">USD</button>
-            <button class="filter-btn" onclick="setFiltro('brl',this)">BRL</button>
-            <button class="filter-btn" onclick="setFiltro('trocar',this)">⚠️ Trocar</button>
+        <!-- Abas -->
+        <div class="abas">
+            <button class="aba aba-active" onclick="setAba('lista',this)">📋 Todas as Despesas</button>
+            <button class="aba" onclick="setAba('vencimentos',this)">📅 Vencimentos 90 dias</button>
         </div>
 
-        <!-- Lista -->
-        <div class="despesas-list" id="despesasList">
-            <div class="empty-state">⏳ Carregando...</div>
+        <!-- PAINEL VENCIMENTOS -->
+        <div id="painelVencimentos" style="display:none;">
+            <div id="vencimentosContent"></div>
         </div>
 
+        <!-- PAINEL LISTA -->
+        <div id="painelLista">
+            <!-- Alertas de vencimento próximos -->
+            <div id="alertasSection"></div>
+            <!-- Totais por empresa -->
+            <div id="empresasSection"></div>
+            <!-- Filtros -->
+            <div class="filtros">
+                <button class="filter-btn active" onclick="setFiltro('todos',this)">Todos</button>
+                <button class="filter-btn" onclick="setFiltro('mensal',this)">Mensais</button>
+                <button class="filter-btn" onclick="setFiltro('anual',this)">Anuais</button>
+                <button class="filter-btn" onclick="setFiltro('usd',this)">USD</button>
+                <button class="filter-btn" onclick="setFiltro('brl',this)">BRL</button>
+                <button class="filter-btn" onclick="setFiltro('trocar',this)">⚠️ Trocar</button>
+            </div>
+        </div>
+
+
+            <!-- Lista -->
+            <div class="despesas-list" id="despesasList">
+                <div class="empty-state">⏳ Carregando...</div>
+            </div><!-- /despesasList -->
+        </div><!-- /painelLista -->
     </div>
 </div>
 
@@ -619,6 +661,91 @@ window.excluirDespesa = async function() {
     }
 };
 
+// ── Abas ──────────────────────────────────────────────
+window.setAba = function(aba, btn) {
+    document.querySelectorAll('.aba').forEach(b => b.classList.remove('aba-active'));
+    btn.classList.add('aba-active');
+    const isPainel = aba === 'vencimentos';
+    document.getElementById('painelVencimentos').style.display = isPainel ? 'block' : 'none';
+    document.getElementById('painelLista').style.display = isPainel ? 'none' : 'block';
+    if (isPainel) renderVencimentos();
+};
+
+function renderVencimentos() {
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const limite = new Date(hoje); limite.setDate(hoje.getDate() + 90);
+
+    const proximos = despesas
+        .filter(d => d.periodo === 'anual' && d.vencimento)
+        .map(d => {
+            const dias = diasAteVencimento(d.vencimento);
+            return { ...d, dias };
+        })
+        .filter(d => d.dias !== null && d.dias >= 0 && d.dias <= 90)
+        .sort((a,b) => a.dias - b.dias);
+
+    const el = document.getElementById('vencimentosContent');
+
+    if (proximos.length === 0) {
+        el.innerHTML = '<div class="venc-vazio">✅ Nenhuma despesa vencendo nos próximos 90 dias</div>';
+        return;
+    }
+
+    // Agrupar por mês
+    const grupos = {};
+    proximos.forEach(d => {
+        const dt = new Date(d.vencimento + 'T00:00:00');
+        const chave = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
+        const titulo = dt.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        if (!grupos[chave]) grupos[chave] = { titulo, items: [] };
+        grupos[chave].items.push(d);
+    });
+
+    let html = `<div style="margin-bottom:12px;padding:10px 14px;background:#f0f4ff;border-radius:10px;font-size:13px;color:#1a237e;font-weight:600;">
+        📅 ${proximos.length} despesa${proximos.length>1?'s':''} vencendo nos próximos 90 dias — Total: ${fmtUSD(proximos.reduce((s,d)=>s+d.valor,0))}
+    </div>`;
+
+    Object.entries(grupos).sort().forEach(([, grupo]) => {
+        html += `<div class="venc-mes">
+            <div class="venc-mes-titulo">📆 ${grupo.titulo.charAt(0).toUpperCase() + grupo.titulo.slice(1)}</div>`;
+
+        grupo.items.forEach(d => {
+            const cls = d.dias <= 15 ? 'urgente' : d.dias <= 30 ? 'atencao' : 'normal';
+            const dCls = d.dias <= 15 ? 'd-urgente' : d.dias <= 30 ? 'd-atencao' : 'd-normal';
+            const diasStr = d.dias === 0 ? 'HOJE' : d.dias === 1 ? '1 dia' : `${d.dias} dias`;
+            const dtFmt = new Date(d.vencimento + 'T00:00:00').toLocaleDateString('pt-BR');
+
+            let pagDisplay = '';
+            if (d.cartaoId) pagDisplay = nomeCartao(d.cartaoId) || '';
+            else if (d.formaPag) pagDisplay = d.formaPag;
+
+            html += `<div class="venc-row ${cls}" onclick="abrirModalEdicao('${d.id}')">
+                <div class="venc-dias ${dCls}">
+                    <span class="num">${d.dias}</span>
+                    <span class="lab">${d.dias === 1 ? 'dia' : 'dias'}</span>
+                </div>
+                <div class="venc-info">
+                    <div class="venc-nome">${d.nome}</div>
+                    <div class="venc-meta">
+                        ${d.empresa ? `<span class="tag tag-empresa">${d.empresa}</span>` : ''}
+                        ${pagDisplay ? `<span class="tag">${pagDisplay}</span>` : ''}
+                        ${d.email ? `<span class="tag">${d.email}</span>` : ''}
+                        ${d.trocar ? `<span class="venc-trocar">⚠️ Trocar</span>` : ''}
+                    </div>
+                    ${d.obs ? `<div style="font-size:11px;color:#888;margin-top:3px;">💬 ${d.obs}</div>` : ''}
+                </div>
+                <div class="venc-val">
+                    <div class="val">${fmtVal(d.valor, d.moeda)}</div>
+                    <div class="data">📅 ${dtFmt}</div>
+                </div>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+
+    el.innerHTML = html;
+}
+
 window.setFiltro = function(f, btn) {
     filtroAtivo = f;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -650,7 +777,7 @@ function popularCartoes() {
     cartoes.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = `💳 ${c.nome} ····${c.ultimos4 || '????'}${c.banco ? ' (' + c.banco + ')' : ''}`;
+        opt.textContent = `💳 ${c.nome} ····${c.ultimos4 || '????'}${c.empresa ? ' — ' + c.empresa : ''}${c.banco ? ' (' + c.banco + ')' : ''}`;
         sel.appendChild(opt);
     });
 
