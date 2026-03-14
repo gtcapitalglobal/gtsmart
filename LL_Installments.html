@@ -229,19 +229,26 @@
 <a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment, saveLLPayment } from './firebase-config.js';
+    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, getLLBuyers, updateLLInstallment, saveLLPayment } from './firebase-config.js';
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
     const fmtData = d => { const dt = safeDate(d); return dt ? dt.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '—'; };
     const toDateInput = d => { if (!d) return ''; if (typeof d === 'string' && d.includes('T')) return d.split('T')[0]; return d; };
 
-    let parcelas = [], contratos = [], filtroAtivo = 'todas', searchTerm = '';
+    let parcelas = [], contratos = [], buyers = [], filtroAtivo = 'todas', searchTerm = '';
     let sqDados = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
-        [parcelas, contratos] = await Promise.all([getLLInstallments(), getLLContracts()]);
+        const results = await Promise.all([
+            getLLInstallments(),
+            getLLContracts(),
+            getLLBuyers().catch(() => [])
+        ]);
+        parcelas = results[0];
+        contratos = results[1];
+        buyers = results[2];
         renderSummary(); renderTabela();
     });
 
@@ -326,9 +333,12 @@
         document.getElementById('btnGerarLink').disabled = false;
         document.getElementById('btnGerarLink').textContent = '💳 Gerar Link';
         document.getElementById('sqInfo').innerHTML = `<strong>${sqDados.propertyId}</strong> — Parcela #${sqDados.installmentNumber}<br>Comprador: <strong>${sqDados.buyerName}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(sqDados.amount)}</strong>`;
-        // Auto-fill telefone e email do contrato
-        var phone = c.buyerPhone || c.phone || c.telefone || '';
-        var email = c.buyerEmail || c.email || '';
+        // Auto-fill — busca phone/email no buyer pelo nome
+        var buyer = buyers.find(function(b) {
+            return b.fullName && c.buyerName && b.fullName.toLowerCase() === c.buyerName.toLowerCase();
+        }) || {};
+        var phone = c.buyerPhone || c.phone || buyer.phone || '';
+        var email = c.buyerEmail || c.email || buyer.email || '';
         document.getElementById('sqPhone').value = phone;
         document.getElementById('sqEmail').value = email;
         document.getElementById('sqToggleLateFee').style.display = isOverdue ? 'flex' : 'none';
