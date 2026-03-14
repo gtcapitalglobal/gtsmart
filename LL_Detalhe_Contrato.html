@@ -769,7 +769,7 @@
                 }
             });
             const historicoStr = allLinhas.length > 0 ? allLinhas.join('\n\n') : '—';
-            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n📊 *OVERVIEW*\n✅ Payments made: ${pagas} of ${total} (${pct}%) ${motivacao}\n🎯 Contract total: ${totalContrato}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}\n${proximaDataStr ? '📆 Next payment: ' + proximaDataStr + ' · ' + proximaValor + '\n' : ''}${payoffDate ? '🏁 Expected payoff: ' + payoffDate + '\n' : ''}\n${sep}\n📋 *PAYMENT HISTORY*\n\n${historicoStr}\n\n${sep}\n${assinatura}`;
+            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n📊 *OVERVIEW*\n\n✅ Payments made: ${pagas} of ${total} (${pct}%)\n${motivacao}\n\n🎯 Contract total: ${totalContrato}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}\n\n${proximaDataStr ? '📆 Next payment: ' + proximaDataStr + ' · ' + proximaValor + '\n' : ''}${payoffDate ? '🏁 Expected payoff: ' + payoffDate + '\n' : ''}\n${sep}\n\n📋 *PAYMENT HISTORY*\n\n${historicoStr}\n\n${sep}\n\n${assinatura}`;
         }
 
         if (canal === 'wa') {
