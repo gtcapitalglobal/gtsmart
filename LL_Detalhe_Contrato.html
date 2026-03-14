@@ -546,7 +546,7 @@
                 <div class="canal-panel" id="painelEmail">
                     <div class="wa-email-row">
                         <label>Email:</label>
-                        <input type="email" id="emailAddr" placeholder="cliente@email.com">
+                        <input type="email" id="emailAddr" placeholder="client@email.com">
                     </div>
                     <div class="wa-btns">
                         <button class="btn-wa btn-wa-cobranca" onclick="enviar('email','cobranca')">🔴 Late Payment Notice</button>
@@ -555,6 +555,8 @@
                 </div>
             </div>
         `;
+        // Preencher contato automaticamente após o DOM estar pronto
+        preencherContato();
     }
 
     window.marcarPago = async function(id) {
@@ -708,7 +710,7 @@
             if (emailEl) emailEl.value = email;
         }
     }
-    setTimeout(preencherContato, 300);
+    // contato preenchido automaticamente pelo renderTudo()
 
     window.enviar = function(canal, tipo) {
         // Montar mensagem (mesma lógica para todos os canais)
