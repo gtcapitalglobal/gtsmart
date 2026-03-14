@@ -1428,6 +1428,22 @@ let allCryptos = [];
             const active = pools.filter(p => p.status !== 'closed');
             if (active.length === 0) { document.getElementById('tabComp').innerHTML = '<p style="color:#888;text-align:center;padding:20px;">Nenhuma pool ativa</p>'; return; }
             let rows = '';
+            active.sort((a, b) => {
+                const calcRoi = p => {
+                    const priceA = getPrice(p.tokenAId), priceB = getPrice(p.tokenBId);
+                    const curA = (p.currentAmountA !== undefined && p.currentAmountA !== '' && p.currentAmountA !== null) ? parseFloat(p.currentAmountA) : parseFloat(p.amountA || 0);
+                    const curB = (p.currentAmountB !== undefined && p.currentAmountB !== '' && p.currentAmountB !== null) ? parseFloat(p.currentAmountB) : parseFloat(p.amountB || 0);
+                    const tvlP = curA * priceA + curB * priceB;
+                    const inv = (p.investmentA || ((p.amountA||0)*(p.entryPriceA||0))) + (p.investmentB || ((p.amountB||0)*(p.entryPriceB||0)));
+                    const fees = getTotalFees(p);
+                    let debt = 0;
+                    if (p.borrowIdA) { const bA = borrows.find(b => b.id === p.borrowIdA); if (bA) debt += parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA||0)/100) * getPrice(bA.cryptoId); }
+                    if (p.borrowIdB) { const bB = borrows.find(b => b.id === p.borrowIdB); if (bB) debt += parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB||0)/100) * getPrice(bB.cryptoId); }
+                    const pnlReal = tvlP - debt + fees;
+                    return inv > 0 ? (pnlReal / inv * 100) : 0;
+                };
+                return calcRoi(b) - calcRoi(a);
+            });
             active.forEach(p => {
                 const priceA = getPrice(p.tokenAId), priceB = getPrice(p.tokenBId);
                 const curA = (p.currentAmountA !== undefined && p.currentAmountA !== '' && p.currentAmountA !== null) ? parseFloat(p.currentAmountA) : parseFloat(p.amountA || 0);
