@@ -87,21 +87,50 @@
 
         .empty { text-align: center; padding: 30px; color: #aaa; font-size: 13px; }
 
-        /* WhatsApp Section */
+        /* Seção de Envio */
         .wa-section { border: 2px solid #dcfce7; border-radius: 12px; padding: 16px; margin-top: 20px; background: #f0fdf4; }
         .wa-title { font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-        .wa-phone-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+        .wa-phone-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
         .wa-phone-row label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; white-space: nowrap; }
         .wa-phone-row input { flex: 1; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; max-width: 220px; }
         .wa-phone-row input:focus { border-color: #25d366; }
+        .wa-email-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+        .wa-email-row label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; white-space: nowrap; }
+        .wa-email-row input { flex: 1; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; }
+        .wa-email-row input:focus { border-color: #1565c0; }
+        .wa-canal-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+        .wa-tab { padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.15s; }
+        .wa-tab.ativo { color: white; border-color: transparent; }
+        .wa-tab-wa.ativo  { background: #25d366; }
+        .wa-tab-sms.ativo { background: #7c3aed; }
+        .wa-tab-email.ativo { background: #1565c0; }
         .wa-btns { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-wa { display: flex; align-items: center; gap: 8px; padding: 11px 18px; border: none; border-radius: 9px; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; transition: all 0.15s; }
         .btn-wa-cobranca { background: #c62828; color: white; }
         .btn-wa-cobranca:hover { background: #b71c1c; }
         .btn-wa-extrato { background: #25d366; color: white; }
         .btn-wa-extrato:hover { background: #1ebe58; }
+        .btn-wa-sms-extrato { background: #7c3aed; color: white; }
+        .btn-wa-sms-extrato:hover { background: #6d28d9; }
+        .btn-wa-email-extrato { background: #1565c0; color: white; }
+        .btn-wa-email-extrato:hover { background: #0d47a1; }
         .btn-wa:disabled { background: #bbb !important; cursor: not-allowed; }
+        .canal-panel { display: none; }
+        .canal-panel.ativo { display: block; }
+
+        /* PDF / Impressão */
+        .btn-pdf { background: #e65100; color: white; border: none; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; }
+        .btn-pdf:hover { background: #bf360c; }
+
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            .container { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; }
+            .header-right, .btn-back, .btn-act, .btn-pdf, .wa-section,
+            #modalEditar, #modalPagamento, .no-print { display: none !important; }
+            .header { background: #1565c0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { margin: 1.5cm; }
+        }
 
         @media (max-width: 600px) {
             .grid2 { grid-template-columns: 1fr; }
@@ -115,6 +144,7 @@
     <div class="header">
         <h2>📋 <span id="headerTitulo">Contrato</span></h2>
         <div class="header-right">
+            <button class="btn-pdf" onclick="gerarPDF()">🖨️ PDF</button>
             <button class="btn-act" onclick="abrirEditar()">✏️ Editar</button>
             <button class="btn-act" onclick="abrirPagamento()">+ Pagamento</button>
             <a href="LL_Contracts.html" class="btn-back">← Contratos</a>
@@ -314,7 +344,11 @@
         contrato = todos.find(c => c.id === contratoId);
         if (!contrato) { document.getElementById('mainContent').innerHTML = '<div class="empty">❌ Contrato não encontrado.</div>'; return; }
 
-        buyer = allBuyers.find(b => b.contractId === contratoId || b.propertyId === contrato.propertyId) || null;
+        buyer = allBuyers.find(b =>
+            b.contractId === contratoId ||
+            b.propertyId === contrato.propertyId ||
+            (b.fullName && contrato.buyerName && b.fullName.toLowerCase() === contrato.buyerName.toLowerCase())
+        ) || null;
 
         parcelas = allParcelas.filter(p => p.contractId === contratoId).sort((a,b) => {
             // Ordena por data de vencimento (balloon aparece na posição cronológica correta)
@@ -473,16 +507,51 @@
                     return dpRow + pagsHtml || '<div class="empty">Nenhum pagamento registrado ainda.</div>';
                 })()}
             </div>
-            <!-- WhatsApp -->
+            <!-- Enviar -->
             <div class="wa-section">
-                <div class="wa-title">📱 Enviar pelo WhatsApp</div>
-                <div class="wa-phone-row">
-                    <label>Telefone (com DDD):</label>
-                    <input type="tel" id="waPhone" placeholder="+1 (305) 000-0000" value="${buyer?.phone || contrato.buyerPhone || contrato.phone || ''}">
+                <div class="wa-title">📤 Enviar para o Cliente</div>
+
+                <!-- Abas de canal -->
+                <div class="wa-canal-tabs">
+                    <button class="wa-tab wa-tab-wa ativo" onclick="selecionarCanal('wa')">📱 WhatsApp</button>
+                    <button class="wa-tab wa-tab-sms" onclick="selecionarCanal('sms')">💬 SMS</button>
+                    <button class="wa-tab wa-tab-email" onclick="selecionarCanal('email')">✉️ Email</button>
                 </div>
-                <div class="wa-btns">
-                    <button class="btn-wa btn-wa-cobranca" onclick="enviarWA('cobranca')">🔴 Cobrança de Atraso</button>
-                    <button class="btn-wa btn-wa-extrato" onclick="enviarWA('extrato')">📄 Extrato Completo</button>
+
+                <!-- Painel WhatsApp -->
+                <div class="canal-panel ativo" id="painelWa">
+                    <div class="wa-phone-row">
+                        <label>Telefone:</label>
+                        <input type="tel" id="waPhone" placeholder="+1 (305) 000-0000">
+                    </div>
+                    <div class="wa-btns">
+                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('wa','cobranca')">🔴 Cobrança de Atraso</button>
+                        <button class="btn-wa btn-wa-extrato" onclick="enviar('wa','extrato')">📄 Extrato Completo</button>
+                    </div>
+                </div>
+
+                <!-- Painel SMS -->
+                <div class="canal-panel" id="painelSms">
+                    <div class="wa-phone-row">
+                        <label>Telefone:</label>
+                        <input type="tel" id="smsPhone" placeholder="+1 (305) 000-0000">
+                    </div>
+                    <div class="wa-btns">
+                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('sms','cobranca')">🔴 Cobrança de Atraso</button>
+                        <button class="btn-wa btn-wa-sms-extrato" onclick="enviar('sms','extrato')">📄 Extrato Completo</button>
+                    </div>
+                </div>
+
+                <!-- Painel Email -->
+                <div class="canal-panel" id="painelEmail">
+                    <div class="wa-email-row">
+                        <label>Email:</label>
+                        <input type="email" id="emailAddr" placeholder="cliente@email.com">
+                    </div>
+                    <div class="wa-btns">
+                        <button class="btn-wa btn-wa-cobranca" onclick="enviar('email','cobranca')">🔴 Cobrança de Atraso</button>
+                        <button class="btn-wa btn-wa-email-extrato" onclick="enviar('email','extrato')">📄 Extrato Completo</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -617,11 +686,32 @@
         renderTudo();
     };
 
-    window.enviarWA = function(tipo) {
-        const rawPhone = (document.getElementById('waPhone')?.value || '').replace(/\D/g, '');
-        if (!rawPhone) { alert('Please enter the buyer\'s phone number.'); return; }
-        const fPhone = rawPhone.length === 10 ? '1' + rawPhone : rawPhone;
+    window.selecionarCanal = function(canal) {
+        document.querySelectorAll('.wa-tab').forEach(t => t.classList.remove('ativo'));
+        document.querySelectorAll('.canal-panel').forEach(p => p.classList.remove('ativo'));
+        document.querySelector('.wa-tab-' + canal).classList.add('ativo');
+        document.getElementById('painel' + canal.charAt(0).toUpperCase() + canal.slice(1)).classList.add('ativo');
+    };
 
+    // Preencher contato automaticamente ao carregar
+    function preencherContato() {
+        const phone = contrato.buyerPhone || contrato.phone || buyer?.phone || '';
+        const email = contrato.buyerEmail || contrato.email || buyer?.email || '';
+        if (phone) {
+            const waEl = document.getElementById('waPhone');
+            const smsEl = document.getElementById('smsPhone');
+            if (waEl) waEl.value = phone;
+            if (smsEl) smsEl.value = phone;
+        }
+        if (email) {
+            const emailEl = document.getElementById('emailAddr');
+            if (emailEl) emailEl.value = email;
+        }
+    }
+    setTimeout(preencherContato, 300);
+
+    window.enviar = function(canal, tipo) {
+        // Montar mensagem (mesma lógica para todos os canais)
         const hoje = new Date();
         const nome = (contrato.buyerName || '').split(' ')[0];
         const propId = contrato.propertyId || '';
@@ -639,17 +729,13 @@
 
         const sortedPags = [...pagamentos].sort((a,b) => a.paymentDate?.localeCompare(b.paymentDate));
         const totalRecebido = fmt2(pagamentos.reduce((s,p) => s + parseFloat(p.amountTotal||0), 0) + parseFloat(contrato.downPayment||0));
-
         const sep = '━━━━━━━━━━━━━━━━━━━━━━';
         const propAddr = contrato.propertyAddress || contrato.address || '';
         const contractDate = fmtData(contrato.contractDate);
-        const proximaPendente = parcelas
-            .filter(p => p.status !== 'PAID' && (p.type||'').toLowerCase() !== 'balloon')
-            .sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
+        const proximaPendente = parcelas.filter(p => p.status !== 'PAID' && (p.type||'').toLowerCase() !== 'balloon').sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
         const proximaDataStr = proximaPendente ? fmtData(proximaPendente.dueDate) : null;
 
         let msg = '';
-
         if (tipo === 'cobranca') {
             if (qtdAtrasadas === 0) { alert('No overdue payments on this contract.'); return; }
             const dataVenc = primeiraAtrasada ? fmtData(primeiraAtrasada.dueDate) : '—';
@@ -657,11 +743,7 @@
         } else {
             let numReg = 0;
             const allLinhas = [];
-
-            if (contrato.downPayment > 0) {
-                allLinhas.push(`📥 ${fmtData(contrato.contractDate)} · ${fmt2(contrato.downPayment)}\n   ↳ Down Payment`);
-            }
-
+            if (contrato.downPayment > 0) allLinhas.push(`📥 ${fmtData(contrato.contractDate)} · ${fmt2(contrato.downPayment)}\n   ↳ Down Payment`);
             sortedPags.forEach(p => {
                 const isBalloon = (p.memo || '').toLowerCase().includes('balloon');
                 if (isBalloon) {
@@ -671,13 +753,40 @@
                     allLinhas.push(`✅ ${fmtData(p.paymentDate)} · ${fmt2(p.amountTotal)}\n   ↳ Payment ${numReg}/${total}`);
                 }
             });
-
             const historicoStr = allLinhas.join('\n\n');
             msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n📊 *OVERVIEW*\n✅ Payments made: ${pagas} of ${total}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}${proximaDataStr ? '\n📆 Next payment due: ' + proximaDataStr : ''}\n\n${sep}\n📋 *PAYMENT HISTORY*\n\n${historicoStr}\n\n${sep}\nThank you,\nGT Real Assets 🏡`;
         }
 
-        const url = `https://wa.me/${fPhone}?text=${encodeURIComponent(msg)}`;
-        window.open(url, '_blank');
+        if (canal === 'wa') {
+            const rawPhone = (document.getElementById('waPhone')?.value || '').replace(/\D/g, '');
+            if (!rawPhone) { alert('Enter the WhatsApp number.'); return; }
+            const fPhone = rawPhone.length === 10 ? '1' + rawPhone : rawPhone;
+            window.open(`https://wa.me/${fPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+        } else if (canal === 'sms') {
+            const rawPhone = (document.getElementById('smsPhone')?.value || '').replace(/\D/g, '');
+            if (!rawPhone) { alert('Enter the SMS number.'); return; }
+            const fPhone = rawPhone.length === 10 ? '1' + rawPhone : rawPhone;
+            // sms: URI — abre app de mensagens nativo
+            window.open(`sms:+${fPhone}?body=${encodeURIComponent(msg)}`, '_blank');
+        } else if (canal === 'email') {
+            const emailAddr = (document.getElementById('emailAddr')?.value || '').trim();
+            if (!emailAddr) { alert('Enter the email address.'); return; }
+            const subject = tipo === 'cobranca'
+                ? `Payment Reminder — Property ${propId}`
+                : `Payment Statement — Property ${propId}`;
+            window.open(`mailto:${emailAddr}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`, '_blank');
+        }
+    };
+
+    // Manter compatibilidade com código antigo
+    window.enviarWA = (tipo) => window.enviar('wa', tipo);
+
+    window.gerarPDF = function() {
+        // Esconder seção de envio temporariamente
+        const waSection = document.querySelector('.wa-section');
+        if (waSection) waSection.style.display = 'none';
+        window.print();
+        setTimeout(() => { if (waSection) waSection.style.display = ''; }, 1000);
     };
 
     document.getElementById('modalEditar').addEventListener('click', e => {
