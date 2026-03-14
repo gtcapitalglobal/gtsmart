@@ -334,8 +334,13 @@
         document.getElementById('btnGerarLink').textContent = '💳 Gerar Link';
         document.getElementById('sqInfo').innerHTML = `<strong>${sqDados.propertyId}</strong> — Parcela #${sqDados.installmentNumber}<br>Comprador: <strong>${sqDados.buyerName}</strong><br>Vencimento: ${fmtData(p.dueDate)} · Valor: <strong>${fmt2(sqDados.amount)}</strong>`;
         // Auto-fill — busca phone/email no buyer pelo nome
+        // Busca buyer por propertyId, contractId ou nome (ordem de prioridade)
         var buyer = buyers.find(function(b) {
-            return b.fullName && c.buyerName && b.fullName.toLowerCase() === c.buyerName.toLowerCase();
+            return b.propertyId && p.propertyId && b.propertyId === p.propertyId;
+        }) || buyers.find(function(b) {
+            return b.contractId && b.contractId === p.contractId;
+        }) || buyers.find(function(b) {
+            return b.fullName && c.buyerName && b.fullName.toLowerCase().trim() === c.buyerName.toLowerCase().trim();
         }) || {};
         var phone = c.buyerPhone || c.phone || buyer.phone || '';
         var email = c.buyerEmail || c.email || buyer.email || '';
