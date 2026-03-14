@@ -713,15 +713,17 @@
     // contato preenchido automaticamente pelo renderTudo()
 
     window.enviar = function(canal, tipo) {
-        // Montar mensagem (mesma lógica para todos os canais)
         const hoje = new Date();
         const nome = (contrato.buyerName || '').split(' ')[0];
         const propId = contrato.propertyId || '';
+        const propAddr = contrato.propertyAddress || contrato.address || '';
         const parcela = fmt2(contrato.installmentAmount || 0);
         const pagas = parcelas.filter(p => p.status === 'PAID' && (p.type||'').toLowerCase() !== 'balloon').length;
         const total = parcelas.filter(p => (p.type||'').toLowerCase() !== 'balloon').length;
         const restantes = total - pagas;
+        const totalContrato = fmt2((contrato.installmentAmount || 0) * total + parseFloat(contrato.downPayment || 0) + parseFloat(contrato.balloonAmount || 0));
         const balance = fmt2((contrato.installmentAmount || 0) * restantes + (contrato.balloonAmount || 0));
+        const pct = total > 0 ? Math.round((pagas / total) * 100) : 0;
 
         const atrasadas = parcelas.filter(p => p.status !== 'PAID' && p._overdue);
         const primeiraAtrasada = atrasadas.sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
@@ -732,16 +734,27 @@
         const sortedPags = [...pagamentos].sort((a,b) => a.paymentDate?.localeCompare(b.paymentDate));
         const totalRecebido = fmt2(pagamentos.reduce((s,p) => s + parseFloat(p.amountTotal||0), 0) + parseFloat(contrato.downPayment||0));
         const sep = '━━━━━━━━━━━━━━━━━━━━━━';
-        const propAddr = contrato.propertyAddress || contrato.address || '';
         const contractDate = fmtData(contrato.contractDate);
+
+        // Próxima parcela pendente
         const proximaPending = parcelas.filter(p => p.status !== 'PAID' && (p.type||'').toLowerCase() !== 'balloon').sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
         const proximaDataStr = proximaPending ? fmtData(proximaPending.dueDate) : null;
+        const proximaValor = proximaPending ? fmt2(proximaPending.amount || contrato.installmentAmount || 0) : null;
+
+        // Data prevista de quitação (última parcela regular)
+        const ultimaParcela = [...parcelas].filter(p => (p.type||'').toLowerCase() !== 'balloon').sort((a,b) => b.installmentNumber - a.installmentNumber)[0];
+        const payoffDate = ultimaParcela ? fmtData(ultimaParcela.dueDate) : null;
+
+        // Motivação baseada no progresso
+        const motivacao = pct >= 75 ? '🔥 Almost there!' : pct >= 50 ? '🎯 Halfway through!' : pct >= 25 ? '💪 Great progress!' : '🌱 Just getting started!';
+
+        const assinatura = `GT Lands 🏡\nwww.gtlands.com`;
 
         let msg = '';
         if (tipo === 'cobranca') {
             if (qtdAtrasadas === 0) { alert('No overdue payments on this contract.'); return; }
             const dataVenc = primeiraAtrasada ? fmtData(primeiraAtrasada.dueDate) : '—';
-            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n⚠️ *PAYMENT REMINDER*\n\nYou have ${qtdAtrasadas === 1 ? '1 overdue payment' : qtdAtrasadas + ' overdue payments'}.\n\n📆 Overdue since: ${dataVenc} (${diasAtraso} days)\n💸 Total past due: ${totalAtrasado}\n💳 Monthly payment: ${parcela}\n\nPlease send your payment at your earliest convenience.\n\n📎 If you have already made the payment, please send us the receipt.\n\n${sep}\nThank you,\nGT Real Assets 🏡`;
+            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n⚠️ *PAYMENT REMINDER*\n\nYou have ${qtdAtrasadas === 1 ? '1 overdue payment' : qtdAtrasadas + ' overdue payments'}.\n\n📆 Overdue since: ${dataVenc} (${diasAtraso} days)\n💸 Total past due: ${totalAtrasado}\n💳 Monthly payment: ${parcela}\n\nPlease send your payment at your earliest convenience.\n\n📎 If you have already made the payment, please send us the receipt.\n\n${sep}\n${assinatura}`;
         } else {
             let numReg = 0;
             const allLinhas = [];
@@ -755,8 +768,8 @@
                     allLinhas.push(`✅ ${fmtData(p.paymentDate)} · ${fmt2(p.amountTotal)}\n   ↳ Payment ${numReg}/${total}`);
                 }
             });
-            const historicoStr = allLinhas.join('\n\n');
-            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n📊 *OVERVIEW*\n✅ Payments made: ${pagas} of ${total}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}${proximaDataStr ? '\n📆 Next payment due: ' + proximaDataStr : ''}\n\n${sep}\n📋 *PAYMENT HISTORY*\n\n${historicoStr}\n\n${sep}\nThank you,\nGT Real Assets 🏡`;
+            const historicoStr = allLinhas.length > 0 ? allLinhas.join('\n\n') : '—';
+            msg = `Hi ${nome} 👋\n\n${sep}\n🏠 *Property ${propId}*\n${propAddr ? '📍 ' + propAddr + '\n' : ''}📅 Contract signed: ${contractDate}\n${sep}\n\n📊 *OVERVIEW*\n✅ Payments made: ${pagas} of ${total} (${pct}%) ${motivacao}\n🎯 Contract total: ${totalContrato}\n💰 Total received: ${totalRecebido}\n📌 Remaining balance: ~${balance}\n${proximaDataStr ? '📆 Next payment: ' + proximaDataStr + ' · ' + proximaValor + '\n' : ''}${payoffDate ? '🏁 Expected payoff: ' + payoffDate + '\n' : ''}\n${sep}\n📋 *PAYMENT HISTORY*\n\n${historicoStr}\n\n${sep}\n${assinatura}`;
         }
 
         if (canal === 'wa') {
@@ -768,7 +781,6 @@
             const rawPhone = (document.getElementById('smsPhone')?.value || '').replace(/\D/g, '');
             if (!rawPhone) { alert('Enter the SMS number.'); return; }
             const fPhone = rawPhone.length === 10 ? '1' + rawPhone : rawPhone;
-            // sms: URI — abre app de mensagens nativo
             window.open(`sms:+${fPhone}?body=${encodeURIComponent(msg)}`, '_blank');
         } else if (canal === 'email') {
             const emailAddr = (document.getElementById('emailAddr')?.value || '').trim();
