@@ -173,7 +173,7 @@
 <a href="LL_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#1565c0;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
 
 <script type="module">
-    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment, deleteLLInstallment, saveLLPayment } from './firebase-config.js';
+    import { auth, onAuthStateChanged, getLLInstallments, getLLContracts, updateLLInstallment, deleteLLInstallmentsByContract, saveLLPayment } from './firebase-config.js';
 
     const fmt2 = v => '$' + parseFloat(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const safeDate = d => { if (!d) return null; const s = (typeof d === 'string' && d.includes('T')) ? d : d + 'T12:00:00'; const dt = new Date(s); return isNaN(dt) ? null : dt; };
@@ -329,7 +329,7 @@
         const p = parcelas.find(x => x.id === id); if (!p) return;
         const c = contratos.find(x => x.id === p.contractId) || {};
         if (!confirm(`Excluir esta parcela?\n\nImóvel: ${p.propertyId||c.propertyId||'—'}\nParcela #${p.installmentNumber||'—'} · ${fmtData(p.dueDate)} · ${fmt2(p.amount)}\n\nEsta ação não pode ser desfeita.`)) return;
-        const ok = await deleteLLInstallment(id);
+        const ok = await updateLLInstallment(id, { _deleted: true, status: 'CANCELLED' });
         if (ok) { parcelas = parcelas.filter(x => x.id !== id); renderSummary(); renderTabela(); }
     };
 
