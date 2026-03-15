@@ -389,7 +389,11 @@
                 <div class="modal-label">Property Tax (USD/year)</div>
                 <input type="number" class="modal-input" id="fPropertyTax" placeholder="Ex: 157.00" step="any">
 
-                <div class="modal-section">📝 Notas</div>
+                <div class="modal-section">📢 Mensagem WhatsApp</div>
+                <div class="modal-label">Observação <span style="color:#aaa;font-weight:400;">— aparece na mensagem do WhatsApp</span></div>
+                <textarea class="modal-textarea" id="fObservacao" placeholder="Ex: Excelente lote em condomínio fechado. Próximo a dois belos lagos..."></textarea>
+
+                <div class="modal-section">📝 Notas Internas</div>
                 <textarea class="modal-textarea" id="fNotes" placeholder="Anotações gerais sobre o terreno..."></textarea>
 
                 <div class="modal-btns">
@@ -399,7 +403,21 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 3.0 | 14/03/2026</p>
+
+        <!-- WhatsApp Modal -->
+        <div class="modal-overlay" id="waModal">
+            <div class="modal-box" style="max-width:480px;">
+                <div class="modal-title" style="color:#25d366;">📲 Mensagem WhatsApp</div>
+                <textarea id="waText" style="width:100%;min-height:220px;padding:12px;border:2px solid #e0e0e0;border-radius:10px;font-size:13px;line-height:1.7;outline:none;resize:vertical;font-family:'Segoe UI',sans-serif;"></textarea>
+                <div class="modal-btns" style="margin-top:12px;">
+                    <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('waModal').classList.remove('show')">Fechar</button>
+                    <button class="modal-btn modal-btn-save" style="background:#25d366;" onclick="copiarWA()">📋 Copiar</button>
+                </div>
+                <div id="waCopied" style="display:none;text-align:center;color:#25d366;font-size:12px;font-weight:700;margin-top:8px;">✅ Copiado! Cole no WhatsApp.</div>
+            </div>
+        </div>
+
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 4.0 | 14/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -567,6 +585,7 @@
                         '</div>' +
                         '<div class="land-actions">' +
                             (mapsUrl ? '<a href="' + mapsUrl + '" target="_blank" class="maps-btn" title="Abrir no Maps">📍 Maps</a>' : '') +
+                            '<button class="land-btn" onclick="gerarWhatsApp(\'' + l.id + '\')" title="Gerar WhatsApp" style="font-size:18px;">📲</button>' +
                             '<button class="land-btn" onclick="editLand(\'' + l.id + '\')" title="Editar">✏️</button>' +
                             '<button class="land-btn" onclick="deleteLand(\'' + l.id + '\')" title="Deletar">🗑️</button>' +
                         '</div>' +
@@ -663,7 +682,7 @@
             ['fParcel','fAddress','fCounty','fState','fCoords','fDescription','fLegalDesc',
              'fAcres','fSqft','fMinLot','fLotMeas','fPurchaseDate','fAuctionCosts','fPropertyCosts','fTitleCertificate',
              'fSaleDate','fSaleValue','fSaleCosts','fDownPayment','fInstallments','fInstallmentValue',
-             'fZoningCode','fZoningNotes','fHoaName','fHoaFee','fPropertyTax','fNotes'].forEach(id => {
+             'fZoningCode','fZoningNotes','fHoaName','fHoaFee','fPropertyTax','fObservacao','fNotes'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
@@ -724,6 +743,7 @@
                 hoaName: document.getElementById('fHoaName').value.trim(),
                 hoaFee: parseFloat(document.getElementById('fHoaFee').value) || 0,
                 propertyTax: parseFloat(document.getElementById('fPropertyTax').value) || 0,
+                observacao: document.getElementById('fObservacao').value.trim(),
                 notes: document.getElementById('fNotes').value.trim(),
                 createdAt: editingId ? (lands.find(l => l.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -783,6 +803,7 @@
             document.getElementById('fHoaName').value = l.hoaName || '';
             document.getElementById('fHoaFee').value = l.hoaFee || '';
             document.getElementById('fPropertyTax').value = l.propertyTax || '';
+            document.getElementById('fObservacao').value = l.observacao || '';
             document.getElementById('fNotes').value = l.notes || '';
 
             document.getElementById('hoaFields').className = 'hoa-fields' + (l.hoa ? ' show' : '');
@@ -807,7 +828,43 @@
             }
         };
 
-        // ===== QUICK EDIT PARCELAS =====
+        // ===== WHATSAPP =====
+        window.gerarWhatsApp = function(id) {
+            const l = lands.find(x => x.id === id);
+            if (!l) return;
+            const mapsUrl = l.coordinates
+                ? 'https://www.google.com/maps?q=' + encodeURIComponent(l.coordinates)
+                : '';
+            const numero = lands.indexOf(l) + 1;
+            let texto = '';
+            texto += 'Propriedade #' + numero + '\n';
+            texto += 'Endereco: ' + (l.address || '—') + '\n';
+            if (mapsUrl) texto += '🔗 Google Maps: ' + mapsUrl + '\n';
+            texto += 'Tamanho: ' + (l.sqft ? parseFloat(l.sqft).toLocaleString('en-US') + ' sqft' : '—') + (l.acres ? ' (' + l.acres + ' acres)' : '') + '\n';
+            if (l.zoningCode) texto += 'Zoning Code: ' + l.zoningCode + '\n';
+            if (l.observacao) texto += 'Observação: ' + l.observacao + '\n';
+            texto += '\n';
+            if (l.paymentType === 'parcelado') {
+                texto += 'A vista $' + parseFloat(l.saleValue).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '\n';
+                if (l.downPayment > 0) texto += 'Entrada $' + parseFloat(l.downPayment).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '\n';
+                if (l.installments > 0) texto += 'Prazo: ' + l.installments + 'x\n';
+                if (l.installmentValue > 0) texto += 'Valor Mensal: $' + parseFloat(l.installmentValue).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '\n';
+            } else {
+                texto += 'A vista $' + parseFloat(l.saleValue).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '\n';
+            }
+            document.getElementById('waText').value = texto.trim();
+            document.getElementById('waCopied').style.display = 'none';
+            document.getElementById('waModal').classList.add('show');
+        };
+
+        window.copiarWA = function() {
+            const txt = document.getElementById('waText');
+            txt.select();
+            document.execCommand('copy');
+            document.getElementById('waCopied').style.display = 'block';
+        };
+
+                // ===== QUICK EDIT PARCELAS =====
         window.toggleParcelaEdit = function(id) {
             const editDiv = document.getElementById('parc-edit-' + id);
             if (!editDiv) return;
