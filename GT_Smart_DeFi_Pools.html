@@ -1832,7 +1832,28 @@ let allCryptos = [];
             setTimeout(() => {
                 document.getElementById('poolBorrowIdA').value = p.borrowIdA || '';
                 document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
-                // Campos de % já foram preenchidos corretamente acima — não sobrescrever
+
+                // Preencher % — detecta formato antigo (quantidade) e converte
+                function fillPct(side, borrowId, rawPct, borrowQty) {
+                    const el = document.getElementById('poolBorrowQty' + side);
+                    const pct = parseFloat(rawPct || 0);
+                    if (pct > 0 && pct <= 100) {
+                        el.value = pct.toFixed(2);
+                    } else {
+                        const b = borrows.find(x => x.id === borrowId);
+                        const total = b ? parseFloat(b.amount || 0) : 0;
+                        if (pct > 100 && total > 0) {
+                            el.value = ((pct / total) * 100).toFixed(2);
+                        } else if (parseFloat(borrowQty || 0) > 0 && total > 0) {
+                            el.value = ((parseFloat(borrowQty) / total) * 100).toFixed(2);
+                        } else {
+                            el.value = '';
+                        }
+                    }
+                }
+                fillPct('A', p.borrowIdA, p.borrowPctA, p.borrowQtyA);
+                fillPct('B', p.borrowIdB, p.borrowPctB, p.borrowQtyB);
+
                 updateBorrowLinkA(); updateBorrowLinkB();
             }, 100);
             updatePoolPreview();
