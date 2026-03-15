@@ -1832,17 +1832,7 @@ let allCryptos = [];
             setTimeout(() => {
                 document.getElementById('poolBorrowIdA').value = p.borrowIdA || '';
                 document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
-                // Re-preencher qty após populateBorrowSelect (que reseta os selects)
-                if (p.borrowQtyA) { document.getElementById('poolBorrowQtyA').value = p.borrowQtyA; }
-                else if (p.borrowIdA && p.borrowPctA) {
-                    const bA = borrows.find(b => b.id === p.borrowIdA);
-                    if (bA) document.getElementById('poolBorrowQtyA').value = (parseFloat(bA.amount||0) * (parseFloat(p.borrowPctA)/100)).toFixed(4);
-                }
-                if (p.borrowQtyB) { document.getElementById('poolBorrowQtyB').value = p.borrowQtyB; }
-                else if (p.borrowIdB && p.borrowPctB) {
-                    const bB = borrows.find(b => b.id === p.borrowIdB);
-                    if (bB) document.getElementById('poolBorrowQtyB').value = (parseFloat(bB.amount||0) * (parseFloat(p.borrowPctB)/100)).toFixed(4);
-                }
+                // Campos de % já foram preenchidos corretamente acima — não sobrescrever
                 updateBorrowLinkA(); updateBorrowLinkB();
             }, 100);
             updatePoolPreview();
