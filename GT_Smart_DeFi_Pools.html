@@ -590,6 +590,7 @@
 let allCryptos = [];
         let pools = [];
         let borrows = [];
+        let colaterais = [];
         let userId = null;
         let selectedTokenA = null;
         let selectedTokenB = null;
@@ -691,6 +692,13 @@ let allCryptos = [];
         window.updateBorrowLinkB = function() { buildBorrowPreview('B'); };
 
         // ===== PRICES =====
+        async function loadColaterais() {
+            try {
+                const snap = await getDocs(collection(db, 'users', userId, 'defi_colateral'));
+                colaterais = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+            } catch(e) { colaterais = []; }
+        }
+
         async function loadPrices() {
             try {
                 const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
@@ -1045,11 +1053,36 @@ let allCryptos = [];
                             const roiMes = daysInPool > 0 ? roiTotal / (daysInPool / 30) : 0;
                             const roiDia = daysInPool > 0 ? roiTotal / daysInPool : 0;
                             const roiColor = lucroTotal >= 0 ? '#2e7d32' : '#c62828';
-                            return '<div class="pool-block-hero" style="background:' + (lucroTotal >= 0 ? '#e8f5e9' : '#fdecea') + ';">' +
-                                '<div class="hero-label" style="color:' + roiColor + ';">💰 Lucro Total (Pool - Dívida + Fees)</div>' +
-                                '<div class="hero-value" style="color:' + roiColor + ';">' + (lucroTotal >= 0 ? '+' : '') + fmtUsd(lucroTotal) + '</div>' +
-                                '<div class="hero-sub" style="color:' + roiColor + ';font-weight:700;">ROI: ' + roiAnual.toFixed(1) + '%/ano | ' + roiMes.toFixed(1) + '%/mês | ' + roiDia.toFixed(2) + '%/dia</div>' +
-                                '<div class="hero-sub" style="color:' + roiColor + ';">Pool: ' + fmtUsd(totalVal) + ' | Dívida: ' + fmtUsd(totalDebt) + ' | Fees: ' + fmtUsd(poolTotalFees) + '</div>' +
+                            // ROI Colateralizado
+                            const colChain = (p.chain || '').toLowerCase();
+                            const colateralChain = colaterais.filter(c => (c.chain||'').toLowerCase() === colChain);
+                            const totalColateral = colateralChain.reduce((s,c) => s + parseFloat(c.amount||0)*getPrice(c.cryptoId), 0);
+                            const totalDebtAllPools = pools.filter(x => x.status !== 'closed' && (x.chain||'').toLowerCase() === colChain).reduce((s,x) => {
+                                let d = 0;
+                                if (x.borrowIdA) { const bA = borrows.find(b => b.id === x.borrowIdA); if (bA) d += parseFloat(bA.amount||0)*(parseFloat(x.borrowPctA||0)/100)*getPrice(bA.cryptoId); }
+                                if (x.borrowIdB) { const bB = borrows.find(b => b.id === x.borrowIdB); if (bB) d += parseFloat(bB.amount||0)*(parseFloat(x.borrowPctB||0)/100)*getPrice(bB.cryptoId); }
+                                return s + d;
+                            }, 0);
+                            const colAlocado = totalDebtAllPools > 0 ? (totalDebt / totalDebtAllPools) * totalColateral : 0;
+                            const roiCol = colAlocado > 0 && daysInPool > 0 ? (lucroTotal / colAlocado) * (365 / daysInPool) * 100 : 0;
+                            const metaOk = roiCol >= 20;
+                            const metaColor = metaOk ? '#2e7d32' : '#c62828';
+
+                            return '<div class="pool-block-hero" style="background:' + (lucroTotal >= 0 ? '#e8f5e9' : '#fdecea') + ';display:flex;align-items:center;gap:0;">' +
+                                '<div style="flex:1;">' +
+                                    '<div class="hero-label" style="color:' + roiColor + ';">💰 Lucro Total (Pool - Dívida + Fees)</div>' +
+                                    '<div class="hero-value" style="color:' + roiColor + ';">' + (lucroTotal >= 0 ? '+' : '') + fmtUsd(lucroTotal) + '</div>' +
+                                    '<div class="hero-sub" style="color:' + roiColor + ';font-weight:700;">ROI: ' + roiAnual.toFixed(1) + '%/ano | ' + roiMes.toFixed(1) + '%/mês | ' + roiDia.toFixed(2) + '%/dia</div>' +
+                                    '<div class="hero-sub" style="color:' + roiColor + ';">Pool: ' + fmtUsd(totalVal) + ' | Dívida: ' + fmtUsd(totalDebt) + ' | Fees: ' + fmtUsd(poolTotalFees) + '</div>' +
+                                '</div>' +
+                                (colAlocado > 0 ?
+                                    '<div style="border-left:1px dashed ' + (lucroTotal >= 0 ? '#a5d6a7' : '#ef9a9a') + ';padding-left:16px;min-width:160px;text-align:center;">' +
+                                        '<div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:6px;">🎯 Meta 20%a.a</div>' +
+                                        '<div style="font-size:18px;font-weight:700;color:' + metaColor + ';margin-bottom:4px;">' + (metaOk ? '✅ Sim' : '❌ Não') + '</div>' +
+                                        '<div style="font-size:10px;color:#888;margin-bottom:2px;">ROI Colateralizado</div>' +
+                                        '<div style="font-size:15px;font-weight:700;color:' + metaColor + ';">' + (roiCol >= 0 ? '+' : '') + roiCol.toFixed(1) + '%/ano</div>' +
+                                    '</div>'
+                                : '') +
                             '</div>';
                         })()
                     :
@@ -1758,7 +1791,7 @@ let allCryptos = [];
                 }
             }
             const ok = await savePoolToFirebase(pool);
-            if (ok) { showGTToast('✅ Pool salva!', 'sucesso'); await loadPools(); renderPoolList(); closePoolModal(); }
+            if (ok) { showGTToast('✅ Pool salva!', 'sucesso'); await loadPools(); renderPoolList(); if (panoramaOpen) renderPanorama(); closePoolModal(); }
             else showGTToast('Erro ao salvar!', 'erro');
         };
 
@@ -1958,6 +1991,7 @@ let allCryptos = [];
             if (savedMeta !== null) metaFeesMensal = parseFloat(savedMeta) || 0;
             await loadPrices();
             await loadBorrows();
+            await loadColaterais();
             await loadPools();
             renderPoolList();
             setInterval(async () => { await loadPrices(); renderPoolList(); }, 60000);
