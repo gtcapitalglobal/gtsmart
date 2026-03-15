@@ -250,8 +250,11 @@
                     </div>
                 </div>
 
-                <div class="modal-label">Property Costs (USD)</div>
-                <input type="number" class="modal-input" id="fPropertyCosts" placeholder="Ex: 1911.46" step="any" oninput="updateFinancialPreview()">
+                <div class="modal-label">Property Costs / Taxes (USD)</div>
+                <input type="number" class="modal-input" id="fPropertyCosts" placeholder="Ex: 79.20" step="any" oninput="updateFinancialPreview()">
+
+                <div class="modal-label">Title Certificate (USD) <span style="color:#aaa;font-weight:400;">— opcional</span></div>
+                <input type="number" class="modal-input" id="fTitleCertificate" placeholder="Ex: 1250.00" step="any" oninput="updateFinancialPreview()">
 
                 <div class="modal-section">💰 Venda</div>
 
@@ -396,7 +399,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 1.0 | 14/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 2.0 | 14/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -457,15 +460,16 @@
         }
 
         // ===== FINANCIAL CALC =====
-        function calcFinancial(saleValue, auctionCosts, propertyCosts, saleCosts) {
+        function calcFinancial(saleValue, auctionCosts, propertyCosts, saleCosts, titleCertificate) {
             const sv = parseFloat(saleValue) || 0;
             const ac = parseFloat(auctionCosts) || 0;
             const pc = parseFloat(propertyCosts) || 0;
             const sc = parseFloat(saleCosts) || 0;
-            const invested = ac + pc;
-            const profit = sv - ac - pc - sc;
+            const tc = parseFloat(titleCertificate) || 0;
+            const invested = ac + pc + tc;
+            const profit = sv - ac - pc - sc - tc;
             const roi = invested > 0 ? (profit / invested * 100) : 0;
-            return { sv, ac, pc, sc, invested, profit, roi };
+            return { sv, ac, pc, sc, tc, invested, profit, roi };
         }
 
         window.updateFinancialPreview = function() {
@@ -473,10 +477,11 @@
             const ac = document.getElementById('fAuctionCosts').value;
             const pc = document.getElementById('fPropertyCosts').value;
             const sc = document.getElementById('fSaleCosts').value;
+            const tc = document.getElementById('fTitleCertificate').value;
             const prev = document.getElementById('financialPreview');
             if (!sv && !ac && !pc) { prev.style.display = 'none'; return; }
             prev.style.display = 'block';
-            const f = calcFinancial(sv, ac, pc, sc);
+            const f = calcFinancial(sv, ac, pc, sc, tc);
             document.getElementById('pvSale').textContent = fmt2(f.sv);
             document.getElementById('pvAuction').textContent = '−' + fmt2(f.ac);
             document.getElementById('pvProperty').textContent = '−' + fmt2(f.pc);
@@ -516,7 +521,7 @@
             const vend = lands.filter(l => ['vendido','cfd'].includes(l.status)).length;
             let totalInv = 0, totalProfit = 0, roiSum = 0, roiCount = 0;
             lands.forEach(l => {
-                const f = calcFinancial(l.saleValue, l.auctionCosts, l.propertyCosts, l.saleCosts);
+                const f = calcFinancial(l.saleValue, l.auctionCosts, l.propertyCosts, l.saleCosts, l.titleCertificate);
                 totalInv += f.invested;
                 if (['vendido','cfd'].includes(l.status)) {
                     totalProfit += f.profit;
@@ -543,7 +548,7 @@
             }
 
             document.getElementById('landList').innerHTML = filtered.map(l => {
-                const f = calcFinancial(l.saleValue, l.auctionCosts, l.propertyCosts, l.saleCosts);
+                const f = calcFinancial(l.saleValue, l.auctionCosts, l.propertyCosts, l.saleCosts, l.titleCertificate);
                 const mapsUrl = l.coordinates ? 'https://www.google.com/maps?q=' + encodeURIComponent(l.coordinates) : '';
                 const buyerName = l.buyerId ? (buyers.find(b => b.id === l.buyerId)?.nome || l.buyerName || '—') : '—';
 
@@ -585,6 +590,7 @@
                         '<div class="financial-row"><span class="fr-label">Sale Value</span><span class="fr-value">' + fmt2(f.sv) + '</span></div>' +
                         '<div class="financial-row"><span class="fr-label">Auction Costs</span><span class="fr-value fr-negative">−' + fmt2(f.ac) + '</span></div>' +
                         '<div class="financial-row"><span class="fr-label">Property Costs</span><span class="fr-value fr-negative">−' + fmt2(f.pc) + '</span></div>' +
+                        (f.tc > 0 ? '<div class="financial-row"><span class="fr-label">Title Certificate</span><span class="fr-value fr-negative">−' + fmt2(f.tc) + '</span></div>' : '') +
                         (f.sc > 0 ? '<div class="financial-row"><span class="fr-label">Sale Costs</span><span class="fr-value fr-negative">−' + fmt2(f.sc) + '</span></div>' : '') +
                         '<div class="financial-row"><span class="fr-label">💰 Total Profit</span><span class="fr-value ' + (f.profit >= 0 ? 'fr-positive' : 'fr-negative') + '">' + (f.profit >= 0 ? '+' : '') + fmt2(f.profit) + '</span></div>' +
                         '<div class="financial-row"><span class="fr-label">📊 ROI</span><span class="fr-value ' + (f.roi >= 0 ? 'fr-positive' : 'fr-negative') + '">' + f.roi.toFixed(3) + '%</span></div>' +
@@ -644,7 +650,7 @@
 
         function clearForm() {
             ['fParcel','fAddress','fCounty','fState','fCoords','fDescription','fLegalDesc',
-             'fAcres','fSqft','fMinLot','fLotMeas','fPurchaseDate','fAuctionCosts','fPropertyCosts',
+             'fAcres','fSqft','fMinLot','fLotMeas','fPurchaseDate','fAuctionCosts','fPropertyCosts','fTitleCertificate',
              'fSaleDate','fSaleValue','fSaleCosts','fDownPayment','fInstallments','fInstallmentValue',
              'fZoningCode','fZoningNotes','fHoaName','fHoaFee','fPropertyTax','fNotes'].forEach(id => {
                 const el = document.getElementById(id);
@@ -687,6 +693,7 @@
                 purchaseDate: document.getElementById('fPurchaseDate').value,
                 auctionCosts: parseFloat(document.getElementById('fAuctionCosts').value) || 0,
                 propertyCosts: parseFloat(document.getElementById('fPropertyCosts').value) || 0,
+                titleCertificate: parseFloat(document.getElementById('fTitleCertificate').value) || 0,
                 status: document.getElementById('fStatus').value,
                 buyerId, buyerName,
                 saleDate: document.getElementById('fSaleDate').value,
@@ -746,6 +753,7 @@
             document.getElementById('fPurchaseDate').value = l.purchaseDate || '';
             document.getElementById('fAuctionCosts').value = l.auctionCosts || '';
             document.getElementById('fPropertyCosts').value = l.propertyCosts || '';
+            document.getElementById('fTitleCertificate').value = l.titleCertificate || '';
             document.getElementById('fStatus').value = l.status || 'disponivel';
             document.getElementById('fSaleDate').value = l.saleDate || '';
             document.getElementById('fSaleValue').value = l.saleValue || '';
