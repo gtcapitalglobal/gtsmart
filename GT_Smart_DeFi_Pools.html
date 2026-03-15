@@ -1095,7 +1095,7 @@ let allCryptos = [];
                         }
 
                         return '<div class="range-gauge">' +
-                            '<div class="range-gauge-title">📊 Range ' + (isInRange ? '✅ In Range' : '❌ Out of Range') + '</div>' +
+                             +
                             '<div class="range-bar-wrap">' +
                                 '<div class="range-bar"></div>' +
                                 '<div class="range-bar-fill" style="left:' + barLeft + '%;width:' + barWidth + '%;"></div>' +
@@ -1111,6 +1111,7 @@ let allCryptos = [];
                                 '<span><div class="range-tri' + (isInRange ? '' : ' out') + '" style="' + (!isInRange ? 'border-top-color:#c62828;' : '') + '"></div> Hoje</span>' +
                                 (entryRatio > 0 ? '<span><div class="range-dot" style="background:#378ADD;border:2px solid #ccc;"></div> Entrada (' + entryRatio.toFixed(2) + ')</span>' : '') +
                                 '<span><div class="range-dot" style="background:#43a047;border:2px solid #e0e0e0;width:8px;height:8px;"></div> Range</span>' +
+                                '<span style="font-weight:700;color:' + (isInRange ? '#2e7d32' : '#c62828') + ';margin-left:4px;">' + (isInRange ? '✅ In Range' : '❌ Out of Range') + '</span>' +
                             '</div>' +
                         '</div>';
                     })() +
