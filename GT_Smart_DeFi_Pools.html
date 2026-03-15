@@ -1787,14 +1787,37 @@ let allCryptos = [];
             // Mostrar qty salva (campo borrowQtyA) ou calcular da % salva
             (function() {
                 const pctEl = document.getElementById('poolBorrowQtyA');
-                if (p.borrowPctA) { pctEl.value = parseFloat(p.borrowPctA).toFixed(2); }
-                else { pctEl.value = ''; }
+                const rawPctA = parseFloat(p.borrowPctA || 0);
+                if (rawPctA > 0 && rawPctA <= 100) {
+                    // Novo formato: já é percentual
+                    pctEl.value = rawPctA.toFixed(2);
+                } else if (rawPctA > 100 && p.borrowIdA) {
+                    // Dado antigo: era quantidade — converter para %
+                    const bA = borrows.find(b => b.id === p.borrowIdA);
+                    const totalA = bA ? parseFloat(bA.amount || 0) : 0;
+                    pctEl.value = totalA > 0 ? ((rawPctA / totalA) * 100).toFixed(2) : '';
+                } else if (p.borrowQtyA && p.borrowIdA) {
+                    // Fallback: usar borrowQtyA para calcular %
+                    const bA = borrows.find(b => b.id === p.borrowIdA);
+                    const totalA = bA ? parseFloat(bA.amount || 0) : 0;
+                    pctEl.value = totalA > 0 ? ((parseFloat(p.borrowQtyA) / totalA) * 100).toFixed(2) : '';
+                } else { pctEl.value = ''; }
             })();
             document.getElementById('poolBorrowIdB').value = p.borrowIdB || '';
             (function() {
                 const pctEl = document.getElementById('poolBorrowQtyB');
-                if (p.borrowPctB) { pctEl.value = parseFloat(p.borrowPctB).toFixed(2); }
-                else { pctEl.value = ''; }
+                const rawPctB = parseFloat(p.borrowPctB || 0);
+                if (rawPctB > 0 && rawPctB <= 100) {
+                    pctEl.value = rawPctB.toFixed(2);
+                } else if (rawPctB > 100 && p.borrowIdB) {
+                    const bB = borrows.find(b => b.id === p.borrowIdB);
+                    const totalB = bB ? parseFloat(bB.amount || 0) : 0;
+                    pctEl.value = totalB > 0 ? ((rawPctB / totalB) * 100).toFixed(2) : '';
+                } else if (p.borrowQtyB && p.borrowIdB) {
+                    const bB = borrows.find(b => b.id === p.borrowIdB);
+                    const totalB = bB ? parseFloat(bB.amount || 0) : 0;
+                    pctEl.value = totalB > 0 ? ((parseFloat(p.borrowQtyB) / totalB) * 100).toFixed(2) : '';
+                } else { pctEl.value = ''; }
             })();
             document.getElementById('poolRangeMin').value = p.rangeMin || '';
             document.getElementById('poolRangeMax').value = p.rangeMax || '';
