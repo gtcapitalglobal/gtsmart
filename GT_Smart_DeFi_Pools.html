@@ -548,7 +548,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 9.0 | 15/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 10.0 | 14/03/2026</p>
     </div>
 
 
@@ -1026,12 +1026,14 @@ let allCryptos = [];
                                 (infoB ? '<img src="' + infoB.image + '" onerror="this.style.display=\'none\'">' : '') +
                             '</div>' +
                             '<div>' +
-                                '<div class="pool-pair-name">' + poolTitle + '</div>' +
+                                '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;">' +
+                                    '<div class="pool-pair-name">' + poolTitle + '</div>' +
+                                    ( p.notes ? '<span class="chain-badge" style="background:#fff3e0;color:#e65100;font-weight:700;">🧭 ' + p.notes + '</span>' : '') +
+                                '</div>' +
                                 '<div class="pool-badges">' +
                                     '<span class="chain-badge ' + chainCls + '">' + (p.chain || 'Outro') + '</span>' +
                                     '<span class="dex-badge ' + dexCls + '">' + (p.dex || 'DEX') + '</span>' +
                                     '<span class="status-badge ' + statusCls + '">' + (p.status === 'closed' ? '⏹️ Encerrada' : '✅ Ativa') + '</span>' +
-                                    ( p.notes ? '<span class="chain-badge" style="background:#fff3e0;color:#e65100;font-weight:700;">🧭 ' + p.notes + '</span>' : '') +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
@@ -1204,7 +1206,7 @@ let allCryptos = [];
                                     '<div class="pab-usd" style="font-weight:700;">Valor: ' + fmtUsd(valA) + '</div>' +
                                     '<div class="pab-usd" style="color:#999;">Entrada: ' + parseFloat(p.amountA || 0).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
                                     (p.entryPriceA ? '<div class="pab-usd">Preço: ' + fmtUsd(p.entryPriceA) + '</div>' : '') +
-                                    (bothHaveInvest ? '<div class="pab-usd">Investiu: ' + fmtUsd(investA) + '</div>' : '') +
+                                    (!hasBorrow && investA > 0 ? '<div class="pab-usd">Investiu: ' + fmtUsd(investA) + '</div>' : '') +
                                     (borrowInfoA ? '<div class="pab-usd" style="color:#4a2c8a;font-weight:600;">🏦 ' + borrowInfoA + '</div>' : '') +
                                 '</div>' +
                                 '<div class="pool-amount-box">' +
@@ -1213,7 +1215,7 @@ let allCryptos = [];
                                     '<div class="pab-usd" style="font-weight:700;">Valor: ' + fmtUsd(valB) + '</div>' +
                                     '<div class="pab-usd" style="color:#999;">Entrada: ' + parseFloat(p.amountB || 0).toLocaleString('en-US', {maximumFractionDigits:6}) + '</div>' +
                                     (p.entryPriceB ? '<div class="pab-usd">Preço: ' + fmtUsd(p.entryPriceB) + '</div>' : '') +
-                                    (bothHaveInvest ? '<div class="pab-usd">Investiu: ' + fmtUsd(investB) + '</div>' : '') +
+                                    (!hasBorrow && investB > 0 ? '<div class="pab-usd">Investiu: ' + fmtUsd(investB) + '</div>' : '') +
                                     (borrowInfoB ? '<div class="pab-usd" style="color:#4a2c8a;font-weight:600;">🏦 ' + borrowInfoB + '</div>' : '') +
                                 '</div>' +
                             '</div>' +
