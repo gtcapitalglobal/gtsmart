@@ -109,6 +109,8 @@
         .installment-fields { display: none; }
         .installment-fields.show { display: block; }
 
+        .wa-lang-btn { flex:1; padding: 8px; border-radius: 8px; border: 2px solid #e0e0e0; background: white; font-size: 13px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
+        .wa-lang-btn.active { background: #25d366; color: white; border-color: #25d366; }
         .toggle-field { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
         .toggle-field label { font-size: 13px; font-weight: 600; color: #444; }
         .toggle-field input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; accent-color: #2e7d32; }
@@ -411,6 +413,15 @@
         <div class="modal-overlay" id="waModal">
             <div class="modal-box" style="max-width:480px;">
                 <div class="modal-title" style="color:#25d366;">📲 Mensagem WhatsApp</div>
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <button class="wa-lang-btn active" id="waBtnPt" onclick="selectLang('pt', this)">🇧🇷 PT</button>
+                    <button class="wa-lang-btn" id="waBtnEn" onclick="selectLang('en', this)">🇺🇸 EN</button>
+                    <button class="wa-lang-btn" id="waBtnEs" onclick="selectLang('es', this)">🇪🇸 ES</button>
+                </div>
+                <div id="waLoading" style="display:none;text-align:center;padding:30px;color:#888;font-size:13px;">
+                    <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+                    Traduzindo com IA...
+                </div>
                 <textarea id="waText" style="width:100%;min-height:220px;padding:12px;border:2px solid #e0e0e0;border-radius:10px;font-size:13px;line-height:1.7;outline:none;resize:vertical;font-family:'Segoe UI',sans-serif;"></textarea>
                 <div class="modal-btns" style="margin-top:12px;">
                     <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('waModal').classList.remove('show')">Fechar</button>
@@ -420,7 +431,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 5.0 | 14/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 6.0 | 14/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -834,53 +845,104 @@
         };
 
         // ===== WHATSAPP =====
-        window.gerarWhatsApp = function(id) {
-            const l = lands.find(x => x.id === id);
-            if (!l) return;
-            const mapsUrl = l.coordinates
-                ? 'https://www.google.com/maps?q=' + encodeURIComponent(l.coordinates)
-                : '';
+        let waCurrentLandId = null;
+        let waCurrentLang = 'pt';
+        let waCache = {};
+
+        const waLabels = {
+            pt: { pagamento: 'Condição de pagamento:', entrada: 'de entrada', parcelas: 'x parcelas de', pormes: 'por mês', ou: 'ou', avista: 'à vista', importante: 'Importante:', mapa: 'Localização no mapa:', cta: 'Se tiver interesse, me chama que eu te passo mais detalhes.' },
+            en: { pagamento: 'Payment terms:', entrada: 'down payment', parcelas: 'x payments of', pormes: 'per month', ou: 'or', avista: 'cash price', importante: 'Important:', mapa: 'Property location:', cta: 'If you are interested, reach out and I will share more details.' },
+            es: { pagamento: 'Condiciones de pago:', entrada: 'de entrada', parcelas: 'x cuotas de', pormes: 'por mes', ou: 'o', avista: 'al contado', importante: 'Importante:', mapa: 'Ubicación en el mapa:', cta: 'Si te interesa, contáctame y te doy más detalles.' }
+        };
+
+        function buildWAText(l, lang, obsTraducida, restTraducida) {
+            const lb = waLabels[lang];
+            const mapsUrl = l.coordinates ? 'https://www.google.com/maps?q=' + encodeURIComponent(l.coordinates) : '';
             const fmtV = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
             const fmtV2 = v => '$' + parseFloat(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
 
             let texto = '';
-
-            // Header
             texto += '📍 ' + (l.address || '—') + '\n';
             texto += '📏 ' + (l.sqft ? parseFloat(l.sqft).toLocaleString('en-US') + ' sqft' : '—') + (l.acres ? ' | ' + l.acres + ' acres' : '') + '\n';
             if (l.zoningCode) texto += '✅ Zoning ' + l.zoningCode + '\n';
-
-            // Observacoes — cada linha vira um bullet ✅
-            if (l.observacao) {
-                const linhas = l.observacao.split('\n').map(x => x.trim()).filter(x => x);
-                linhas.forEach(linha => { texto += '✅ ' + linha + '\n'; });
+            if (obsTraducida) {
+                obsTraducida.split('\n').map(x => x.trim()).filter(x => x).forEach(linha => { texto += '✅ ' + linha + '\n'; });
             }
-
-            texto += '\n';
-
-            // Pagamento
-            texto += 'Condição de pagamento:\n';
+            texto += '\n' + lb.pagamento + '\n';
             if (l.paymentType === 'parcelado') {
-                if (l.downPayment > 0) texto += '💵 ' + fmtV(l.downPayment) + ' de entrada\n';
-                if (l.installments > 0 && l.installmentValue > 0) texto += '📆 ' + l.installments + 'x parcelas de ' + fmtV(l.installmentValue) + ' por mês\nou\n';
-                texto += '💰 ' + fmtV2(l.saleValue) + ' à vista\n';
+                if (l.downPayment > 0) texto += '💵 ' + fmtV(l.downPayment) + ' ' + lb.entrada + '\n';
+                if (l.installments > 0 && l.installmentValue > 0) texto += '📆 ' + l.installments + lb.parcelas + ' ' + fmtV(l.installmentValue) + ' ' + lb.pormes + '\n' + lb.ou + '\n';
+                texto += '💰 ' + fmtV2(l.saleValue) + ' ' + lb.avista + '\n';
             } else {
-                texto += '💰 ' + fmtV2(l.saleValue) + ' à vista\n';
+                texto += '💰 ' + fmtV2(l.saleValue) + ' ' + lb.avista + '\n';
             }
+            if (restTraducida) texto += '\n' + lb.importante + ' ' + restTraducida + '\n';
+            if (mapsUrl) texto += '\n📍 ' + lb.mapa + ' ' + mapsUrl + '\n';
+            texto += lb.cta;
+            return texto.trim();
+        }
 
-            // Restricoes
-            if (l.restricoes) {
-                texto += '\nImportante: ' + l.restricoes + '\n';
-            }
+        async function traduzirTexto(texto, idioma) {
+            if (!texto) return '';
+            if (idioma === 'pt') return texto;
+            const cacheKey = idioma + ':' + texto;
+            if (waCache[cacheKey]) return waCache[cacheKey];
+            try {
+                const nomeLang = idioma === 'en' ? 'English' : 'Spanish';
+                const resp = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 500,
+                        messages: [{ role: 'user', content: 'Translate the following text to ' + nomeLang + '. Return ONLY the translated text, nothing else, preserving line breaks:\n\n' + texto }]
+                    })
+                });
+                const data = await resp.json();
+                const result = data.content?.[0]?.text?.trim() || texto;
+                waCache[cacheKey] = result;
+                return result;
+            } catch(e) { return texto; }
+        }
 
-            // Maps
-            if (mapsUrl) texto += '\n📍 Localização no mapa: ' + mapsUrl + '\n';
-
-            texto += 'Se tiver interesse, me chama que eu te passo mais detalhes.';
-
-            document.getElementById('waText').value = texto.trim();
+        window.gerarWhatsApp = async function(id) {
+            const l = lands.find(x => x.id === id);
+            if (!l) return;
+            waCurrentLandId = id;
+            waCurrentLang = 'pt';
+            waCache = {};
+            document.querySelectorAll('.wa-lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('waBtnPt').classList.add('active');
             document.getElementById('waCopied').style.display = 'none';
             document.getElementById('waModal').classList.add('show');
+            const texto = buildWAText(l, 'pt', l.observacao || '', l.restricoes || '');
+            document.getElementById('waText').value = texto;
+        };
+
+        window.selectLang = async function(lang, btn) {
+            const l = lands.find(x => x.id === waCurrentLandId);
+            if (!l) return;
+            waCurrentLang = lang;
+            document.querySelectorAll('.wa-lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('waCopied').style.display = 'none';
+
+            if (lang === 'pt') {
+                document.getElementById('waText').value = buildWAText(l, 'pt', l.observacao || '', l.restricoes || '');
+                return;
+            }
+
+            document.getElementById('waLoading').style.display = 'block';
+            document.getElementById('waText').style.display = 'none';
+
+            const [obsT, restT] = await Promise.all([
+                traduzirTexto(l.observacao || '', lang),
+                traduzirTexto(l.restricoes || '', lang)
+            ]);
+
+            document.getElementById('waLoading').style.display = 'none';
+            document.getElementById('waText').style.display = 'block';
+            document.getElementById('waText').value = buildWAText(l, lang, obsT, restT);
         };
 
         window.copiarWA = function() {
