@@ -447,11 +447,12 @@
                     <button class="modal-btn modal-btn-save" style="background:#25d366;" onclick="copiarWA()">📋 Copiar</button>
                 </div>
                 <button id="btnShareNativo" onclick="compartilharNativo()" style="display:none;width:100%;margin-top:8px;padding:12px;background:#128c7e;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📲 Enviar pelo WhatsApp (com foto)</button>
+                <button onclick="enviarSMS()" style="width:100%;margin-top:8px;padding:12px;background:#1565c0;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">💬 Enviar por SMS</button>
                 <div id="waCopied" style="display:none;text-align:center;color:#25d366;font-size:12px;font-weight:700;margin-top:8px;">✅ Copiado! Cole no WhatsApp.</div>
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 7.0 | 15/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 15/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -1047,6 +1048,11 @@
             } catch(e) {
                 if (e.name !== 'AbortError') alert('Erro ao compartilhar: ' + e.message);
             }
+        };
+
+        window.enviarSMS = function() {
+            const texto = document.getElementById('waText').value;
+            window.open('sms:?body=' + encodeURIComponent(texto), '_blank');
         };
 
         window.copiarWA = function() {
