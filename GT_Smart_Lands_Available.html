@@ -111,6 +111,12 @@
 
         .wa-lang-btn { flex:1; padding: 8px; border-radius: 8px; border: 2px solid #e0e0e0; background: white; font-size: 13px; font-weight: 700; cursor: pointer; color: #555; transition: all 0.2s; }
         .wa-lang-btn.active { background: #25d366; color: white; border-color: #25d366; }
+        .foto-upload-area { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:4px; }
+        .foto-preview { width:100px; height:80px; border-radius:10px; border:2px dashed #ccc; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#fafafa; flex-shrink:0; cursor:pointer; }
+        .foto-preview img { width:100%; height:100%; object-fit:cover; }
+        .foto-placeholder { font-size:28px; color:#ccc; }
+        .btn-foto-upload { background:#2e7d32; color:#fff; border:none; padding:8px 14px; border-radius:7px; font-weight:600; cursor:pointer; font-size:12px; }
+        .btn-foto-remove { background:#ef5350; color:#fff; border:none; padding:8px 14px; border-radius:7px; font-weight:600; cursor:pointer; font-size:12px; }
         .toggle-field { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
         .toggle-field label { font-size: 13px; font-weight: 600; color: #444; }
         .toggle-field input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; accent-color: #2e7d32; }
@@ -427,11 +433,12 @@
                     <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('waModal').classList.remove('show')">Fechar</button>
                     <button class="modal-btn modal-btn-save" style="background:#25d366;" onclick="copiarWA()">📋 Copiar</button>
                 </div>
+                <button id="btnShareNativo" onclick="compartilharNativo()" style="display:none;width:100%;margin-top:8px;padding:12px;background:#128c7e;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📲 Enviar pelo WhatsApp (com foto)</button>
                 <div id="waCopied" style="display:none;text-align:center;color:#25d366;font-size:12px;font-weight:700;margin-top:8px;">✅ Copiado! Cole no WhatsApp.</div>
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 6.0 | 14/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 7.0 | 15/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -584,7 +591,9 @@
                 const mapsUrl = l.coordinates ? 'https://www.google.com/maps?q=' + encodeURIComponent(l.coordinates) : '';
                 const buyerName = l.buyerId ? (buyers.find(b => b.id === l.buyerId)?.nome || l.buyerName || '—') : '—';
 
+                const fotoHtml = l.foto ? '<img src="' + l.foto + '" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:10px;">' : '';
                 return '<div class="land-card">' +
+                    fotoHtml +
                     '<div class="land-top">' +
                         '<div style="flex:1;">' +
                             '<div class="land-title">' + (l.parcel || 'Sem Parcel ID') + '</div>' +
@@ -706,6 +715,12 @@
             document.getElementById('fElectricity').value = 'front';
             document.getElementById('fSewer').value = 'none';
             document.getElementById('fFloodZone').checked = false;
+            // Reset foto
+            tempFotoBase64 = '';
+            fotoModificado = false;
+            document.getElementById('fFotoPreview').innerHTML = '<span class="foto-placeholder">📸</span>';
+            document.getElementById('btnFotoRemove').style.display = 'none';
+            if(document.getElementById('fFotoInput')) document.getElementById('fFotoInput').value = '';
             document.getElementById('fHoa').checked = false;
             document.getElementById('hoaFields').className = 'hoa-fields';
             document.getElementById('installmentFields').className = 'installment-fields';
@@ -759,6 +774,7 @@
                 propertyTax: parseFloat(document.getElementById('fPropertyTax').value) || 0,
                 observacao: document.getElementById('fObservacao').value.trim(),
                 restricoes: document.getElementById('fRestricoes').value.trim(),
+                foto: tempFotoBase64 || '',
                 notes: document.getElementById('fNotes').value.trim(),
                 createdAt: editingId ? (lands.find(l => l.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -819,6 +835,16 @@
             document.getElementById('fHoaFee').value = l.hoaFee || '';
             document.getElementById('fPropertyTax').value = l.propertyTax || '';
             document.getElementById('fObservacao').value = l.observacao || '';
+            // Foto
+            tempFotoBase64 = l.foto || '';
+            fotoModificado = false;
+            if (l.foto) {
+                document.getElementById('fFotoPreview').innerHTML = '<img src="' + l.foto + '">';
+                document.getElementById('btnFotoRemove').style.display = 'inline-block';
+            } else {
+                document.getElementById('fFotoPreview').innerHTML = '<span class="foto-placeholder">📸</span>';
+                document.getElementById('btnFotoRemove').style.display = 'none';
+            }
             document.getElementById('fRestricoes').value = l.restricoes || '';
             document.getElementById('fNotes').value = l.notes || '';
 
@@ -844,7 +870,45 @@
             }
         };
 
+        // ===== FOTO UPLOAD =====
+        window.handleFotoUpload = function(event) {
+            const file = event.target.files[0]; if(!file) return;
+            if(file.size > 10*1024*1024){ alert('Imagem muito grande! Máx 10MB.'); return; }
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 1200; // maior que QR — foto de terreno precisa de qualidade
+                    let w = img.width, h = img.height;
+                    if(w > MAX || h > MAX) {
+                        if(w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                        else { w = Math.round(w * MAX / h); h = MAX; }
+                    }
+                    const cvs = document.createElement('canvas');
+                    cvs.width = w; cvs.height = h;
+                    cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+                    let result = cvs.toDataURL('image/jpeg', 0.85);
+                    tempFotoBase64 = result;
+                    fotoModificado = true;
+                    document.getElementById('fFotoPreview').innerHTML = '<img src="' + result + '">';
+                    document.getElementById('btnFotoRemove').style.display = 'inline-block';
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.removerFoto = function() {
+            tempFotoBase64 = '';
+            fotoModificado = true;
+            document.getElementById('fFotoPreview').innerHTML = '<span class="foto-placeholder">📸</span>';
+            document.getElementById('btnFotoRemove').style.display = 'none';
+            if(document.getElementById('fFotoInput')) document.getElementById('fFotoInput').value = '';
+        };
+
         // ===== WHATSAPP =====
+        let tempFotoBase64 = '';
+        let fotoModificado = false;
         let waCurrentLandId = null;
         let waCurrentLang = 'pt';
         let waCache = {};
@@ -917,6 +981,9 @@
             document.getElementById('waModal').classList.add('show');
             const texto = buildWAText(l, 'pt', l.observacao || '', l.restricoes || '');
             document.getElementById('waText').value = texto;
+            // Mostrar/esconder botão compartilhar com foto
+            const btnShare = document.getElementById('btnShareNativo');
+            if (btnShare) btnShare.style.display = l.foto ? 'block' : 'none';
         };
 
         window.selectLang = async function(lang, btn) {
@@ -943,6 +1010,30 @@
             document.getElementById('waLoading').style.display = 'none';
             document.getElementById('waText').style.display = 'block';
             document.getElementById('waText').value = buildWAText(l, lang, obsT, restT);
+            const btnShare = document.getElementById('btnShareNativo');
+            if (btnShare) btnShare.style.display = l.foto ? 'block' : 'none';
+        };
+
+        window.compartilharNativo = async function() {
+            const l = lands.find(x => x.id === waCurrentLandId);
+            if (!l || !l.foto) { alert('Este terreno não tem foto cadastrada.'); return; }
+            const texto = document.getElementById('waText').value;
+            try {
+                // Converter base64 para File
+                const res = await fetch(l.foto);
+                const blob = await res.blob();
+                const file = new File([blob], 'terreno.jpg', { type: 'image/jpeg' });
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], text: texto });
+                } else if (navigator.share) {
+                    // Fallback: só texto (sem foto)
+                    await navigator.share({ text: texto });
+                } else {
+                    alert('Compartilhamento nativo não disponível neste dispositivo. Use o botão Copiar.');
+                }
+            } catch(e) {
+                if (e.name !== 'AbortError') alert('Erro ao compartilhar: ' + e.message);
+            }
         };
 
         window.copiarWA = function() {
