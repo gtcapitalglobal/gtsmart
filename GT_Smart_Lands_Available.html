@@ -308,16 +308,24 @@
                     <div class="modal-grid3">
                         <div>
                             <div class="modal-label">Down Payment</div>
-                            <input type="number" class="modal-input" id="fDownPayment" placeholder="Ex: 500.00" step="any">
+                            <input type="number" class="modal-input" id="fDownPayment" placeholder="Ex: 500.00" step="any" oninput="calcularParcela()">
                         </div>
                         <div>
                             <div class="modal-label">Nº Parcelas</div>
-                            <input type="number" class="modal-input" id="fInstallments" placeholder="Ex: 24" step="1">
+                            <input type="number" class="modal-input" id="fInstallments" placeholder="Ex: 48" step="1" value="48" oninput="calcularParcela()">
                         </div>
                         <div>
                             <div class="modal-label">Valor Parcela</div>
                             <input type="number" class="modal-input" id="fInstallmentValue" placeholder="Ex: 250.00" step="any">
                         </div>
+                    </div>
+
+                    <!-- Calculadora de Parcela -->
+                    <div style="background:#e8f5e9;border-radius:10px;padding:12px;margin-top:8px;">
+                        <div style="font-size:11px;font-weight:700;color:#1b5e20;margin-bottom:8px;">🧮 Calculadora — 150% de Lucro sobre o Custo</div>
+                        <div style="font-size:11px;color:#555;margin-bottom:6px;">Preencha Custo Total + Sale Value + Down Payment para calcular a parcela sugerida.</div>
+                        <button type="button" onclick="calcularParcela()" style="background:#2e7d32;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%;">⚡ Calcular Parcela Sugerida</button>
+                        <div id="calcPreview" style="display:none;margin-top:8px;font-size:12px;color:#1b5e20;line-height:1.8;"></div>
                     </div>
                 </div>
 
@@ -452,7 +460,7 @@
             </div>
         </div>
 
-        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.0 | 15/03/2026</p>
+        <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 9.0 | 15/03/2026</p>
     </div>
 
     <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
@@ -918,6 +926,40 @@
             document.getElementById('fFotoPreview').innerHTML = '<span class="foto-placeholder">📸</span>';
             document.getElementById('btnFotoRemove').style.display = 'none';
             if(document.getElementById('fFotoInput')) document.getElementById('fFotoInput').value = '';
+        };
+
+        // ===== CALCULADORA DE PARCELA (150% lucro sobre custo) =====
+        window.calcularParcela = function() {
+            const custo = (parseFloat(document.getElementById('fAuctionCosts').value) || 0) +
+                          (parseFloat(document.getElementById('fPropertyCosts').value) || 0) +
+                          (parseFloat(document.getElementById('fTitleCertificate').value) || 0);
+            const entrada = parseFloat(document.getElementById('fDownPayment').value) || 0;
+            const parcelas = parseInt(document.getElementById('fInstallments').value) || 48;
+            const prev = document.getElementById('calcPreview');
+
+            if (custo <= 0 || entrada <= 0 || parcelas <= 0) {
+                prev.style.display = 'none';
+                return;
+            }
+
+            // Lógica: Total a receber = custo × 250% (custo + 150% lucro)
+            // Parcela = (Total - entrada) / nº parcelas
+            const totalReceber = custo * 2.5;
+            const restante = totalReceber - entrada;
+            const valorParcela = restante / parcelas;
+            const lucro = totalReceber - custo;
+            const roiPct = (lucro / custo) * 100;
+
+            prev.style.display = 'block';
+            prev.innerHTML =
+                '💰 Custo total: <strong>$' + custo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</strong><br>' +
+                '🎯 Total a receber (150% lucro): <strong>$' + totalReceber.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</strong><br>' +
+                '💵 Entrada: <strong>$' + entrada.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</strong><br>' +
+                '📆 ' + parcelas + 'x de: <strong style="font-size:15px;color:#1b5e20;">$' + valorParcela.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</strong><br>' +
+                '📊 Lucro: $' + lucro.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' (' + roiPct.toFixed(1) + '%)';
+
+            // Preencher automaticamente o campo Valor Parcela
+            document.getElementById('fInstallmentValue').value = valorParcela.toFixed(2);
         };
 
         // ===== WHATSAPP =====
