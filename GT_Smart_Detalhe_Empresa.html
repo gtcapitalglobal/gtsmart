@@ -1145,8 +1145,7 @@ window.compartilharWhatsApp = function() {
         (empresa.endereco ? `📍 ${empresa.endereco}\n` : '') +
         (empresa.telefone ? `📞 ${empresa.telefone}\n` : '') +
         (empresa.email ? `📧 ${empresa.email}\n` : '') +
-        (empresa.site ? `🌐 ${empresa.site}\n` : '') +
-        `\n🔗 Ver perfil completo:\n${url}`;
+        (empresa.site ? `🌐 ${empresa.site}\n` : '');
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 };
 
