@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Smart - Detalhe da Empresa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #37474f, #546e7a); min-height: 100vh; padding: 15px; }
+        .container { max-width: 960px; margin: 10px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #263238, #37474f); color: white; padding: 15px 20px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h2 { font-size: 17px; }
+        .header-sub { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 7px 13px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+
+        /* Tabs */
+        .tabs { display: flex; overflow-x: auto; background: #eceff1; border-bottom: 3px solid #cfd8dc; padding: 0 10px; gap: 2px; }
+        .tab { padding: 12px 16px; border: none; background: none; font-size: 12px; font-weight: 700; color: #78909c; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.2s; }
+        .tab.active { color: #37474f; border-bottom-color: #37474f; background: white; border-radius: 6px 6px 0 0; }
+        .tab-content { display: none; padding: 20px; }
+        .tab-content.active { display: block; }
+
+        /* Formulário geral */
+        .form-section { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 15px; margin-bottom: 14px; }
+        .form-section-title { font-size: 12px; font-weight: 700; color: #546e7a; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #eceff1; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 12px; }
+        label .opc { color: #bbb; font-weight: 400; font-size: 11px; }
+        input[type=text], input[type=email], input[type=url], input[type=password], input[type=date], input[type=number], select, textarea {
+            width: 100%; padding: 9px 11px; border: 2px solid #e0e0e0; border-radius: 7px; font-size: 13px; font-family: inherit; transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #546e7a; }
+        .btn-save-tab { width: 100%; padding: 12px; background: linear-gradient(135deg, #37474f, #546e7a); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; margin-top: 5px; }
+        .btn-save-tab:hover { opacity: 0.9; }
+
+        /* Cards de itens (credenciais, docs, sócios, etc) */
+        .items-list { display: grid; gap: 10px; margin-bottom: 15px; }
+        .item-card { background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 10px; padding: 14px; }
+        .item-card.destaque { border-color: #546e7a; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .item-titulo { font-size: 14px; font-weight: 700; color: #222; }
+        .item-sub { font-size: 12px; color: #777; margin-top: 2px; }
+        .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-item-edit { padding: 5px 12px; background: #546e7a; color: white; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-item-del { padding: 5px 10px; background: #ef5350; color: white; border: none; border-radius: 5px; font-size: 12px; cursor: pointer; }
+        .item-detail { font-size: 12px; color: #555; line-height: 1.7; }
+        .item-row { display: flex; gap: 8px; align-items: center; }
+        .item-key { font-weight: 700; color: #888; min-width: 80px; font-size: 11px; }
+        .item-val { color: #222; word-break: break-all; }
+        .btn-add-item { width: 100%; padding: 10px; background: white; border: 2px dashed #b0bec5; color: #546e7a; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; margin-bottom: 15px; transition: all 0.2s; }
+        .btn-add-item:hover { background: #eceff1; border-color: #546e7a; }
+        .mini-form { background: #e8eaf6; border: 2px solid #546e7a; border-radius: 10px; padding: 15px; margin-bottom: 15px; display: none; }
+        .mini-form.visible { display: block; }
+        .mini-form-title { font-size: 13px; font-weight: 700; color: #37474f; margin-bottom: 12px; }
+        .mini-btns { display: flex; gap: 8px; }
+        .btn-mini-save { flex: 1; padding: 9px; background: #37474f; color: white; border: none; border-radius: 7px; font-weight: 700; cursor: pointer; font-size: 13px; }
+        .btn-mini-cancel { padding: 9px 16px; background: #9e9e9e; color: white; border: none; border-radius: 7px; font-weight: 700; cursor: pointer; font-size: 13px; }
+
+        /* Senha */
+        .senha-wrap { display: flex; gap: 6px; align-items: center; }
+        .senha-wrap input { flex: 1; }
+        .btn-olho { padding: 9px 12px; background: #eceff1; border: 2px solid #e0e0e0; border-radius: 7px; cursor: pointer; font-size: 14px; }
+        .senha-exibida { font-family: monospace; background: #fff8e1; border: 1px solid #ffe082; padding: 6px 10px; border-radius: 6px; font-size: 13px; color: #333; word-break: break-all; }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 25px; }
+        .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #cfd8dc; }
+        .tl-item { position: relative; margin-bottom: 15px; }
+        .tl-dot { position: absolute; left: -21px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #546e7a; border: 2px solid white; box-shadow: 0 0 0 2px #546e7a; }
+        .tl-dot.verde { background: #43a047; box-shadow: 0 0 0 2px #43a047; }
+        .tl-dot.azul { background: #1976d2; box-shadow: 0 0 0 2px #1976d2; }
+        .tl-dot.vermelho { background: #e53935; box-shadow: 0 0 0 2px #e53935; }
+        .tl-dot.amarelo { background: #ffa000; box-shadow: 0 0 0 2px #ffa000; }
+        .tl-data { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 3px; }
+        .tl-titulo { font-size: 13px; font-weight: 700; color: #222; }
+        .tl-desc { font-size: 12px; color: #666; margin-top: 3px; }
+        .tl-actions { display: flex; gap: 5px; margin-top: 6px; }
+
+        /* Badge tipos */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+        .badge-doc { background: #e3f2fd; color: #1565c0; }
+        .badge-cred { background: #fce4ec; color: #880e4f; }
+        .badge-fin { background: #e8f5e9; color: #1b5e20; }
+        .badge-socio { background: #fff3e0; color: #e65100; }
+
+        /* Financeiro */
+        .conta-card { background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 10px; padding: 14px; }
+        .conta-card.principal-conta { border-color: #43a047; }
+        .conta-banco { font-size: 15px; font-weight: 800; color: #222; }
+        .conta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+        .conta-item { font-size: 12px; }
+        .conta-key { color: #888; font-weight: 600; font-size: 11px; }
+
+        /* Drive link */
+        .drive-link { display: flex; align-items: center; gap: 8px; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 8px 12px; text-decoration: none; color: #1b5e20; font-size: 13px; font-weight: 600; margin-top: 6px; }
+        .drive-link:hover { background: #c8e6c9; }
+
+        .empty-msg { text-align: center; padding: 30px; color: #aaa; font-size: 13px; }
+
+        @media (max-width: 600px) {
+            .form-row, .form-row-3, .conta-grid { grid-template-columns: 1fr; }
+            .tab { padding: 10px 12px; font-size: 11px; }
+        }
+    
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-mode .container { background: #0f0f23; color: #e0e0e0; }
+        body.dark-mode .header { }
+        body.dark-mode .content { color: #e0e0e0; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #16213e; color: #e0e0e0; border-color: #333; }
+        body.dark-mode .card-item, body.dark-mode .summary-card { border-color: #333; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="header-top">
+            <div>
+                <h2 id="headerNome">🏢 Carregando...</h2>
+                <div class="header-sub" id="headerSub"></div>
+            </div>
+            <a href="GT_Smart_Empresas.html" class="btn-back">← Empresas</a>
+            <button onclick="abrirExportar()" style="background:#ffc107;color:#333;border:none;padding:7px 14px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;">📥 Exportar PDF</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('geral',this)">📋 Geral</button>
+        <button class="tab" onclick="switchTab('digital',this)">🌐 Digital & Redes</button>
+        <button class="tab" onclick="switchTab('credenciais',this)">🔐 Credenciais</button>
+        <button class="tab" onclick="switchTab('documentos',this)">📄 Documentos</button>
+        <button class="tab" onclick="switchTab('socios',this)">🤝 Sócios</button>
+        <button class="tab" onclick="switchTab('financeiro',this)">🏦 Financeiro</button>
+        <button class="tab" onclick="switchTab('timeline',this)">📅 Timeline</button>
+    </div>
+
+    <!-- ===== TAB GERAL ===== -->
+    <div class="tab-content active" id="tab-geral">
+        <div class="form-section">
+            <div class="form-section-title">🖼️ Logo da Empresa</div>
+            <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
+                <div id="logoPreview" style="width:80px;height:80px;border:2px dashed #b0bec5;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;background:#f8f9fa;overflow:hidden;">🏢</div>
+                <div>
+                    <label for="logoUpload" style="display:inline-block;background:#546e7a;color:white;padding:9px 18px;border-radius:7px;cursor:pointer;font-weight:700;font-size:13px;">📁 Escolher Logo</label>
+                    <input type="file" id="logoUpload" accept="image/*" style="display:none" onchange="carregarLogo(event)">
+                    <div style="font-size:11px;color:#888;margin-top:5px;">PNG, JPG ou SVG. Aparece no PDF.</div>
+                    <button onclick="removerLogo()" style="background:#ef5350;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-top:5px;">🗑️ Remover</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-section">
+            <div class="form-section-title">🌅 Foto de Capa</div>
+            <div id="capaPreview" style="width:100%;height:100px;border:2px dashed #b0bec5;border-radius:10px;background:#f8f9fa;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px;margin-bottom:10px;">Nenhuma capa selecionada</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <label for="capaUpload" style="display:inline-block;background:#546e7a;color:white;padding:9px 18px;border-radius:7px;cursor:pointer;font-weight:700;font-size:13px;">📁 Escolher Foto de Capa</label>
+                <input type="file" id="capaUpload" accept="image/*" style="display:none" onchange="carregarCapa(event)">
+                <button onclick="removerCapa()" style="background:#ef5350;color:white;border:none;padding:9px 14px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;">🗑️ Remover</button>
+            </div>
+            <div style="font-size:11px;color:#888;margin-top:6px;">Aparece no topo do card na lista de empresas. Recomendado: imagem larga (ex: foto do escritório, obra, equipe).</div>
+        </div>
+        <div class="form-section">
+            <div class="form-section-title">🏷️ Identificação</div>
+            <div class="form-row">
+                <div class="form-group"><label>Nome da Empresa *</label><input type="text" id="g-nome"></div>
+                <div class="form-group"><label>Tipo</label>
+                    <select id="g-tipo"><option value="LLC">LLC</option><option value="Holding LLC">Holding LLC</option><option value="S-Corp">S-Corporation</option><option value="Inc">Inc</option><option value="Sole">Sole Proprietorship</option><option value="Outro">Outro</option></select>
+                </div>
+            </div>
+            <div class="form-group"><label>Função / Ramo</label><input type="text" id="g-funcao"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Status</label><input type="text" id="g-status"></div>
+                <div class="form-group"><label>Tax Classification</label><input type="text" id="g-taxClass"></div>
+            </div>
+            <div class="form-group"><label>Slogan</label><input type="text" id="g-slogan"></div>
+        </div>
+        <div class="form-section">
+            <div class="form-section-title">📋 Números de Registro</div>
+            <div class="form-row">
+                <div class="form-group"><label>EIN (Tax ID)</label><input type="text" id="g-ein"></div>
+                <div class="form-group"><label>Número SOS</label><input type="text" id="g-sos"></div>
+            </div>
+            <div class="form-row-3">
+                <div class="form-group"><label>DUNS Number</label><input type="text" id="g-duns"></div>
+                <div class="form-group"><label>BOIR ID</label><input type="text" id="g-boir"></div>
+                <div class="form-group"><label>SIC Code</label><input type="text" id="g-sic"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>NAICS</label><input type="text" id="g-naics"></div>
+                <div class="form-group"><label>DBA</label><input type="text" id="g-dba"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Registered Agent</label><input type="text" id="g-registeredAgent"></div>
+                <div class="form-group"><label>Capital Inicial</label><input type="text" id="g-capitalInicial"></div>
+            </div>
+        </div>
+        <div class="form-section">
+            <div class="form-section-title">📍 Endereço</div>
+            <div class="form-group"><label>Endereço Comercial</label><input type="text" id="g-endereco"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Estado de Registro</label><input type="text" id="g-estado"></div>
+                <div class="form-group"><label>Telefone</label><input type="text" id="g-telefone"></div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section-title">📝 Observações</div>
+            <textarea id="g-observacoes" rows="3"></textarea>
+        </div>
+        <button class="btn-save-tab" onclick="salvarGeral()">💾 Salvar Informações Gerais</button>
+    </div>
+
+    <!-- ===== TAB DIGITAL & REDES ===== -->
+    <div class="tab-content" id="tab-digital">
+        <div class="form-section">
+            <div class="form-section-title">🌐 Site & Servidor</div>
+            <div class="form-row">
+                <div class="form-group"><label>Site Principal</label><input type="text" id="d-site" placeholder="Ex: www.gtcapitalglobal.com"></div>
+                <div class="form-group"><label>Site Secundário <span class="opc">(opcional)</span></label><input type="text" id="d-site2"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Domínio / Servidor</label><input type="text" id="d-servidor" placeholder="Ex: Cloudflare + Hostinger Premium"></div>
+                <div class="form-group"><label>Hospedagem</label><input type="text" id="d-hospedagem" placeholder="Ex: Vercel, Hostinger, AWS"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Email Principal</label><input type="email" id="d-email"></div>
+                <div class="form-group"><label>Email Secundário</label><input type="email" id="d-email2"></div>
+            </div>
+            <div class="form-group"><label>Email Adicional <span class="opc">(admin, contato, etc)</span></label><input type="text" id="d-emailExtra" placeholder="Ex: admin@empresa.com, contact@empresa.com"></div>
+        </div>
+        <div class="form-section">
+            <div class="form-section-title">📱 Redes Sociais</div>
+            <div class="form-row">
+                <div class="form-group"><label>LinkedIn</label><input type="text" id="d-linkedin" placeholder="linkedin.com/company/..."></div>
+                <div class="form-group"><label>Instagram</label><input type="text" id="d-instagram" placeholder="@usuario"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Facebook</label><input type="text" id="d-facebook" placeholder="facebook.com/..."></div>
+                <div class="form-group"><label>YouTube</label><input type="text" id="d-youtube" placeholder="youtube.com/@..."></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Google Business</label><input type="text" id="d-googleBusiness" placeholder="Gustavo@gtlands.com"></div>
+                <div class="form-group"><label>Yelp</label><input type="text" id="d-yelp"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>TikTok</label><input type="text" id="d-tiktok"></div>
+                <div class="form-group"><label>Link de Avaliações (Google)</label><input type="text" id="d-avaliacoes" placeholder="https://g.page/r/..."></div>
+            </div>
+        </div>
+        <div class="form-section">
+            <div class="form-section-title">💬 CRM & Ferramentas</div>
+            <div class="form-row">
+                <div class="form-group"><label>CRM / IA</label><input type="text" id="d-crm" placeholder="Ex: vendasgtlands@gmail.com"></div>
+                <div class="form-group"><label>Outras Ferramentas</label><input type="text" id="d-ferramentas" placeholder="Ex: Zapier, Make, HubSpot"></div>
+            </div>
+        </div>
+        <button class="btn-save-tab" onclick="salvarDigital()">💾 Salvar Digital & Redes</button>
+    </div>
+
+    <!-- ===== TAB CREDENCIAIS ===== -->
+    <div class="tab-content" id="tab-credenciais">
+        <button class="btn-add-item" onclick="mostrarMiniForm('cred')">+ Adicionar Credencial / Senha</button>
+
+        <div class="mini-form" id="miniForm-cred">
+            <div class="mini-form-title" id="miniFormTitle-cred">🔐 Nova Credencial</div>
+            <input type="hidden" id="cred-editIdx">
+            <div class="form-row">
+                <div class="form-group"><label>Título / Sistema *</label><input type="text" id="cred-titulo" placeholder="Ex: IRS Portal, Bank of America Online, Sunbiz..."></div>
+                <div class="form-group"><label>Categoria</label>
+                    <select id="cred-categoria">
+                        <option value="Portal Gov">🏛️ Portal Governamental</option>
+                        <option value="Banco">🏦 Banco / Financeiro</option>
+                        <option value="Email">📧 Email</option>
+                        <option value="Dominio">🌐 Domínio / Hospedagem</option>
+                        <option value="Redes Sociais">📱 Redes Sociais</option>
+                        <option value="Software">💻 Software / SaaS</option>
+                        <option value="Outro">📌 Outro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Usuário / Email de Login</label><input type="text" id="cred-usuario" placeholder="Ex: gustavo@empresa.com"></div>
+                <div class="form-group"><label>Senha</label>
+                    <div class="senha-wrap">
+                        <input type="password" id="cred-senha" placeholder="••••••••">
+                        <button type="button" class="btn-olho" onclick="toggleSenha('cred-senha', this)">👁️</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>URL / Link de Acesso</label><input type="text" id="cred-url" placeholder="https://..."></div>
+                <div class="form-group"><label>PIN / Código Secundário <span class="opc">(opcional)</span></label><input type="text" id="cred-pin" placeholder="Ex: PIN, código de segurança"></div>
+            </div>
+            <div class="form-group"><label>Pergunta Secreta / Backup <span class="opc">(opcional)</span></label><input type="text" id="cred-backup" placeholder="Ex: pergunta secreta, código de recuperação"></div>
+            <div class="form-group"><label>Observações</label><textarea id="cred-obs" rows="2" placeholder="Ex: requer 2FA, renovar em dez/2026..."></textarea></div>
+            <div class="mini-btns">
+                <button class="btn-mini-save" onclick="salvarCredencial()">💾 Salvar</button>
+                <button class="btn-mini-cancel" onclick="fecharMiniForm('cred')">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="items-list" id="lista-credenciais"></div>
+    </div>
+
+    <!-- ===== TAB DOCUMENTOS ===== -->
+    <div class="tab-content" id="tab-documentos">
+        <button class="btn-add-item" onclick="mostrarMiniForm('doc')">+ Adicionar Documento</button>
+
+        <div class="mini-form" id="miniForm-doc">
+            <div class="mini-form-title" id="miniFormTitle-doc">📄 Novo Documento</div>
+            <input type="hidden" id="doc-editIdx">
+            <div class="form-row">
+                <div class="form-group"><label>Nome do Documento *</label><input type="text" id="doc-nome" placeholder="Ex: Articles of Organization, EIN Letter..."></div>
+                <div class="form-group"><label>Tipo</label>
+                    <select id="doc-tipo">
+                        <option value="Constituição">📜 Constituição / Articles</option>
+                        <option value="Fiscal">💰 Fiscal / IRS</option>
+                        <option value="Bancário">🏦 Bancário</option>
+                        <option value="Contrato">📋 Contrato</option>
+                        <option value="Identidade">🪪 Identidade / KYC</option>
+                        <option value="Registro">🏛️ Registro Estadual</option>
+                        <option value="Seguro">🛡️ Seguro</option>
+                        <option value="Outro">📁 Outro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group"><label>🔗 Link Google Drive</label><input type="url" id="doc-link" placeholder="https://drive.google.com/file/d/..."></div>
+            <div class="form-row">
+                <div class="form-group"><label>Data do Documento <span class="opc">(opcional)</span></label><input type="date" id="doc-data"></div>
+                <div class="form-group"><label>Validade / Renovação <span class="opc">(opcional)</span></label><input type="date" id="doc-validade"></div>
+            </div>
+            <div class="form-group"><label>Descrição / Observações</label><textarea id="doc-desc" rows="2" placeholder="Ex: Enviado ao IRS em 08/2025, aprovado..."></textarea></div>
+            <div class="mini-btns">
+                <button class="btn-mini-save" onclick="salvarDocumento()">💾 Salvar</button>
+                <button class="btn-mini-cancel" onclick="fecharMiniForm('doc')">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="items-list" id="lista-documentos"></div>
+    </div>
+
+    <!-- ===== TAB SÓCIOS ===== -->
+    <div class="tab-content" id="tab-socios">
+        <button class="btn-add-item" onclick="mostrarMiniForm('socio')">+ Adicionar Sócio / Membro</button>
+
+        <div class="mini-form" id="miniForm-socio">
+            <div class="mini-form-title" id="miniFormTitle-socio">🤝 Novo Sócio</div>
+            <input type="hidden" id="socio-editIdx">
+            <div class="form-row">
+                <div class="form-group"><label>Nome Completo *</label><input type="text" id="socio-nome" placeholder="Ex: Gustavo Lucas Araujo"></div>
+                <div class="form-group"><label>Função / Cargo</label>
+                    <select id="socio-funcao">
+                        <option value="Manager">Manager</option>
+                        <option value="Member">Member</option>
+                        <option value="Managing Member">Managing Member</option>
+                        <option value="Authorized Person">Authorized Person</option>
+                        <option value="Partner">Partner</option>
+                        <option value="Investor">Investor</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>% de Participação <span class="opc">(opcional)</span></label><input type="number" id="socio-percentual" placeholder="Ex: 50" min="0" max="100" step="0.01"></div>
+                <div class="form-group"><label>Empresa Representada <span class="opc">(opcional)</span></label><input type="text" id="socio-empresa" placeholder="Ex: GT Capital Global LLC"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Email</label><input type="email" id="socio-email" placeholder="Ex: gustavo@gtcapitalglobal.com"></div>
+                <div class="form-group"><label>Telefone</label><input type="text" id="socio-telefone" placeholder="Ex: +1 (786) 862-4576"></div>
+            </div>
+            <div class="form-group"><label>Endereço</label><input type="text" id="socio-endereco" placeholder="Ex: 16632 NW 23rd Street, Apt 302, Pembroke Pines, FL 33028"></div>
+            <div class="form-group"><label>Observações <span class="opc">(opcional)</span></label><textarea id="socio-obs" rows="2"></textarea></div>
+            <div class="mini-btns">
+                <button class="btn-mini-save" onclick="salvarSocio()">💾 Salvar</button>
+                <button class="btn-mini-cancel" onclick="fecharMiniForm('socio')">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="lista-socios"></div>
+    </div>
+
+    <!-- ===== TAB FINANCEIRO ===== -->
+    <div class="tab-content" id="tab-financeiro">
+        <button class="btn-add-item" onclick="mostrarMiniForm('conta')">+ Adicionar Conta / Plataforma</button>
+
+        <div class="mini-form" id="miniForm-conta">
+            <div class="mini-form-title" id="miniFormTitle-conta">🏦 Nova Conta / Plataforma</div>
+            <input type="hidden" id="conta-editIdx">
+            <div class="form-row">
+                <div class="form-group"><label>Banco / Plataforma *</label><input type="text" id="conta-banco" placeholder="Ex: Bank of America, Square, Stripe..."></div>
+                <div class="form-group"><label>Tipo</label>
+                    <select id="conta-tipo">
+                        <option value="Conta Bancária">🏦 Conta Bancária</option>
+                        <option value="Pagamentos">💳 Processador de Pagamentos</option>
+                        <option value="Cartão Empresarial">💳 Cartão Empresarial</option>
+                        <option value="Investimento">📈 Investimento</option>
+                        <option value="Cripto">🪙 Cripto</option>
+                        <option value="Outro">📌 Outro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Account Number</label><input type="text" id="conta-account"></div>
+                <div class="form-group"><label>Routing ACH</label><input type="text" id="conta-ach"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Routing Wire</label><input type="text" id="conta-wire"></div>
+                <div class="form-group"><label>Branch Address</label><input type="text" id="conta-branch" placeholder="Ex: 222 Broadway, New York, NY 10038"></div>
+            </div>
+            <div class="form-row-3">
+                <div class="form-group"><label>Zelle <span class="opc">(telefone ou email)</span></label><input type="text" id="conta-zelle" placeholder="Ex: 754-302-2072"></div>
+                <div class="form-group"><label>Zelle Tag <span class="opc">(opcional)</span></label><input type="text" id="conta-zelleTag" placeholder="Ex: @gtlands"></div>
+                <div class="form-group"><label>Payoneer</label><input type="text" id="conta-payoneer"></div>
+                <div class="form-group"><label>PayPal</label><input type="text" id="conta-paypal"></div>
+            </div>
+            <div class="form-row-3">
+                <div class="form-group"><label>Square</label><input type="text" id="conta-square" placeholder="Ex: Login / ID da conta"></div>
+                <div class="form-group"><label>CashApp</label><input type="text" id="conta-cashapp" placeholder="Ex: $gtlands"></div>
+                <div class="form-group"><label>Venmo</label><input type="text" id="conta-venmo" placeholder="Ex: @gtlandsusa"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Taxa de Processamento <span class="opc">(opcional)</span></label><input type="text" id="conta-taxa" placeholder="Ex: 2.6% + $0.10 por transação"></div>
+                <div class="form-group"><label>Login / Usuário da Plataforma <span class="opc">(opcional)</span></label><input type="text" id="conta-login"></div>
+            </div>
+            <div class="form-group"><label>Observações</label><textarea id="conta-obs" rows="2" placeholder="Ex: conta principal, uso apenas para..."></textarea></div>
+            
+            <div class="form-group" style="background:#e8f5e9;border-radius:10px;padding:12px;border:1px solid #c8e6c9;">
+                <label style="color:#2e7d32;font-weight:700;">📱 QR Code Zelle <span class="opc">(opcional)</span></label>
+                <div style="font-size:11px;color:#555;margin-bottom:8px;">Salve a imagem do QR Code direto do app do Bank of America e faça upload aqui. Vai aparecer no card de pagamento.</div>
+                <div id="qrPreview" style="display:none;margin-bottom:8px;">
+                    <img id="qrPreviewImg" style="width:120px;height:120px;border-radius:8px;border:2px solid #a5d6a7;">
+                </div>
+                <input type="hidden" id="conta-qrcode">
+                <label for="qrUploadInput" style="display:inline-block;background:#2e7d32;color:white;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;">📁 Upload QR Code</label>
+                <input type="file" id="qrUploadInput" accept="image/*" style="display:none" onchange="carregarQR(event)">
+                <button type="button" onclick="removerQR()" style="background:#ef5350;color:white;border:none;padding:8px 12px;border-radius:7px;cursor:pointer;font-size:12px;margin-left:8px;">🗑️ Remover</button>
+            </div>
+
+            <div class="mini-btns">
+                <button class="btn-mini-save" onclick="salvarConta()">💾 Salvar</button>
+                <button class="btn-mini-cancel" onclick="fecharMiniForm('conta')">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="items-list" id="lista-contas"></div>
+    </div>
+
+    <!-- ===== TAB TIMELINE ===== -->
+    <div class="tab-content" id="tab-timeline">
+        <button class="btn-add-item" onclick="mostrarMiniForm('tl')">+ Adicionar Evento</button>
+
+        <div class="mini-form" id="miniForm-tl">
+            <div class="mini-form-title" id="miniFormTitle-tl">📅 Novo Evento</div>
+            <input type="hidden" id="tl-editIdx">
+            <div class="form-row">
+                <div class="form-group"><label>Título *</label><input type="text" id="tl-titulo" placeholder="Ex: Abertura da empresa, Eleição S-Corp..."></div>
+                <div class="form-group"><label>Data</label><input type="date" id="tl-data"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Tipo</label>
+                    <select id="tl-tipo">
+                        <option value="Abertura">🟢 Abertura / Constituição</option>
+                        <option value="Fiscal">💰 Fiscal / IRS</option>
+                        <option value="Bancario">🏦 Bancário</option>
+                        <option value="Legal">📜 Legal / Registro</option>
+                        <option value="Renovacao">🔄 Renovação</option>
+                        <option value="Vencimento">⚠️ Vencimento / Prazo</option>
+                        <option value="Outro">📌 Outro</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Data de Vencimento / Lembrete <span class="opc">(opcional)</span></label><input type="date" id="tl-vencimento"></div>
+            </div>
+            <div class="form-group"><label>Descrição</label><textarea id="tl-desc" rows="2" placeholder="Ex: Eleição S-Corp enviada via Form 2553 ao IRS, aprovada em..."></textarea></div>
+            <div class="mini-btns">
+                <button class="btn-mini-save" onclick="salvarTimeline()">💾 Salvar</button>
+                <button class="btn-mini-cancel" onclick="fecharMiniForm('tl')">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="lista-timeline"></div>
+    </div>
+</div>
+
+<a href="GT_Smart_Empresas.html" style="position:fixed;bottom:20px;right:20px;background:#546e7a;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏢 Empresas</a>
+
+<script type="module">
+        // Dark mode
+import { auth, onAuthStateChanged, getEmpresas, updateEmpresa, getUserSetting, saveUserSetting } from './firebase-config.js';
+
+const params = new URLSearchParams(window.location.search);
+const empId = params.get('id');
+
+let empresa = null;
+let todas = [];
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'GT_Smart_Login.html'; return; }
+    todas = await getEmpresas() || [];
+    empresa = todas.find(e => e.id === empId);
+    if (!empresa) { alert('Empresa não encontrada!'); window.location.href = 'GT_Smart_Empresas.html'; return; }
+    window._empresa = empresa;
+    window._empId = empId;
+    preencherTudo();
+});
+
+function preencherTudo() {
+    document.getElementById('headerNome').textContent = '🏢 ' + empresa.nome;
+    document.getElementById('headerSub').textContent = (empresa.tipo || 'LLC') + (empresa.funcao ? ' · ' + empresa.funcao : '');
+
+    // Logo
+    if (empresa.logo) {
+        const prev = document.getElementById('logoPreview');
+        if (prev) prev.innerHTML = `<img src="${empresa.logo}" style="width:100%;height:100%;object-fit:contain;">`;
+    }
+    // Capa
+    if (empresa.capa) {
+        const prev = document.getElementById('capaPreview');
+        if (prev) { prev.innerHTML = `<img src="${empresa.capa}" style="width:100%;height:100%;object-fit:cover;">`; }
+    }
+
+    // Geral
+    const geralCampos = ['nome','tipo','funcao','status','taxClass','slogan','ein','sos','duns','boir','sic','naics','dba','registeredAgent','capitalInicial','endereco','estado','telefone','observacoes'];
+    geralCampos.forEach(c => { const el = document.getElementById('g-'+c); if (el) el.value = empresa[c] || ''; });
+
+    // Digital
+    const digitais = ['site','site2','servidor','hospedagem','email','email2','emailExtra','linkedin','instagram','facebook','youtube','googleBusiness','yelp','tiktok','avaliacoes','crm','ferramentas'];
+    digitais.forEach(c => { const el = document.getElementById('d-'+c); if (el) el.value = (empresa.digital || empresa)[c] || empresa[c] || ''; });
+
+    renderCredenciais();
+    renderDocumentos();
+    renderSocios();
+    renderContas();
+    renderTimeline();
+}
+
+window.carregarLogo = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const base64 = e.target.result;
+        document.getElementById('logoPreview').innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:contain;">`;
+        empresa.logo = base64;
+        window._empresa = empresa;
+        empresa.updatedAt = new Date().toISOString();
+        const ok = await updateEmpresa(empresa);
+        if (ok) alert('✅ Logo salva!');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.removerLogo = async function() {
+    if (!confirm('Remover a logo?')) return;
+    empresa.logo = '';
+    window._empresa = empresa;
+    document.getElementById('logoPreview').innerHTML = '🏢';
+    empresa.updatedAt = new Date().toISOString();
+    await updateEmpresa(empresa);
+};
+
+window.carregarCapa = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const base64 = e.target.result;
+        document.getElementById('capaPreview').innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">`;
+        empresa.capa = base64;
+        window._empresa = empresa;
+        empresa.updatedAt = new Date().toISOString();
+        const ok = await updateEmpresa(empresa);
+        if (ok) alert('✅ Capa salva!');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.removerCapa = async function() {
+    if (!confirm('Remover a foto de capa?')) return;
+    empresa.capa = '';
+    window._empresa = empresa;
+    document.getElementById('capaPreview').innerHTML = 'Nenhuma capa selecionada';
+    empresa.updatedAt = new Date().toISOString();
+    await updateEmpresa(empresa);
+};
+
+// ===== GERAL =====
+window.salvarGeral = async function() {
+    const campos = ['nome','tipo','funcao','status','taxClass','slogan','ein','sos','duns','boir','sic','naics','dba','registeredAgent','capitalInicial','endereco','estado','telefone','observacoes'];
+    campos.forEach(c => { const el = document.getElementById('g-'+c); if (el) empresa[c] = el.value.trim(); });
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) { alert('✅ Informações gerais salvas!'); document.getElementById('headerNome').textContent = '🏢 ' + empresa.nome; }
+    else alert('❌ Erro ao salvar.');
+};
+
+// ===== DIGITAL =====
+window.salvarDigital = async function() {
+    if (!empresa.digital) empresa.digital = {};
+    const campos = ['site','site2','servidor','hospedagem','email','email2','emailExtra','linkedin','instagram','facebook','youtube','googleBusiness','yelp','tiktok','avaliacoes','crm','ferramentas'];
+    campos.forEach(c => { const el = document.getElementById('d-'+c); if (el) empresa.digital[c] = el.value.trim(); });
+    empresa.email = empresa.digital.email;
+    empresa.email2 = empresa.digital.email2;
+    empresa.site = empresa.digital.site;
+    empresa.linkedin = empresa.digital.linkedin;
+    empresa.instagram = empresa.digital.instagram;
+    empresa.facebook = empresa.digital.facebook;
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) alert('✅ Digital & Redes salvo!');
+    else alert('❌ Erro ao salvar.');
+};
+
+// ===== CREDENCIAIS =====
+function renderCredenciais() {
+    const lista = empresa.credenciais || [];
+    if (lista.length === 0) { document.getElementById('lista-credenciais').innerHTML = '<div class="empty-msg">Nenhuma credencial cadastrada ainda.</div>'; return; }
+    const cats = { 'Portal Gov':'🏛️', 'Banco':'🏦', 'Email':'📧', 'Dominio':'🌐', 'Redes Sociais':'📱', 'Software':'💻', 'Outro':'📌' };
+    document.getElementById('lista-credenciais').innerHTML = lista.map((c, i) => `
+        <div class="item-card">
+            <div class="item-header">
+                <div>
+                    <div class="item-titulo">${cats[c.categoria]||'📌'} ${c.titulo}</div>
+                    <div class="item-sub">${c.categoria || ''}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn-item-edit" onclick="editarCredencial(${i})">✏️</button>
+                    <button class="btn-item-del" onclick="excluirItem('credenciais',${i})">🗑️</button>
+                </div>
+            </div>
+            <div class="item-detail">
+                ${c.usuario ? `<div class="item-row"><span class="item-key">Usuário:</span><span class="item-val">${c.usuario}</span></div>` : ''}
+                ${c.senha ? `<div class="item-row"><span class="item-key">Senha:</span><span class="senha-exibida" id="s-${i}" style="display:none">${c.senha}</span><button onclick="document.getElementById('s-${i}').style.display=document.getElementById('s-${i}').style.display==='none'?'block':'none'" style="background:#eceff1;border:1px solid #ccc;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:12px;">👁️ Ver senha</button></div>` : ''}
+                ${c.url ? `<div class="item-row"><span class="item-key">URL:</span><a href="${c.url}" target="_blank" class="item-val" style="color:#1976d2">${c.url}</a></div>` : ''}
+                ${c.pin ? `<div class="item-row"><span class="item-key">PIN:</span><span class="item-val">${c.pin}</span></div>` : ''}
+                ${c.backup ? `<div class="item-row"><span class="item-key">Backup:</span><span class="item-val">${c.backup}</span></div>` : ''}
+                ${c.obs ? `<div class="item-row"><span class="item-key">Obs:</span><span class="item-val">${c.obs}</span></div>` : ''}
+            </div>
+        </div>`).join('');
+}
+
+window.editarCredencial = function(i) {
+    const c = (empresa.credenciais || [])[i];
+    if (!c) return;
+    mostrarMiniForm('cred');
+    document.getElementById('miniFormTitle-cred').textContent = '✏️ Editar Credencial';
+    document.getElementById('cred-editIdx').value = i;
+    document.getElementById('cred-titulo').value = c.titulo || '';
+    document.getElementById('cred-categoria').value = c.categoria || 'Outro';
+    document.getElementById('cred-usuario').value = c.usuario || '';
+    document.getElementById('cred-senha').value = c.senha || '';
+    document.getElementById('cred-url').value = c.url || '';
+    document.getElementById('cred-pin').value = c.pin || '';
+    document.getElementById('cred-backup').value = c.backup || '';
+    document.getElementById('cred-obs').value = c.obs || '';
+};
+
+window.salvarCredencial = async function() {
+    const titulo = document.getElementById('cred-titulo').value.trim();
+    if (!titulo) { alert('Título obrigatório!'); return; }
+    const item = { titulo, categoria: document.getElementById('cred-categoria').value, usuario: document.getElementById('cred-usuario').value, senha: document.getElementById('cred-senha').value, url: document.getElementById('cred-url').value, pin: document.getElementById('cred-pin').value, backup: document.getElementById('cred-backup').value, obs: document.getElementById('cred-obs').value };
+    if (!empresa.credenciais) empresa.credenciais = [];
+    const idx = document.getElementById('cred-editIdx').value;
+    if (idx !== '') empresa.credenciais[parseInt(idx)] = item;
+    else empresa.credenciais.push(item);
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) { fecharMiniForm('cred'); renderCredenciais(); alert('✅ Salvo!'); }
+    else alert('❌ Erro ao salvar.');
+};
+
+// ===== DOCUMENTOS =====
+function renderDocumentos() {
+    const lista = empresa.documentos || [];
+    if (lista.length === 0) { document.getElementById('lista-documentos').innerHTML = '<div class="empty-msg">Nenhum documento cadastrado ainda.</div>'; return; }
+    const tipos = { 'Constituição':'📜', 'Fiscal':'💰', 'Bancário':'🏦', 'Contrato':'📋', 'Identidade':'🪪', 'Registro':'🏛️', 'Seguro':'🛡️', 'Outro':'📁' };
+    document.getElementById('lista-documentos').innerHTML = lista.map((d, i) => `
+        <div class="item-card">
+            <div class="item-header">
+                <div>
+                    <div class="item-titulo">${tipos[d.tipo]||'📁'} ${d.nome}</div>
+                    <div class="item-sub">${d.tipo || ''} ${d.data ? '· ' + fmtData(d.data) : ''} ${d.validade ? '· Validade: ' + fmtData(d.validade) : ''}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn-item-edit" onclick="editarDocumento(${i})">✏️</button>
+                    <button class="btn-item-del" onclick="excluirItem('documentos',${i})">🗑️</button>
+                </div>
+            </div>
+            ${d.link ? `<a href="${d.link}" target="_blank" class="drive-link">📂 Abrir no Google Drive</a>` : ''}
+            ${d.desc ? `<div class="item-detail" style="margin-top:8px;">${d.desc}</div>` : ''}
+        </div>`).join('');
+}
+
+window.editarDocumento = function(i) {
+    const d = (empresa.documentos || [])[i];
+    if (!d) return;
+    mostrarMiniForm('doc');
+    document.getElementById('miniFormTitle-doc').textContent = '✏️ Editar Documento';
+    document.getElementById('doc-editIdx').value = i;
+    document.getElementById('doc-nome').value = d.nome || '';
+    document.getElementById('doc-tipo').value = d.tipo || 'Outro';
+    document.getElementById('doc-link').value = d.link || '';
+    document.getElementById('doc-data').value = d.data || '';
+    document.getElementById('doc-validade').value = d.validade || '';
+    document.getElementById('doc-desc').value = d.desc || '';
+};
+
+window.salvarDocumento = async function() {
+    const nome = document.getElementById('doc-nome').value.trim();
+    if (!nome) { alert('Nome obrigatório!'); return; }
+    const item = { nome, tipo: document.getElementById('doc-tipo').value, link: document.getElementById('doc-link').value, data: document.getElementById('doc-data').value, validade: document.getElementById('doc-validade').value, desc: document.getElementById('doc-desc').value };
+    if (!empresa.documentos) empresa.documentos = [];
+    const idx = document.getElementById('doc-editIdx').value;
+    if (idx !== '') empresa.documentos[parseInt(idx)] = item;
+    else empresa.documentos.push(item);
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) { fecharMiniForm('doc'); renderDocumentos(); alert('✅ Salvo!'); }
+    else alert('❌ Erro ao salvar.');
+};
+
+// ===== SÓCIOS =====
+function renderSocios() {
+    const lista = empresa.socios || [];
+    if (lista.length === 0) { document.getElementById('lista-socios').innerHTML = '<div class="empty-msg">Nenhum sócio cadastrado ainda.</div>'; return; }
+    document.getElementById('lista-socios').innerHTML = '<div class="items-list">' + lista.map((s, i) => `
+        <div class="item-card destaque">
+            <div class="item-header">
+                <div>
+                    <div class="item-titulo">🤝 ${s.nome}</div>
+                    <div class="item-sub">${s.funcao || ''}${s.percentual ? ' · ' + s.percentual + '%' : ''}${s.empresa ? ' · ' + s.empresa : ''}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn-item-edit" onclick="editarSocio(${i})">✏️</button>
+                    <button class="btn-item-del" onclick="excluirItem('socios',${i})">🗑️</button>
+                </div>
+            </div>
+            <div class="item-detail">
+                ${s.email ? `<div class="item-row"><span class="item-key">Email:</span><span class="item-val">${s.email}</span></div>` : ''}
+                ${s.telefone ? `<div class="item-row"><span class="item-key">Tel:</span><span class="item-val">${s.telefone}</span></div>` : ''}
+                ${s.endereco ? `<div class="item-row"><span class="item-key">Endereço:</span><span class="item-val">${s.endereco}</span></div>` : ''}
+                ${s.obs ? `<div class="item-row"><span class="item-key">Obs:</span><span class="item-val">${s.obs}</span></div>` : ''}
+            </div>
+        </div>`).join('') + '</div>';
+}
+
+window.editarSocio = function(i) {
+    const s = (empresa.socios || [])[i];
+    if (!s) return;
+    mostrarMiniForm('socio');
+    document.getElementById('miniFormTitle-socio').textContent = '✏️ Editar Sócio';
+    document.getElementById('socio-editIdx').value = i;
+    document.getElementById('socio-nome').value = s.nome || '';
+    document.getElementById('socio-funcao').value = s.funcao || 'Member';
+    document.getElementById('socio-percentual').value = s.percentual || '';
+    document.getElementById('socio-empresa').value = s.empresa || '';
+    document.getElementById('socio-email').value = s.email || '';
+    document.getElementById('socio-telefone').value = s.telefone || '';
+    document.getElementById('socio-endereco').value = s.endereco || '';
+    document.getElementById('socio-obs').value = s.obs || '';
+};
+
+window.salvarSocio = async function() {
+    const nome = document.getElementById('socio-nome').value.trim();
+    if (!nome) { alert('Nome obrigatório!'); return; }
+    const item = { nome, funcao: document.getElementById('socio-funcao').value, percentual: document.getElementById('socio-percentual').value, empresa: document.getElementById('socio-empresa').value, email: document.getElementById('socio-email').value, telefone: document.getElementById('socio-telefone').value, endereco: document.getElementById('socio-endereco').value, obs: document.getElementById('socio-obs').value };
+    if (!empresa.socios) empresa.socios = [];
+    const idx = document.getElementById('socio-editIdx').value;
+    if (idx !== '') empresa.socios[parseInt(idx)] = item;
+    else empresa.socios.push(item);
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) { fecharMiniForm('socio'); renderSocios(); alert('✅ Salvo!'); }
+    else alert('❌ Erro ao salvar.');
+};
+
+// ===== FINANCEIRO =====
+function renderContas() {
+    const lista = empresa.contas || [];
+    if (lista.length === 0) { document.getElementById('lista-contas').innerHTML = '<div class="empty-msg">Nenhuma conta cadastrada ainda.</div>'; return; }
+    document.getElementById('lista-contas').innerHTML = lista.map((c, i) => `
+        <div class="item-card ${i===0?'destaque':''}">
+            <div class="item-header">
+                <div>
+                    <div class="item-titulo">🏦 ${c.banco}</div>
+                    <div class="item-sub">${c.tipo || ''}${i===0?' · Principal':''}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn-item-edit" onclick="editarConta(${i})">✏️</button>
+                    <button class="btn-item-del" onclick="excluirItem('contas',${i})">🗑️</button>
+                </div>
+            </div>
+            <div class="conta-grid">
+                ${c.account ? `<div><div class="conta-key">Account #</div><div>${c.account}</div></div>` : ''}
+                ${c.ach ? `<div><div class="conta-key">ACH</div><div>${c.ach}</div></div>` : ''}
+                ${c.wire ? `<div><div class="conta-key">Wire</div><div>${c.wire}</div></div>` : ''}
+                ${c.branch ? `<div><div class="conta-key">Branch</div><div>${c.branch}</div></div>` : ''}
+                ${c.zelle ? `<div><div class="conta-key">Zelle</div><div>${c.zelle}${c.zelleTag ? ` · <span style="color:#6a1b9a;font-weight:700;">${c.zelleTag}</span>` : ''}</div></div>` : ''}
+                ${c.payoneer ? `<div><div class="conta-key">Payoneer</div><div>${c.payoneer}</div></div>` : ''}
+                ${c.paypal ? `<div><div class="conta-key">PayPal</div><div>${c.paypal}</div></div>` : ''}
+                ${c.square ? `<div><div class="conta-key">Square</div><div>${c.square}</div></div>` : ''}
+                ${c.cashapp ? `<div><div class="conta-key">CashApp</div><div>${c.cashapp}</div></div>` : ''}
+                ${c.venmo ? `<div><div class="conta-key">Venmo</div><div>${c.venmo}</div></div>` : ''}
+                ${c.taxa ? `<div style="grid-column:1/-1"><div class="conta-key">Taxa</div><div>${c.taxa}</div></div>` : ''}
+                ${c.obs ? `<div style="grid-column:1/-1"><div class="conta-key">Obs</div><div>${c.obs}</div></div>` : ''}
+            </div>
+            ${(c.qrcode || c.zelleQr) ? `
+            <div style="margin-top:10px;padding:10px;background:#e8f5e9;border-radius:8px;display:flex;align-items:center;gap:12px;">
+                <img src="${c.qrcode || c.zelleQr}" style="width:72px;height:72px;border-radius:6px;border:2px solid #a5d6a7;">
+                <div>
+                    <div style="font-size:11px;color:#2e7d32;font-weight:700;">✅ QR Code Zelle</div>
+                    <div style="font-size:11px;color:#555;margin-top:2px;">QR Code salvo · aparecerá no card de pagamento</div>
+                </div>
+            </div>` : `
+            <div style="margin-top:10px;padding:8px 12px;background:#fff8e1;border-radius:8px;">
+                <div style="font-size:11px;color:#f57f17;">⚠️ QR Code Zelle não cadastrado · clique em ✏️ Editar para adicionar</div>
+            </div>`}
+            <button onclick="gerarCardPagamento(${i})" style="margin-top:10px;width:100%;padding:10px;background:linear-gradient(135deg,#4a148c,#6a1b9a);color:white;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                💳 Gerar Card de Pagamento
+            </button>
+        </div>`).join('');
+}
+
+window.editarConta = function(i) {
+    const c = (empresa.contas || [])[i];
+    if (!c) return;
+    mostrarMiniForm('conta');
+    document.getElementById('miniFormTitle-conta').textContent = '✏️ Editar Conta';
+    document.getElementById('conta-editIdx').value = i;
+    ['banco','tipo','account','ach','wire','branch','zelle','zelleTag','payoneer','paypal','square','cashapp','venmo','taxa','login','obs'].forEach(k => { const el = document.getElementById('conta-'+k); if (el) el.value = c[k] || ''; });
+    // Carregar QR se tiver (qrcode OU zelleQr)
+    const qrVal = c.qrcode || c.zelleQr || '';
+    document.getElementById('conta-qrcode').value = qrVal;
+    if (qrVal) {
+        document.getElementById('qrPreviewImg').src = qrVal;
+        document.getElementById('qrPreview').style.display = 'block';
+    } else {
+        document.getElementById('qrPreview').style.display = 'none';
+    }
+};
+
+window.salvarConta = async function() {
+    const banco = document.getElementById('conta-banco').value.trim();
+    if (!banco) { alert('Banco/Plataforma obrigatório!'); return; }
+    const item = {};
+    ['banco','tipo','account','ach','wire','branch','zelle','zelleTag','payoneer','paypal','square','cashapp','venmo','taxa','login','obs'].forEach(k => { const el = document.getElementById('conta-'+k); if (el) item[k] = el.value.trim(); });
+    const qrRaw = document.getElementById('conta-qrcode').value || '';
+    if (qrRaw && qrRaw.length > 800*1024) { alert('⚠️ QR Code muito grande. Use o botão de upload para comprimir automaticamente.'); return; }
+    item.qrcode = qrRaw;
+    item.zelleQr = qrRaw; // compatibilidade com payment card
+    if (!empresa.contas) empresa.contas = [];
+    const idx = document.getElementById('conta-editIdx').value;
+    if (idx !== '') empresa.contas[parseInt(idx)] = item;
+    else empresa.contas.push(item);
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) { fecharMiniForm('conta'); renderContas(); alert('✅ Salvo!'); }
+    else alert('❌ Erro ao salvar.');
+};
+
+window.carregarQR = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5*1024*1024) { alert('Imagem muito grande! Máx 5MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+            // Comprimir para max 300px (mantém QR legível e pequeno)
+            const MAX = 300;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+                if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const cvs = document.createElement('canvas');
+            cvs.width = w; cvs.height = h;
+            const ctx = cvs.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, 0, 0, w, h);
+            // PNG primeiro, JPEG se muito grande
+            let result = cvs.toDataURL('image/png');
+            if (result.length > 150000) result = cvs.toDataURL('image/jpeg', 0.92);
+            const sizeKB = Math.round(result.length / 1024);
+            if (sizeKB > 800) { alert('⚠️ QR muito grande (' + sizeKB + 'KB). Use imagem menor.'); return; }
+            document.getElementById('conta-qrcode').value = result;
+            document.getElementById('qrPreviewImg').src = result;
+            document.getElementById('qrPreview').style.display = 'block';
+            alert('✅ QR carregado! ' + sizeKB + 'KB. Agora clique Salvar.');
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+};
+
+window.removerQR = function() {
+    document.getElementById('conta-qrcode').value = '';
+    document.getElementById('qrPreview').style.display = 'none';
+    document.getElementById('qrUploadInput').value = '';
+};
+
+// ===== TIMELINE =====
+function renderTimeline() {
+    const lista = (empresa.timeline || []).sort((a,b) => (b.data||'') > (a.data||'') ? 1 : -1);
+    if (lista.length === 0) { document.getElementById('lista-timeline').innerHTML = '<div class="empty-msg">Nenhum evento cadastrado ainda.</div>'; return; }
+    const cores = { 'Abertura':'verde', 'Fiscal':'azul', 'Bancario':'azul', 'Legal':'azul', 'Renovacao':'amarelo', 'Vencimento':'vermelho', 'Outro':'' };
+    const icons = { 'Abertura':'🟢', 'Fiscal':'💰', 'Bancario':'🏦', 'Legal':'📜', 'Renovacao':'🔄', 'Vencimento':'⚠️', 'Outro':'📌' };
+    const today = new Date();
+    document.getElementById('lista-timeline').innerHTML = '<div class="timeline">' + lista.map((t, i) => {
+        const prazo = t.vencimento ? new Date(t.vencimento) : null;
+        const dias = prazo ? Math.round((prazo - today) / 86400000) : null;
+        const vencAlert = dias !== null && dias <= 30 ? `<span style="color:${dias<=0?'#e53935':'#f57f17'};font-weight:700;font-size:11px;"> ${dias<=0?'⚠️ Venceu há '+Math.abs(dias)+' dias':'⏰ Vence em '+dias+' dias'}</span>` : '';
+        return `<div class="tl-item">
+            <div class="tl-dot ${cores[t.tipo]||''}"></div>
+            <div class="tl-data">${icons[t.tipo]||'📌'} ${t.tipo || ''} · ${t.data ? fmtData(t.data) : 'Sem data'}</div>
+            <div class="tl-titulo">${t.titulo}</div>
+            ${t.desc ? `<div class="tl-desc">${t.desc}</div>` : ''}
+            ${t.vencimento ? `<div class="tl-desc">📅 Vencimento/Prazo: ${fmtData(t.vencimento)} ${vencAlert}</div>` : ''}
+            <div class="tl-actions">
+                <button class="btn-item-edit" onclick="editarTimeline(${i})">✏️</button>
+                <button class="btn-item-del" onclick="excluirItem('timeline',${i})">🗑️</button>
+            </div>
+        </div>`;
+    }).join('') + '</div>';
+}
+
+window.editarTimeline = function(i) {
+    const lista = (empresa.timeline || []).sort((a,b) => (b.data||'') > (a.data||'') ? 1 : -1);
+    const t = lista[i];
+    if (!t) return;
+    const realIdx = empresa.timeline.indexOf(t);
+    mostrarMiniForm('tl');
+    document.getElementById('miniFormTitle-tl').textContent = '✏️ Editar Evento';
+    document.getElementById('tl-editIdx').value = realIdx;
+    document.getElementById('tl-titulo').value = t.titulo || '';
+    document.getElementById('tl-data').value = t.data || '';
+    document.getElementById('tl-tipo').value = t.tipo || 'Outro';
+    document.getElementById('tl-vencimento').value = t.vencimento || '';
+    document.getElementById('tl-desc').value = t.desc || '';
+};
+
+window.salvarTimeline = async function() {
+    const titulo = document.getElementById('tl-titulo').value.trim();
+    if (!titulo) { alert('Título obrigatório!'); return; }
+    const item = { titulo, data: document.getElementById('tl-data').value, tipo: document.getElementById('tl-tipo').value, vencimento: document.getElementById('tl-vencimento').value, desc: document.getElementById('tl-desc').value };
+    if (!empresa.timeline) empresa.timeline = [];
+    const idx = document.getElementById('tl-editIdx').value;
+    if (idx !== '') empresa.timeline[parseInt(idx)] = item;
+    else empresa.timeline.push(item);
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) { fecharMiniForm('tl'); renderTimeline(); alert('✅ Salvo!'); }
+    else alert('❌ Erro ao salvar.');
+};
+
+// ===== EXCLUIR GENÉRICO =====
+window.excluirItem = async function(campo, i) {
+    if (!confirm('Excluir este item?')) return;
+    empresa[campo].splice(i, 1);
+    empresa.updatedAt = new Date().toISOString();
+    const ok = await updateEmpresa(empresa);
+    if (ok) {
+        if (campo === 'credenciais') renderCredenciais();
+        else if (campo === 'documentos') renderDocumentos();
+        else if (campo === 'socios') renderSocios();
+        else if (campo === 'contas') renderContas();
+        else if (campo === 'timeline') renderTimeline();
+    }
+};
+
+// ===== UTILITÁRIOS =====
+window.switchTab = function(tab, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+};
+
+window.mostrarMiniForm = function(tipo) {
+    document.getElementById('miniForm-' + tipo).classList.add('visible');
+    const ids = ['cred-editIdx','doc-editIdx','socio-editIdx','conta-editIdx','tl-editIdx'];
+    const formId = tipo + '-editIdx';
+    if (document.getElementById(formId)) document.getElementById(formId).value = '';
+    document.getElementById('miniForm-' + tipo).scrollIntoView({ behavior: 'smooth' });
+};
+
+window.fecharMiniForm = function(tipo) {
+    document.getElementById('miniForm-' + tipo).classList.remove('visible');
+    ['titulo','usuario','senha','url','pin','backup','obs','nome','link','data','validade','desc','percentual','empresa','email','telefone','endereco','banco','account','ach','wire','branch','zelle','payoneer','paypal','square','cashapp','venmo','taxa','login','vencimento'].forEach(c => {
+        const el = document.getElementById(tipo + '-' + c);
+        if (el) el.value = '';
+    });
+    const editEl = document.getElementById(tipo + '-editIdx');
+    if (editEl) editEl.value = '';
+};
+
+window.toggleSenha = function(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'password') { el.type = 'text'; btn.textContent = '🔒'; }
+    else { el.type = 'password'; btn.textContent = '👁️'; }
+};
+
+function fmtData(d) {
+    if (!d) return '';
+    const p = d.split('-');
+    return p.length === 3 ? p[2]+'/'+p[1]+'/'+p[0] : d;
+}
+</script>
+<!-- MODAL EXPORTAR PDF -->
+<div id="modalExportar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;overflow-y:auto;padding:15px;">
+  <div style="background:white;border-radius:14px;max-width:520px;margin:20px auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:linear-gradient(135deg,#263238,#37474f);color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="font-size:16px;">📥 Exportar PDF</h3>
+      <button onclick="fecharExportar()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:16px;">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <!-- Escolha do modelo -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div id="btnBasico" onclick="selecionarModelo('basico')" style="border:3px solid #546e7a;border-radius:10px;padding:15px;text-align:center;cursor:pointer;background:#eceff1;">
+          <div style="font-size:24px;margin-bottom:6px;">📄</div>
+          <div style="font-weight:800;font-size:14px;color:#263238;">Básico</div>
+          <div style="font-size:11px;color:#777;margin-top:4px;">Você escolhe os campos</div>
+        </div>
+        <div id="btnAvancado" onclick="selecionarModelo('avancado')" style="border:3px solid #cfd8dc;border-radius:10px;padding:15px;text-align:center;cursor:pointer;background:white;">
+          <div style="font-size:24px;margin-bottom:6px;">📋</div>
+          <div style="font-weight:800;font-size:14px;color:#263238;">Avançado</div>
+          <div style="font-size:11px;color:#777;margin-top:4px;">Exporta tudo</div>
+        </div>
+      </div>
+
+      <!-- Opções do modelo básico -->
+      <div id="opcoesBasico" style="background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;padding:15px;margin-bottom:15px;">
+        <div style="font-size:13px;font-weight:700;color:#546e7a;margin-bottom:12px;">✅ Escolha o que incluir no PDF:</div>
+
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:6px;">Identificação</div>
+        <label class="chk-row"><input type="checkbox" id="chk-nome" checked> Nome da Empresa</label>
+        <label class="chk-row"><input type="checkbox" id="chk-tipo" checked> Tipo (LLC, S-Corp...)</label>
+        <label class="chk-row"><input type="checkbox" id="chk-ein" checked> EIN (Tax ID)</label>
+        <label class="chk-row"><input type="checkbox" id="chk-sos"> Número SOS</label>
+        <label class="chk-row"><input type="checkbox" id="chk-duns"> DUNS Number</label>
+        <label class="chk-row"><input type="checkbox" id="chk-boir"> BOIR ID</label>
+        <label class="chk-row"><input type="checkbox" id="chk-taxclass"> Tax Classification</label>
+        <label class="chk-row"><input type="checkbox" id="chk-status"> Status</label>
+        <label class="chk-row"><input type="checkbox" id="chk-regagent"> Registered Agent</label>
+        <label class="chk-row"><input type="checkbox" id="chk-capital"> Capital Inicial</label>
+
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin:10px 0 6px;">Endereço & Contato</div>
+        <label class="chk-row"><input type="checkbox" id="chk-endereco" checked> Endereço Comercial</label>
+        <label class="chk-row"><input type="checkbox" id="chk-telefone" checked> Telefone</label>
+        <label class="chk-row"><input type="checkbox" id="chk-email" checked> Email(s)</label>
+        <label class="chk-row"><input type="checkbox" id="chk-site" checked> Site</label>
+
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin:10px 0 6px;">Gestão</div>
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin:10px 0 6px;">Financeiro</div>
+        <label class="chk-row"><input type="checkbox" id="chk-banco" checked> Banco</label>
+        <label class="chk-row"><input type="checkbox" id="chk-account" checked> Account Number</label>
+        <label class="chk-row"><input type="checkbox" id="chk-routing" checked> Routing ACH & Wire</label>
+        <label class="chk-row"><input type="checkbox" id="chk-zelle" checked> Zelle</label>
+        <label class="chk-row"><input type="checkbox" id="chk-payoneer"> Payoneer</label>
+        <label class="chk-row"><input type="checkbox" id="chk-outros-pag"> Outros pagamentos</label>
+
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin:10px 0 6px;">Extras</div>
+        <label class="chk-row"><input type="checkbox" id="chk-redes"> Redes Sociais</label>
+        <label class="chk-row"><input type="checkbox" id="chk-socios"> Lista de Sócios</label>
+        <label class="chk-row"><input type="checkbox" id="chk-obs"> Observações</label>
+      </div>
+
+      <button onclick="gerarPDF()" style="width:100%;padding:13px;background:linear-gradient(135deg,#263238,#546e7a);color:white;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:8px;">🖨️ Gerar PDF</button>
+      <button onclick="compartilharWhatsApp()" style="width:100%;padding:12px;background:#25D366;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">📲 Compartilhar por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ÁREA DE IMPRESSÃO -->
+<div id="areaPrint" style="display:none;"></div>
+
+<style>
+  .chk-row { display:flex; align-items:center; gap:8px; padding:5px 4px; font-size:13px; color:#333; cursor:pointer; border-radius:5px; }
+  .chk-row:hover { background:#eceff1; }
+  .chk-row input { width:16px; height:16px; cursor:pointer; accent-color:#546e7a; }
+
+  @media print {
+    body > * { display: none !important; }
+    #areaPrint { display: block !important; }
+    #areaPrint * { display: revert; }
+  }
+
+  .pdf-page { font-family: 'Segoe UI', sans-serif; color: #222; max-width: 800px; margin: 0 auto; padding: 30px; }
+  .pdf-header { border-bottom: 3px solid #37474f; padding-bottom: 15px; margin-bottom: 20px; }
+  .pdf-empresa-nome { font-size: 24px; font-weight: 900; color: #263238; }
+  .pdf-empresa-tipo { font-size: 13px; color: #666; margin-top: 4px; }
+  .pdf-section { margin-bottom: 18px; }
+  .pdf-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #546e7a; border-bottom: 1px solid #cfd8dc; padding-bottom: 4px; margin-bottom: 10px; }
+  .pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pdf-row { padding: 5px 0; border-bottom: 1px solid #f5f5f5; }
+  .pdf-key { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; }
+  .pdf-val { font-size: 13px; color: #222; margin-top: 2px; }
+  .pdf-footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #cfd8dc; font-size: 11px; color: #aaa; text-align: center; }
+  .pdf-modelo-badge { display:inline-block; background:#37474f; color:white; padding:3px 12px; border-radius:10px; font-size:11px; font-weight:700; margin-left:10px; }
+</style>
+
+<script>
+let modeloAtual = 'basico';
+
+window.abrirExportar = async function() {
+    const empId = window._empId;
+    document.getElementById('modalExportar').style.display = 'block';
+    // Carrega preferências salvas no Firebase (sincroniza entre dispositivos)
+    try {
+        const salvo = await getUserSetting('pdf_prefs_' + empId);
+        if (salvo) {
+            const prefs = typeof salvo === 'string' ? JSON.parse(salvo) : salvo;
+            Object.keys(prefs).forEach(k => {
+                const el = document.getElementById('chk-' + k);
+                if (el) el.checked = prefs[k];
+            });
+        }
+    } catch(e) {
+        // fallback silencioso — preferências não carregadas
+    }
+};
+
+window.fecharExportar = function() {
+    document.getElementById('modalExportar').style.display = 'none';
+};
+
+window.selecionarModelo = function(modelo) {
+    modeloAtual = modelo;
+    document.getElementById('btnBasico').style.borderColor = modelo === 'basico' ? '#546e7a' : '#cfd8dc';
+    document.getElementById('btnBasico').style.background = modelo === 'basico' ? '#eceff1' : 'white';
+    document.getElementById('btnAvancado').style.borderColor = modelo === 'avancado' ? '#546e7a' : '#cfd8dc';
+    document.getElementById('btnAvancado').style.background = modelo === 'avancado' ? '#eceff1' : 'white';
+    document.getElementById('opcoesBasico').style.display = modelo === 'basico' ? 'block' : 'none';
+};
+
+window.compartilharWhatsApp = function() {
+    const empresa = window._empresa;
+    if (!empresa) { alert('Aguarde os dados carregarem.'); return; }
+    const url = window.location.href.split('?')[0] + '?id=' + empresa.id;
+    const msg = `🏢 *${empresa.nome}*\n` +
+        (empresa.tipo ? `📋 ${empresa.tipo}\n` : '') +
+        (empresa.ein ? `🔢 EIN: ${empresa.ein}\n` : '') +
+        (empresa.endereco ? `📍 ${empresa.endereco}\n` : '') +
+        (empresa.telefone ? `📞 ${empresa.telefone}\n` : '') +
+        (empresa.email ? `📧 ${empresa.email}\n` : '') +
+        (empresa.site ? `🌐 ${empresa.site}\n` : '') +
+        `\n🔗 Ver perfil completo:\n${url}`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+};
+
+window.gerarPDF = function() {
+    const empresa = window._empresa;
+    const empId = window._empId;
+    if (!empresa) { alert('Erro: dados da empresa não carregados ainda. Aguarde e tente novamente.'); return; }
+    // Salva preferências
+    const chks = ['nome','tipo','ein','sos','duns','boir','taxclass','status','regagent','capital','endereco','telefone','email','site','banco','account','routing','zelle','payoneer','outros-pag','redes','socios','obs'];
+    const prefs = {};
+    chks.forEach(k => { const el = document.getElementById('chk-' + k); if (el) prefs[k] = el.checked; });
+    // Salva preferências no Firebase (sincroniza entre dispositivos)
+    saveUserSetting('pdf_prefs_' + empId, prefs).catch(() => {});
+
+    const e = empresa;
+    const avancado = modeloAtual === 'avancado';
+    const inc = k => avancado || prefs[k] === true;
+
+    function bloco(titulo, linhas) {
+        const rows = linhas.filter(l => l[1]).map(l => `<div class="pdf-row"><div class="pdf-key">${l[0]}</div><div class="pdf-val">${l[1]}</div></div>`).join('');
+        if (!rows) return '';
+        return `<div class="pdf-section"><div class="pdf-section-title">${titulo}</div><div class="pdf-grid">${rows}</div></div>`;
+    }
+
+    let html = `<div class="pdf-page">
+      <div class="pdf-header">
+        ${empresa.logo ? `<div style="margin-bottom:12px;"><img src="${empresa.logo}" style="max-height:70px;max-width:200px;object-fit:contain;"></div>` : ''}
+        <div class="pdf-empresa-nome">${e.nome || ''} <span class="pdf-modelo-badge">${avancado ? 'Ficha Completa' : 'Company Profile'}</span></div>
+        <div class="pdf-empresa-tipo">${e.tipo || ''} ${e.funcao ? '· ' + e.funcao : ''}</div>
+        ${e.slogan ? `<div style="font-size:13px;color:#888;font-style:italic;margin-top:4px;">"${e.slogan}"</div>` : ''}
+      </div>`;
+
+    // IDENTIFICAÇÃO
+    const idLinhas = [];
+    if (inc('ein')) idLinhas.push(['EIN (Tax ID)', e.ein]);
+    if (inc('sos')) idLinhas.push(['Número SOS', e.sos || e.sosfl]);
+    if (inc('duns')) idLinhas.push(['DUNS Number', e.duns]);
+    if (inc('boir')) idLinhas.push(['BOIR ID', e.boir]);
+    if (inc('taxclass')) idLinhas.push(['Tax Classification', e.taxClass]);
+    if (inc('status')) idLinhas.push(['Status', e.status]);
+    if (avancado) { idLinhas.push(['SIC', e.sic]); idLinhas.push(['NAICS', e.naics]); idLinhas.push(['DBA', e.dba]); }
+    if (inc('regagent')) idLinhas.push(['Registered Agent', e.registeredAgent]);
+    if (inc('capital')) idLinhas.push(['Capital Inicial', e.capitalInicial]);
+    if (idLinhas.some(l => l[1])) html += bloco('📋 Registro', idLinhas);
+
+    // CONTATO
+    const ctLinhas = [];
+    if (inc('endereco')) ctLinhas.push(['Endereço', e.endereco]);
+    if (inc('telefone')) ctLinhas.push(['Telefone', e.telefone]);
+    if (inc('email')) ctLinhas.push(['Email', [e.email, e.email2, (e.digital||{}).emailExtra].filter(Boolean).join(' | ')]);
+    if (inc('site')) ctLinhas.push(['Site', e.site]);
+    if (ctLinhas.some(l => l[1])) html += bloco('📍 Endereço & Contato', ctLinhas);
+
+    // FINANCEIRO - pega da conta principal ou campos diretos
+    const contaPrincipal = (e.contas || [])[0] || e;
+    const finLinhas = [];
+    if (inc('banco')) finLinhas.push(['Banco', contaPrincipal.banco]);
+    if (inc('account')) finLinhas.push(['Account Number', contaPrincipal.account || contaPrincipal.accountNumber]);
+    if (inc('routing')) { finLinhas.push(['Routing ACH', contaPrincipal.ach || contaPrincipal.routingACH]); finLinhas.push(['Routing Wire', contaPrincipal.wire || contaPrincipal.routingWire]); }
+    if (avancado || inc('routing')) finLinhas.push(['Branch', contaPrincipal.branch || contaPrincipal.branchAddress]);
+    if (inc('zelle')) finLinhas.push(['Zelle', contaPrincipal.zelle]);
+    if (inc('payoneer')) finLinhas.push(['Payoneer', contaPrincipal.payoneer || e.payoneer]);
+    if (inc('outros-pag')) finLinhas.push(['Outros', contaPrincipal.outrosPag || e.outrosPag]);
+    if (finLinhas.some(l => l[1])) html += bloco('🏦 Financeiro', finLinhas);
+
+    // REDES SOCIAIS
+    if (inc('redes') || avancado) {
+        const d = e.digital || e;
+        const rLinhas = [['LinkedIn', d.linkedin || e.linkedin], ['Instagram', d.instagram || e.instagram], ['Facebook', d.facebook || e.facebook]];
+        if (avancado) { rLinhas.push(['YouTube', d.youtube]); rLinhas.push(['Google Business', d.googleBusiness]); rLinhas.push(['TikTok', d.tiktok]); }
+        html += bloco('🌐 Redes Sociais & Digital', rLinhas);
+    }
+
+    // SÓCIOS (avançado ou selecionado)
+    if ((inc('socios') || avancado) && (e.socios || []).length > 0) {
+        const rows = e.socios.map(s => `
+            <div style="background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:8px;">
+                <div style="font-weight:700;">${s.nome} <span style="font-size:11px;background:#eceff1;padding:2px 8px;border-radius:6px;">${s.funcao||''}</span> ${s.percentual ? '<span style="font-size:11px;color:#546e7a;">'+s.percentual+'%</span>' : ''}</div>
+                ${s.empresa ? `<div style="font-size:12px;color:#777;">🏢 ${s.empresa}</div>` : ''}
+                ${s.email ? `<div style="font-size:12px;">📧 ${s.email}</div>` : ''}
+                ${s.telefone ? `<div style="font-size:12px;">📞 ${s.telefone}</div>` : ''}
+                ${s.endereco ? `<div style="font-size:12px;">📍 ${s.endereco}</div>` : ''}
+            </div>`).join('');
+        html += `<div class="pdf-section"><div class="pdf-section-title">🤝 Sócios & Membros</div>${rows}</div>`;
+    }
+
+    // TODAS AS CONTAS (só avançado)
+    if (avancado && (e.contas || []).length > 1) {
+        const rows = e.contas.map((c, i) => `
+            <div style="background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:8px;">
+                <div style="font-weight:700;">${c.banco} <span style="font-size:11px;background:#eceff1;padding:2px 8px;border-radius:6px;">${c.tipo||''}</span>${i===0?' <span style="font-size:11px;color:#43a047;font-weight:700;">✓ Principal</span>':''}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;font-size:12px;">
+                    ${c.account ? `<div><b>Account:</b> ${c.account}</div>` : ''}
+                    ${c.ach ? `<div><b>ACH:</b> ${c.ach}</div>` : ''}
+                    ${c.wire ? `<div><b>Wire:</b> ${c.wire}</div>` : ''}
+                    ${c.zelle ? `<div><b>Zelle:</b> ${c.zelle}</div>` : ''}
+                    ${c.square ? `<div><b>Square:</b> ${c.square}</div>` : ''}
+                    ${c.taxa ? `<div><b>Taxa:</b> ${c.taxa}</div>` : ''}
+                </div>
+            </div>`).join('');
+        html += `<div class="pdf-section"><div class="pdf-section-title">🏦 Todas as Contas</div>${rows}</div>`;
+    }
+
+    // TIMELINE (só avançado)
+    if (avancado && (e.timeline || []).length > 0) {
+        const rows = [...e.timeline].sort((a,b) => (a.data||'') > (b.data||'') ? -1 : 1)
+            .map(t => `<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px;"><span style="font-weight:700;color:#546e7a;">${t.data||'—'}</span> · <b>${t.titulo}</b>${t.desc ? '<br><span style="color:#666;">'+t.desc+'</span>' : ''}</div>`).join('');
+        html += `<div class="pdf-section"><div class="pdf-section-title">📅 Histórico / Timeline</div>${rows}</div>`;
+    }
+
+    // OBS
+    if ((inc('obs') || avancado) && e.observacoes) {
+        html += `<div class="pdf-section"><div class="pdf-section-title">📝 Observações</div><div style="font-size:13px;color:#555;">${e.observacoes}</div></div>`;
+    }
+
+    html += `<div class="pdf-footer">Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')} · GT Smart Equity</div></div>`;
+
+    const area = document.getElementById('areaPrint');
+    area.innerHTML = html;
+    fecharExportar();
+    setTimeout(() => { window.print(); }, 300);
+};
+
+// ═══════════════════════════════════════════════════════
+// GERADOR DE CARD DE PAGAMENTO
+// ═══════════════════════════════════════════════════════
+
+window.gerarCardPagamento = async function(idx) {
+    try {
+        const empresa = window._empresa;
+        if (!empresa) { alert('Empresa não encontrada!'); return; }
+        const c = (empresa.contas || [])[idx];
+        if (!c) { alert('Conta não encontrada!'); return; }
+
+        const W = 600;
+        let y = 0;
+
+        // Helper: carregar imagem
+        const loadImg = (src) => new Promise((res) => {
+            if (!src) return res(null);
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => res(img);
+            img.onerror = () => res(null);
+            img.src = src;
+        });
+
+        // Pré-carregar imagens
+        const imgEmp = await loadImg(empresa.logo || null);
+        const imgQR  = await loadImg(c.qrcode || c.zelleQr || null);
+
+        // Calcular altura dinâmica
+        let alturaEstimada = 120; // header
+        alturaEstimada += 20 + 18; // linha + espaço
+        alturaEstimada += 22; // titulo banco
+        if (c.account) alturaEstimada += 24;
+        if (c.ach)     alturaEstimada += 24;
+        if (c.wire)    alturaEstimada += 24;
+        if (c.branch)  alturaEstimada += 24;
+        alturaEstimada += 24 + 18; // espaço + linha
+        alturaEstimada += 22; // titulo zelle
+        if (c.zelle)    alturaEstimada += 24;
+        if (c.zelleTag) alturaEstimada += 24;
+        alturaEstimada += imgQR ? 155 : 24;
+        alturaEstimada += 24 + 18; // espaço + linha
+        const plats = [];
+        if (c.cashapp)  plats.push(['CashApp', c.cashapp]);
+        if (c.venmo)    plats.push(['Venmo', c.venmo]);
+        if (c.paypal)   plats.push(['PayPal', c.paypal]);
+        if (c.payoneer) plats.push(['Payoneer', c.payoneer]);
+        if (c.square)   plats.push(['Square', c.square]);
+        if (plats.length > 0) alturaEstimada += 22 + plats.length * 24 + 10;
+        alturaEstimada += 70; // rodapé
+
+        const H = alturaEstimada + 40;
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        // ── FUNDO ──
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#1a0533');
+        bg.addColorStop(1, '#0d001f');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Faixa topo
+        const faixa = ctx.createLinearGradient(0, 0, W, 0);
+        faixa.addColorStop(0, '#6a1b9a');
+        faixa.addColorStop(1, '#4a148c');
+        ctx.fillStyle = faixa;
+        ctx.fillRect(0, 0, W, 6);
+
+        y = 25;
+
+        // ── HEADER: logo + nome empresa ──
+        if (imgEmp) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(58, y + 32, 32, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fill();
+            ctx.clip();
+            ctx.drawImage(imgEmp, 26, y, 64, 64);
+            ctx.restore();
+        }
+        const xTxt = imgEmp ? 108 : 30;
+        ctx.font = 'bold 22px Arial';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(empresa.nome || 'GT Smart Equity', xTxt, y + 24);
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#ce93d8';
+        const subtipo = [(empresa.tipo || ''), (empresa.funcao || '')].filter(Boolean).join(' · ');
+        ctx.fillText(subtipo, xTxt, y + 46);
+        y += 90;
+
+        // Helper: linha separadora
+        const linha = () => {
+            ctx.strokeStyle = '#4a148c';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(30, y);
+            ctx.lineTo(W - 30, y);
+            ctx.stroke();
+            y += 18;
+        };
+
+        // Helper: título de seção
+        const secTit = (txt) => {
+            ctx.font = 'bold 13px Arial';
+            ctx.fillStyle = '#ce93d8';
+            ctx.fillText(txt, 30, y);
+            y += 22;
+        };
+
+        // Helper: linha label + valor
+        const dado = (label, valor, bold) => {
+            if (!valor) return;
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#9575cd';
+            ctx.fillText(label, 30, y);
+            ctx.font = bold ? 'bold 15px Arial' : '14px Arial';
+            ctx.fillStyle = bold ? '#ffffff' : '#ede7f6';
+            ctx.fillText(valor, 195, y);
+            y += 24;
+        };
+
+        linha();
+
+        // ── BANK OF AMERICA ──
+        secTit('🏦  BANK OF AMERICA');
+        dado('Account #',    c.account, true);
+        dado('Routing ACH',  c.ach,     false);
+        dado('Routing Wire', c.wire,    false);
+        dado('Branch',       c.branch,  false);
+        y += 6;
+        linha();
+
+        // ── ZELLE ──
+        secTit('⚡  ZELLE');
+        dado('Phone / Email', c.zelle,    true);
+        dado('Tag',           c.zelleTag, true);
+
+        if (imgQR) {
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            ctx.fillRect(30, y, W - 60, 140);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(W/2 - 52, y + 10, 104, 104);
+            ctx.drawImage(imgQR, W/2 - 50, y + 12, 100, 100);
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#ce93d8';
+            ctx.textAlign = 'center';
+            ctx.fillText('Escaneie para pagar via Zelle', W/2, y + 130);
+            ctx.textAlign = 'left';
+            y += 150;
+        } else {
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#f57f17';
+            ctx.fillText('⚠️  QR Code não cadastrado', 30, y);
+            y += 24;
+        }
+        y += 6;
+        linha();
+
+        // ── OUTRAS PLATAFORMAS ──
+        if (plats.length > 0) {
+            secTit('📱  OUTRAS PLATAFORMAS');
+            plats.forEach(([lbl, val]) => dado(lbl, val, false));
+            y += 6;
+        }
+
+        // ── RODAPÉ ──
+        y = H - 52;
+        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+        ctx.fillRect(0, y, W, 52);
+        ctx.font = '11px Arial';
+        ctx.fillStyle = '#7e57c2';
+        ctx.textAlign = 'center';
+        ctx.fillText('GT Smart Equity  ·  Gerado em ' + new Date().toLocaleDateString('pt-BR'), W/2, H - 30);
+        ctx.fillText('Para dúvidas entre em contato conosco', W/2, H - 14);
+        ctx.textAlign = 'left';
+
+        const url = canvas.toDataURL('image/png');
+        mostrarModalCard(url, c.banco || 'Conta');
+
+    } catch(err) {
+        console.error('Erro ao gerar card:', err);
+        alert('Erro: ' + err.message);
+    }
+};
+
+function mostrarModalCard(url, nomeBanco) {
+    // Remove modal anterior se existir
+    const old = document.getElementById('modalCardPag');
+    if (old) old.remove();
+
+    // Salva URL em variável global para o botão compartilhar acessar
+    window._cardUrl = url;
+    window._cardNome = nomeBanco;
+
+    const modal = document.createElement('div');
+    modal.id = 'modalCardPag';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;overflow-y:auto;';
+
+    const div = document.createElement('div');
+    div.style.cssText = 'background:#1a0533;border-radius:16px;padding:20px;max-width:400px;width:100%;text-align:center;border:1px solid #6a1b9a;';
+    div.innerHTML = `
+        <div style="font-size:16px;font-weight:700;color:white;margin-bottom:14px;">💳 Card de Pagamento · ${nomeBanco}</div>
+        <img id="cardPreviewImg" src="${url}" style="width:100%;border-radius:12px;border:2px solid #6a1b9a;display:block;margin:0 auto;">
+        <div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <a id="btnBaixarCard" href="${url}" download="card-pagamento-${nomeBanco.replace(/\s+/g,'-')}.png"
+               style="background:linear-gradient(135deg,#6a1b9a,#4a148c);color:white;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;">
+                📥 Baixar PNG
+            </a>
+            <button id="btnCompartilharCard" style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:white;padding:10px 22px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;">
+                📤 Compartilhar
+            </button>
+            <button id="btnFecharCard" style="background:rgba(255,255,255,0.1);color:white;padding:10px 22px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;">
+                ✖ Fechar
+            </button>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#9575cd;">
+            💡 Pressione e segure a imagem para salvar no celular
+        </div>`;
+
+    modal.appendChild(div);
+    document.body.appendChild(modal);
+
+    document.getElementById('btnFecharCard').onclick = () => modal.remove();
+    document.getElementById('btnCompartilharCard').onclick = () => compartilharCard();
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+window.compartilharCard = async function() {
+    const url = window._cardUrl;
+    const nome = window._cardNome || 'Conta';
+    if (!url) return;
+    try {
+        const blob = await (await fetch(url)).blob();
+        const file = new File([blob], 'card-pagamento.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Card de Pagamento', text: 'GT Smart Equity' });
+        } else {
+            alert('Seu navegador não suporta compartilhamento direto.\nUse o botão Baixar PNG e envie pelo WhatsApp!');
+        }
+    } catch(e) {
+        alert('Use o botão Baixar PNG para salvar e enviar pelo WhatsApp!');
+    }
+};
+</script>
+
+    <a href="GT_Smart_Menu.html" style="position:fixed;bottom:20px;right:20px;background:#2e7d32;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);z-index:999;">🏠 Menu</a>
+
+    <p style="text-align:center;font-size:11px;opacity:0.5;padding:10px;">Basic 8.1 | 15/03/2026</p>
+</body>
+</html>
