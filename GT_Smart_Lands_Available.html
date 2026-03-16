@@ -404,6 +404,19 @@
                 <div class="modal-label">Restrições <span style="color:#aaa;font-weight:400;">— aparece como "Importante:" na mensagem</span></div>
                 <input type="text" class="modal-input" id="fRestricoes" placeholder="Ex: O lote não permite mobile home">
 
+                <div class="modal-section">📸 Foto do Terreno</div>
+                <div class="foto-upload-area">
+                    <div class="foto-preview" id="fFotoPreview" onclick="document.getElementById('fFotoInput').click()">
+                        <span class="foto-placeholder">📸</span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn-foto-upload" onclick="document.getElementById('fFotoInput').click()">📤 Upload Foto</button>
+                        <button type="button" class="btn-foto-remove" id="btnFotoRemove" style="display:none;" onclick="removerFoto()">✕ Remover</button>
+                        <input type="file" id="fFotoInput" accept="image/*" style="display:none" onchange="handleFotoUpload(event)">
+                        <div style="font-size:11px;color:#888;margin-top:6px;">Aparece no compartilhamento via WhatsApp</div>
+                    </div>
+                </div>
+
                 <div class="modal-section">📝 Notas Internas</div>
                 <textarea class="modal-textarea" id="fNotes" placeholder="Anotações gerais sobre o terreno..."></textarea>
 
